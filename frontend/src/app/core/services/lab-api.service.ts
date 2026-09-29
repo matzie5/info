@@ -7,8 +7,32 @@ import { Session, FeedItem, UserRole, ActionType } from '../models/session.model
 export class LabApiService {
   private baseUrl = (window as any).__API_BASE_URL__ || '/api/v1';
 
+  private async fetchApi(path: string, options?: RequestInit): Promise<Response> {
+    const primaryUrl = `${this.baseUrl}${path}`;
+    try {
+      const res = await fetch(primaryUrl, options);
+      const contentType = res.headers.get('content-type') || '';
+
+      // If server returned HTML (e.g. Angular index.html when proxy is not forwarding)
+      if (contentType.includes('text/html')) {
+        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          console.warn(`[LabApiService] Endpoint ${primaryUrl} returned HTML. Falling back to direct backend at http://127.0.0.1:8000/api/v1${path}`);
+          const fallbackRes = await fetch(`http://127.0.0.1:8000/api/v1${path}`, options);
+          return fallbackRes;
+        }
+      }
+      return res;
+    } catch (err) {
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        console.warn(`[LabApiService] Request to ${primaryUrl} failed. Retrying direct backend at http://127.0.0.1:8000/api/v1${path}...`, err);
+        return fetch(`http://127.0.0.1:8000/api/v1${path}`, options);
+      }
+      throw err;
+    }
+  }
+
   async createSession(title: string, language: string = 'pl', maxTicks: number = 40): Promise<Session> {
-    const res = await fetch(`${this.baseUrl}/sessions`, {
+    const res = await this.fetchApi('/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -18,36 +42,39 @@ export class LabApiService {
         max_ticks: maxTicks
       })
     });
-    if (!res.ok) throw new Error(`Create session failed: ${res.statusText}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || `Create session failed: ${res.statusText}`);
+    }
     return res.json();
   }
 
   async getSession(sessionId: string): Promise<Session> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}`);
+    const res = await this.fetchApi(`/sessions/${sessionId}`);
     if (!res.ok) throw new Error(`Get session failed: ${res.statusText}`);
     return res.json();
   }
 
   async startSession(sessionId: string): Promise<Session> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/start`, { method: 'POST' });
+    const res = await this.fetchApi(`/sessions/${sessionId}/start`, { method: 'POST' });
     if (!res.ok) throw new Error(`Start session failed: ${res.statusText}`);
     return res.json();
   }
 
   async pauseSession(sessionId: string): Promise<Session> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/pause`, { method: 'POST' });
+    const res = await this.fetchApi(`/sessions/${sessionId}/pause`, { method: 'POST' });
     if (!res.ok) throw new Error(`Pause session failed: ${res.statusText}`);
     return res.json();
   }
 
   async resumeSession(sessionId: string): Promise<Session> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/resume`, { method: 'POST' });
+    const res = await this.fetchApi(`/sessions/${sessionId}/resume`, { method: 'POST' });
     if (!res.ok) throw new Error(`Resume session failed: ${res.statusText}`);
     return res.json();
   }
 
   async getFeed(sessionId: string): Promise<FeedItem[]> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/feed`);
+    const res = await this.fetchApi(`/sessions/${sessionId}/feed`);
     if (!res.ok) throw new Error(`Get feed failed: ${res.statusText}`);
     return res.json();
   }
@@ -65,7 +92,7 @@ export class LabApiService {
       content?: string;
     }
   ): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/actions`, {
+    const res = await this.fetchApi(`/sessions/${sessionId}/actions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -92,7 +119,7 @@ export class LabApiService {
     assigned_handle: string;
     custom_auth_token: string;
   }> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/join-by-token`, {
+    const res = await this.fetchApi(`/sessions/${sessionId}/join-by-token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -105,7 +132,7 @@ export class LabApiService {
   }
 
   async createInvite(sessionId: string, role: UserRole, teamQuota: number = 20): Promise<{ token: string; invite_url: string }> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/invites`, {
+    const res = await this.fetchApi(`/sessions/${sessionId}/invites`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -118,7 +145,7 @@ export class LabApiService {
   }
 
   async sendHeartbeat(sessionId: string, userId: string, role: UserRole, handle: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/heartbeat`, {
+    const res = await this.fetchApi(`/sessions/${sessionId}/heartbeat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -132,13 +159,13 @@ export class LabApiService {
 
   // Facilitator Master HUD Admin calls
   async adminForceTick(sessionId: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/force-tick`, { method: 'POST' });
+    const res = await this.fetchApi(`/admin/sessions/${sessionId}/force-tick`, { method: 'POST' });
     if (!res.ok) throw new Error(`Force tick failed: ${res.statusText}`);
     return res.json();
   }
 
   async adminCrisisInject(sessionId: string, statement?: string, severity: string = 'HIGH'): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/inject`, {
+    const res = await this.fetchApi(`/admin/sessions/${sessionId}/inject`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ statement, severity })
@@ -148,13 +175,13 @@ export class LabApiService {
   }
 
   async adminGetPresence(sessionId: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/presence`);
+    const res = await this.fetchApi(`/admin/sessions/${sessionId}/presence`);
     if (!res.ok) throw new Error(`Get presence failed: ${res.statusText}`);
     return res.json();
   }
 
   async adminGetTelemetry(sessionId: string): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/telemetry`);
+    const res = await this.fetchApi(`/admin/sessions/${sessionId}/telemetry`);
     if (!res.ok) throw new Error(`Get telemetry failed: ${res.statusText}`);
     return res.json();
   }
