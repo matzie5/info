@@ -1,0 +1,161 @@
+import { Injectable } from '@angular/core';
+import { Session, FeedItem, UserRole, ActionType } from '../models/session.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class LabApiService {
+  private baseUrl = (window as any).__API_BASE_URL__ || '/api/v1';
+
+  async createSession(title: string, language: string = 'pl', maxTicks: number = 40): Promise<Session> {
+    const res = await fetch(`${this.baseUrl}/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        scenario_id: 'poland-grid-panic-2026',
+        language,
+        max_ticks: maxTicks
+      })
+    });
+    if (!res.ok) throw new Error(`Create session failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async getSession(sessionId: string): Promise<Session> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}`);
+    if (!res.ok) throw new Error(`Get session failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async startSession(sessionId: string): Promise<Session> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/start`, { method: 'POST' });
+    if (!res.ok) throw new Error(`Start session failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async pauseSession(sessionId: string): Promise<Session> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/pause`, { method: 'POST' });
+    if (!res.ok) throw new Error(`Pause session failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async resumeSession(sessionId: string): Promise<Session> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/resume`, { method: 'POST' });
+    if (!res.ok) throw new Error(`Resume session failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async getFeed(sessionId: string): Promise<FeedItem[]> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/feed`);
+    if (!res.ok) throw new Error(`Get feed failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async submitAction(
+    sessionId: string,
+    action: {
+      userId: string;
+      team: UserRole;
+      actionType: ActionType;
+      targetPostId?: string;
+      targetCluster?: string;
+      customPrompt?: string;
+      headline?: string;
+      content?: string;
+    }
+  ): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/actions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: action.userId,
+        team: action.team,
+        action_type: action.actionType,
+        target_post_id: action.targetPostId,
+        target_cluster: action.targetCluster,
+        custom_prompt: action.customPrompt,
+        headline: action.headline,
+        content: action.content
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || 'Action execution failed');
+    }
+    return res.json();
+  }
+
+  async joinByToken(sessionId: string, token: string, requestedHandle?: string): Promise<{
+    session_id: string;
+    assigned_role: UserRole;
+    assigned_handle: string;
+    custom_auth_token: string;
+  }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/join-by-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        requested_handle: requestedHandle
+      })
+    });
+    if (!res.ok) throw new Error(`Join by token failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async createInvite(sessionId: string, role: UserRole, teamQuota: number = 20): Promise<{ token: string; invite_url: string }> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/invites`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        role,
+        team_quota: teamQuota
+      })
+    });
+    if (!res.ok) throw new Error(`Create invite failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async sendHeartbeat(sessionId: string, userId: string, role: UserRole, handle: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/sessions/${sessionId}/heartbeat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        role,
+        handle
+      })
+    });
+    return res.ok;
+  }
+
+  // Facilitator Master HUD Admin calls
+  async adminForceTick(sessionId: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/force-tick`, { method: 'POST' });
+    if (!res.ok) throw new Error(`Force tick failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async adminCrisisInject(sessionId: string, statement?: string, severity: string = 'HIGH'): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/inject`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ statement, severity })
+    });
+    if (!res.ok) throw new Error(`Crisis inject failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async adminGetPresence(sessionId: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/presence`);
+    if (!res.ok) throw new Error(`Get presence failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async adminGetTelemetry(sessionId: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/admin/sessions/${sessionId}/telemetry`);
+    if (!res.ok) throw new Error(`Get telemetry failed: ${res.statusText}`);
+    return res.json();
+  }
+}

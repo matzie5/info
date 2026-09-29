@@ -1,0 +1,84 @@
+{
+  "app": {
+    "title": "Infosphere Lab",
+    "subtitle": "Platforma Symulacji ABM i Obrony Przestrzeni Informacyjnej"
+  },
+  "nav": {
+    "arena": "Arena",
+    "pulse": "Feed Społecznościowy Pulse",
+    "radar": "Radar Zarażania",
+    "hud": "Konsola Główna (HUD)",
+    "debrief": "Podsumowanie (Debrief)",
+    "language": "Język"
+  },
+  "roles": {
+    "red_team": "Grupa Działań Nieprzyjacielskich (Red Team)",
+    "blue_team": "Dyrekcja Obrony Informacyjnej (Blue Team)",
+    "facilitator": "Główny Moderator (Facilitator)",
+    "observer": "Analityk Strategiczny (Obserwator)"
+  },
+  "metrics": {
+    "trust": "Zaufanie do Instytucji",
+    "polarization": "Wskaźnik Polaryzacji",
+    "virality": "Dynamika Wiralowa",
+    "reach": "Zasięg Dezinformacji",
+    "debunk_rate": "Skuteczność Dementi"
+  },
+  "pulse": {
+    "trending": "Popularne w Pulse",
+    "verified": "Instytucja Zweryfikowana",
+    "fact_check": "Nota Faktograficzna",
+    "prebunk_shield": "Tarcza Edukacyjna (Prebunking)",
+    "shares": "Udostępnienia",
+    "likes": "Polubienia",
+    "comments": "Komentarze",
+    "share_action": "Podaj dalej",
+    "comment_action": "Komentarz",
+    "reply_placeholder": "Napisz komentarz..."
+  },
+  "actions": {
+    "red": {
+      "title": "Konsola Operacji Wpływu",
+      "capital": "Kapitał Operacyjny",
+      "deploy_swarm": "Rój Botów",
+      "deploy_swarm_desc": "Uruchom zautomatyzowane konta potrajające zasięg i oburzenie.",
+      "deepfake": "Syntetyzuj Deepfake AI",
+      "deepfake_desc": "Wykorzystaj Gemini Flash do wygenerowania sensacyjnego wycieku.",
+      "microtarget": "Mikrotargetowanie",
+      "microtarget_desc": "Skieruj narrację precyzyjnie do podatnej grupy demograficznej.",
+      "astroturf": "Komentarze Astroturfing",
+      "astroturf_desc": "Zalej sekcję komentarzy syntetycznymi wpisami oburzonych obywateli."
+    },
+    "blue": {
+      "title": "Konsola Środków Obronnych",
+      "bandwidth": "Przepustowość Zespołu",
+      "prebunk": "Kampania Prebunkingowa",
+      "prebunk_desc": "Zaszczep odporność poznawczą w wybranej grupie przed uderzeniem fejka.",
+      "debunk": "Weryfikacja Faktów (Dementi)",
+      "debunk_desc": "Dołącz zweryfikowaną notę faktograficzną i opinię ekspercką.",
+      "friction": "Tarcia Algorytmiczne",
+      "friction_desc": "Ogranicz wagi algorytmu rekomendacji, aby wyhamować rozprzestrzenianie.",
+      "advisory": "Rządowy Komunikat Kryzysowy",
+      "advisory_desc": "Opublikuj oficjalne dementi Rządowego Centrum Bezpieczeństwa (RCB)."
+    }
+  },
+  "admin": {
+    "title": "Panel Główny Moderatora",
+    "god_mode": "Sterowanie Ćwiczeniem",
+    "start": "Rozpocznij Symulację",
+    "pause": "Zatrzymaj Zegar",
+    "resume": "Wznów Zegar",
+    "force_tick": "Wymuś Krok (Tick)",
+    "emergency_inject": "Wprowadź Alert RCB",
+    "token_budget": "Budżet Tokenów Gemini Flash",
+    "presence_radar": "Radar Obecności Uczestników",
+    "clusters": "Telemetria Grup Demograficznych"
+  },
+  "debrief": {
+    "title": "Podsumowanie i Analiza Ćwiczenia",
+    "timeline": "Oś Czasu (Scrubber)",
+    "outcome": "Wynik Gry Terenowej",
+    "congratulations": "Ćwiczenie Zakończone",
+    "summary": "Podsumowanie Trajektorii Wskaźników"
+  }
+}

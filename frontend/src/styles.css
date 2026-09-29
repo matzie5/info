@@ -1,0 +1,190 @@
+/* Infosphere Design System Tokens & Base Styles */
+:root {
+  --font-sans: 'Lato', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Color Palette */
+  --bg-night: #0B0F17;
+  --bg-surface: #141B26;
+  --bg-surface-glass: rgba(20, 27, 38, 0.85);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-light: rgba(255, 255, 255, 0.15);
+
+  --brand-defense: #84AA40;
+  --brand-defense-glow: rgba(132, 170, 64, 0.25);
+  --brand-virality: #F9A81C;
+  --brand-virality-glow: rgba(249, 168, 28, 0.25);
+
+  --adversary-red: #EF4444;
+  --adversary-red-glow: rgba(239, 68, 68, 0.25);
+  --defense-blue: #3B82F6;
+  --defense-blue-glow: rgba(59, 130, 246, 0.25);
+
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-dim: #64748B;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-night);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* Glass Card Surfaces */
+.glass-panel {
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+}
+
+.glass-panel-glow-green {
+  box-shadow: 0 0 20px var(--brand-defense-glow);
+  border-color: rgba(132, 170, 64, 0.4);
+}
+
+.glass-panel-glow-red {
+  box-shadow: 0 0 20px var(--adversary-red-glow);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.glass-panel-glow-amber {
+  box-shadow: 0 0 20px var(--brand-virality-glow);
+  border-color: rgba(249, 168, 28, 0.4);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(11, 15, 23, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--brand-defense);
+  color: #0B0F17;
+  font-weight: 700;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.15);
+  box-shadow: 0 0 15px var(--brand-defense-glow);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-adversary {
+  background: var(--adversary-red);
+  color: #FFFFFF;
+  font-weight: 700;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-adversary:hover:not(:disabled) {
+  filter: brightness(1.15);
+  box-shadow: 0 0 15px var(--adversary-red-glow);
+}
+.btn-adversary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Inputs */
+.input-field {
+  width: 100%;
+  background: rgba(11, 15, 23, 0.7);
+  border: 1px solid var(--border-glass-light);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-field:focus {
+  border-color: var(--brand-defense);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.badge-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.badge-green {
+  background: rgba(132, 170, 64, 0.15);
+  color: #A3E635;
+  border: 1px solid rgba(132, 170, 64, 0.3);
+}
+.badge-amber {
+  background: rgba(249, 168, 28, 0.15);
+  color: #FBBF24;
+  border: 1px solid rgba(249, 168, 28, 0.3);
+}

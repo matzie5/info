@@ -1,0 +1,84 @@
+{
+  "app": {
+    "title": "Infosphere Lab",
+    "subtitle": "Information Defense & ABM Simulation Platform"
+  },
+  "nav": {
+    "arena": "Arena",
+    "pulse": "Pulse Feed",
+    "radar": "Contagion Radar",
+    "hud": "Master HUD",
+    "debrief": "Debrief",
+    "language": "Language"
+  },
+  "roles": {
+    "red_team": "Adversary Cell (Red Team)",
+    "blue_team": "Defense Directorate (Blue Team)",
+    "facilitator": "Master Facilitator",
+    "observer": "Strategic Analyst (Observer)"
+  },
+  "metrics": {
+    "trust": "Platform Trust",
+    "polarization": "Polarization Index",
+    "virality": "Virality Velocity",
+    "reach": "Disinformation Reach",
+    "debunk_rate": "Debunk Effectiveness"
+  },
+  "pulse": {
+    "trending": "Trending on Pulse",
+    "verified": "Verified Institution",
+    "fact_check": "Fact Check Notice",
+    "prebunk_shield": "Shielded by Literacy Campaign",
+    "shares": "Shares",
+    "likes": "Likes",
+    "comments": "Comments",
+    "share_action": "Reshare",
+    "comment_action": "Comment",
+    "reply_placeholder": "Write an organic comment..."
+  },
+  "actions": {
+    "red": {
+      "title": "Information Operations Console",
+      "capital": "Adversary Capital",
+      "deploy_swarm": "Deploy Bot Swarm",
+      "deploy_swarm_desc": "Mobilize automated accounts to amplify outrage narrative by 300%.",
+      "deepfake": "Synthesize AI Deepfake",
+      "deepfake_desc": "Use Gemini Flash to generate breaking disinformation leak.",
+      "microtarget": "Microtarget Cluster",
+      "microtarget_desc": "Surgically inject narrative into high-susceptibility demographic.",
+      "astroturf": "Astroturf Commentary",
+      "astroturf_desc": "Flood comment sections with synthetic outrage replies."
+    },
+    "blue": {
+      "title": "Defense Countermeasures Console",
+      "bandwidth": "Defense Bandwidth",
+      "prebunk": "Prebunk Campaign",
+      "prebunk_desc": "Inoculate target cluster with media literacy before disinfo strikes.",
+      "debunk": "Evidence Debunk",
+      "debunk_desc": "Attach verified fact-check badge and expert analysis to viral post.",
+      "friction": "Velocity Friction",
+      "friction_desc": "Throttles recommendation algorithm to dampen viral cascades.",
+      "advisory": "Public Crisis Advisory",
+      "advisory_desc": "Broadcast verified statement from Government Security Centre (RCB)."
+    }
+  },
+  "admin": {
+    "title": "Facilitator Master HUD",
+    "god_mode": "Exercise Controls",
+    "start": "Start Exercise",
+    "pause": "Pause Clock",
+    "resume": "Resume Clock",
+    "force_tick": "Advance Tick",
+    "emergency_inject": "Trigger Crisis Inject",
+    "token_budget": "Gemini Flash Token Governor",
+    "presence_radar": "Live Participant Presence",
+    "clusters": "Demographic Cluster Telemetry"
+  },
+  "debrief": {
+    "title": "Scenario Analytical Debrief",
+    "timeline": "Timeline Playback Scrubber",
+    "outcome": "Exercise Outcome",
+    "congratulations": "Mission Concluded",
+    "summary": "Telemetry & Vector Trajectory Summary"
+  }
+}
