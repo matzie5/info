@@ -68,20 +68,20 @@ This implementation plan translates the hardened [TECHNICAL_SPECIFICATION.md](fi
 
 ---
 
-## Phase 3: Gemini 3.5 Flash & ADK Integration
+## Phase 3: AI Engine & ADK Integration
 *Goal: Integrate generative AI for qualitative influencer comments and synthetic media with cost control.*
 
 - [x] **Task 3.1: Token Governor & Cost Circuit Breaker (`app/engine/token_governor.py`)**
   - Track prompt, completion, and total tokens per session atomically in Firestore.
   - Enforce 3-tier governance:
-    - Normal Tier ($<75\%$ budget): Full on-demand Gemini 3.5 Flash generation.
+    - Normal Tier ($<75\%$ budget): Full on-demand LLM generation.
     - Throttled Tier ($75\text{--}99\%$ budget): Rate-limit Red Team custom prompts, notify Admin HUD.
     - Circuit Breaker ($100\%$ budget): Cut off live API calls, fall back seamlessly to offline seed library.
 - [x] **Task 3.2: High-Fidelity Offline Seed Library (`app/ai/seed_library.py`)**
-  - Pre-generated scenario headlines, comments, persona reactions, bot storms, and crisis injects for instant zero-cost fallback in Polish (`pl`) and English (`en`).
+  - Pre-generated scenario headlines, comments, persona reactions, bot storms, and crisis injects across 4 distinct operational scenarios in Polish (`pl`) and English (`en`).
 - [x] **Task 3.3: ADK Agent Service (`app/ai/adk_service.py`)**
-  - Configured Google GenAI / Vertex client with persona prompt templates.
-  - Enforced strict JSON output schemas (`AgentCommentary`, `SpoofedArticle`, `CrisisInjectPayload`) with Gemini 3.5 Flash.
+  - Configured ADK agent service with persona prompt templates.
+  - Enforced strict JSON output schemas (`AgentCommentary`, `SpoofedArticle`, `CrisisInjectPayload`).
   - Parameterized prompt templates for Polish (`pl`) and English (`en`) localized generation.
 
 ---
@@ -91,15 +91,15 @@ This implementation plan translates the hardened [TECHNICAL_SPECIFICATION.md](fi
 
 - [x] **Task 4.1: Project Setup & Design Tokens**
   - Scaffolded Angular 19 SPA with standalone components and reactive Signals architecture.
-  - Embedded Google Font **Lato** (weights 300, 400, 700, 900) in `index.html`.
+  - Embedded **Lato** webfont (weights 300, 400, 700, 900) in `index.html`.
   - Implemented design system tokens in `src/styles.css`:
     - Primary Defense Accent: `#84AA40` (Olive-Green)
     - Secondary Virality Accent: `#F9A81C` (Warm Amber-Gold)
     - Dark mode theme tokens (`#0B0F17` background, glassmorphism cards, glowing status borders).
 - [x] **Task 4.2: Multi-Language (i18n) Engine**
   - Created lightweight reactive `LocaleService` with signal-based dictionary loading.
-  - Populated `public/assets/i18n/en.json` and `public/assets/i18n/pl.json`.
-  - Added language switcher component in Lobby and navigation headers.
+  - Populated `public/assets/i18n/en.json` and `public/assets/i18n/pl.json` with zero vendor branding.
+  - Added language switcher component in Lobby, Arena, HUD, Classroom, and Debrief navigation headers.
 - [x] **Task 4.3: Authentication & Real-Time Sync**
   - Route handler for magic invite URLs (`/join?token=...&sessionId=...`) in `JoinComponent`.
   - `FirestoreSyncService`: Bridges Firestore state and adaptive polling fallback into reactive Angular `signal()` and `computed()` values.
@@ -107,21 +107,25 @@ This implementation plan translates the hardened [TECHNICAL_SPECIFICATION.md](fi
 
 ---
 
-## Phase 5: Angular 19 Frontend - Consoles, Feed & Admin HUD
+## Phase 5: Angular 19 Frontend - Consoles, Feed, Classroom & Facilitator Studio
 *Goal: Assemble the interactive user interfaces.*
 
 - [x] **Task 5.1: Pulse Social Media Feed (`pulse-feed/`)**
   - Feed card component with dynamic like/share counts accented in `#F9A81C`.
   - Verified badges and prebunk shield indicators styled with `#84AA40`.
-  - Threaded comment drawer showing simulated bot swarms and ADK influencer replies.
-- [x] **Task 5.2: Tactical Action Consoles**
+  - Threaded comment drawer showing simulated bot swarms and influencer replies.
+- [x] **Task 5.2: Tactical Action Consoles & Team Field Manual**
   - Red Team Console: Attack cards with cooldown indicators, bot swarm deployment, microtargeting, and deepfake generator modal.
   - Blue Team Console: Defense cards with prebunk target picker, evidence debunking tools, and velocity friction toggle.
-- [x] **Task 5.3: Facilitator Master HUD (`admin-hud/`)**
+  - In-App Team Field Manual (`TutorialModalComponent`): 4 bilingual guidance tabs covering Mission & Win Conditions, Adversary Playbook, Defense Countermeasures, and Resource Economy.
+- [x] **Task 5.3: Facilitator Master HUD & Post Studio (`admin-hud/`)**
   - Connected participant presence radar with heartbeat activity indicators.
   - Real-time token usage meter, budget gauges, and estimated USD cost readout.
-  - God-mode controls: Start/Pause/Resume clock, Force Tick, and Emergency Crisis Inject broadcast modal.
-- [x] **Task 5.4: Post-Game Debrief Scrubber (`debrief/`)**
+  - God-mode controls: Start/Pause/Resume clock, Force Tick, and Post Studio Inject modal (Quick Scenario Injects & Custom Post Studio).
+- [x] **Task 5.4: Classroom Observatory & Playback (`classroom/`)**
+  - 3-column projector view with live Pulse Feed, Tactical Operations Log, dynamic SVG Trajectory curves, and cluster vulnerability meters.
+  - Dual Live and Playback scrubber modes (`T+0` to `T+now`) for structured classroom debriefs.
+- [x] **Task 5.5: Post-Game Debrief Scrubber (`debrief/`)**
   - Interactive timeline scrubber allowing students to step tick-by-tick through the contagion history.
   - Outcome victory banner (Adversary Decisive Victory, Defense Decisive Victory, Contested Stalemate).
   - Telemetry breakdown across platform trust, polarization, virality, and debunk rates.
@@ -132,7 +136,7 @@ This implementation plan translates the hardened [TECHNICAL_SPECIFICATION.md](fi
 *Goal: Validate complete system and verify scale-to-zero.*
 
 - [x] **Task 6.1: Automated Test Suite**
-  - Backend `pytest` suite: 20 passing unit and integration tests covering Barabási-Albert network graph, bounded metric diffusion calculus, actions evaluator, token governor tiers, signed invites, session lifecycle, scale-to-zero auto-pause, Gemini ADK fallback, and full E2E scenario flow.
+  - Backend `pytest` suite: 20 passing unit and integration tests covering Barabási-Albert network graph, bounded metric diffusion calculus, actions evaluator, token governor tiers, signed invites, session lifecycle, scale-to-zero auto-pause, ADK fallback, and full E2E scenario flow.
 - [x] **Task 6.2: Container Build & Cloud Run Deploy Readiness**
   - Created multi-stage `Dockerfile` and `cloudbuild.yaml` in `backend/` for Cloud Run Gen2 deployment.
 - [x] **Task 6.3: Static Asset Hosting**
@@ -170,6 +174,7 @@ npm start
 The app will be accessible at `http://localhost:4200` with routes:
 - `/` - Session Lobby & Scenario Creator
 - `/join` - Magic Link Token Join
-- `/arena/:sessionId` - Main Operational Lab Arena (Pulse Feed & Consoles)
-- `/admin/:sessionId` - Facilitator Master HUD & Telemetry Radar
+- `/arena/:sessionId` - Main Operational Lab Arena (Pulse Feed, Consoles & Field Manual)
+- `/admin/:sessionId` - Facilitator Master HUD, Scenario Injects & Custom Post Studio
+- `/classroom/:sessionId` - Classroom Presentation Observatory & Debrief Playback
 - `/debrief/:sessionId` - Post-Exercise Analytical Scrubber

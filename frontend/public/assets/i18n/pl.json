@@ -1,7 +1,11 @@
 {
   "app": {
     "title": "Infosphere Lab",
-    "subtitle": "Platforma Symulacji ABM i Obrony Przestrzeni Informacyjnej"
+    "subtitle": "Platforma Symulacji ABM i Obrony Przestrzeni Informacyjnej",
+    "classroom_view": "Widok Sali",
+    "arena_view": "Widok Areny",
+    "admin_view": "Panel Moderatora",
+    "debrief_view": "Podsumowanie"
   },
   "nav": {
     "arena": "Arena",
@@ -9,7 +13,9 @@
     "radar": "Radar Zarażania",
     "hud": "Konsola Główna (HUD)",
     "debrief": "Podsumowanie (Debrief)",
-    "language": "Język"
+    "classroom": "Widok Sali",
+    "language": "Język",
+    "tutorial": "Instrukcja Operacyjna"
   },
   "roles": {
     "red_team": "Grupa Działań Nieprzyjacielskich (Red Team)",
@@ -24,6 +30,23 @@
     "reach": "Zasięg Dezinformacji",
     "debunk_rate": "Skuteczność Dementi"
   },
+  "lobby": {
+    "brand_title": "Infosphere Lab • Platforma Strategicznej Obrony Informacyjnej",
+    "host_card_title": "Utwórz Nową Symulację",
+    "host_card_desc": "Skonfiguruj scenariusz, parametry operacyjne i uruchom Panel Główny Moderatora.",
+    "scenario_label": "Scenariusz Operacyjny",
+    "title_label": "Tytuł Ćwiczenia",
+    "max_ticks_label": "Maksymalny Czas Operacyjny (1 krok = 10s / 1h w scenariuszu)",
+    "create_btn": "Uruchom Panel Moderatora",
+    "join_card_title": "Dołącz do Aktywnej Symulacji",
+    "join_card_desc": "Wprowadź identyfikator sesji, aby dołączyć jako analityk lub operator.",
+    "session_id_label": "Identyfikator Sesji Ćwiczenia",
+    "handle_label": "Pseudonim / Znak Wywoławczy",
+    "role_label": "Przydzielona Rola Operacyjna",
+    "join_btn": "Wejdź do Areny Ćwiczeń",
+    "connecting": "Nawiązywanie połączenia...",
+    "creating": "Inicjalizacja Scenariusza..."
+  },
   "pulse": {
     "trending": "Popularne w Pulse",
     "verified": "Instytucja Zweryfikowana",
@@ -34,32 +57,44 @@
     "comments": "Komentarze",
     "share_action": "Podaj dalej",
     "comment_action": "Komentarz",
-    "reply_placeholder": "Napisz komentarz..."
+    "reply_placeholder": "Napisz komentarz...",
+    "empty": "Brak wykrytych postów wiralowych w sieci."
   },
   "actions": {
     "red": {
       "title": "Konsola Operacji Wpływu",
       "capital": "Kapitał Operacyjny",
       "deploy_swarm": "Rój Botów",
-      "deploy_swarm_desc": "Uruchom zautomatyzowane konta potrajające zasięg i oburzenie.",
+      "deploy_swarm_desc": "Uruchom zautomatyzowane konta potrajające zasięg i wskaźnik oburzenia (+300%).",
       "deepfake": "Syntetyzuj Deepfake AI",
-      "deepfake_desc": "Wykorzystaj Gemini Flash do wygenerowania sensacyjnego wycieku.",
+      "deepfake_desc": "Użyj generatywnej AI do wytworzenia sensacyjnego, sfabrykowanego artykułu.",
       "microtarget": "Mikrotargetowanie",
-      "microtarget_desc": "Skieruj narrację precyzyjnie do podatnej grupy demograficznej.",
+      "microtarget_desc": "Skieruj spolaryzowaną narrację precyzyjnie do podatnej grupy demograficznej.",
       "astroturf": "Komentarze Astroturfing",
-      "astroturf_desc": "Zalej sekcję komentarzy syntetycznymi wpisami oburzonych obywateli."
+      "astroturf_desc": "Zalej sekcję komentarzy syntetycznymi wpisami symulującymi oburzenie obywateli.",
+      "cost_capital": "Kapitał",
+      "target_post": "Wybierz Post Docelowy",
+      "target_cluster": "Docelowa Grupa Demograficzna",
+      "headline_label": "Sfabrykowany Nagłówek",
+      "prompt_label": "Własny Prompt Dezinformacyjny",
+      "execute": "Wdróż Operację"
     },
     "blue": {
       "title": "Konsola Środków Obronnych",
       "bandwidth": "Przepustowość Zespołu",
       "prebunk": "Kampania Prebunkingowa",
-      "prebunk_desc": "Zaszczep odporność poznawczą w wybranej grupie przed uderzeniem fejka.",
+      "prebunk_desc": "Zaszczep odporność poznawczą w wybranej grupie zanim uderzy dezinformacja.",
       "debunk": "Weryfikacja Faktów (Dementi)",
-      "debunk_desc": "Dołącz zweryfikowaną notę faktograficzną i opinię ekspercką.",
+      "debunk_desc": "Dołącz zweryfikowaną notę faktograficzną i opinię ekspercką do wiralowego posta.",
       "friction": "Tarcia Algorytmiczne",
-      "friction_desc": "Ogranicz wagi algorytmu rekomendacji, aby wyhamować rozprzestrzenianie.",
+      "friction_desc": "Ogranicz wagi algorytmu rekomendacji, aby wyhamować rozprzestrzenianie kaskad.",
       "advisory": "Rządowy Komunikat Kryzysowy",
-      "advisory_desc": "Opublikuj oficjalne dementi Rządowego Centrum Bezpieczeństwa (RCB)."
+      "advisory_desc": "Opublikuj oficjalne dementi Rządowego Centrum Bezpieczeństwa (RCB).",
+      "cost_bandwidth": "Przepustowość",
+      "execute_prebunk": "Zaszczep Grupę",
+      "execute_debunk": "Zweryfikuj Post",
+      "execute_friction": "Zastosuj Tarcia",
+      "execute_advisory": "Nadaj Komunikat"
     }
   },
   "admin": {
@@ -70,15 +105,70 @@
     "resume": "Wznów Zegar",
     "force_tick": "Wymuś Krok (Tick)",
     "emergency_inject": "Wprowadź Alert RCB",
-    "token_budget": "Budżet Tokenów Gemini Flash",
+    "token_budget": "Gubernator Tokenów Silnika AI",
     "presence_radar": "Radar Obecności Uczestników",
-    "clusters": "Telemetria Grup Demograficznych"
+    "clusters": "Telemetria Grup Demograficznych",
+    "add_post": "+ Dodaj / Wstrzyknij Post",
+    "add_post_modal_title": "Wstrzyknij Post Scenariusza lub Własną Wiadomość",
+    "tab_quick_inject": "Szybki Wstrzyk ze Scenariusza",
+    "tab_custom_post": "Kreator Własnego Posta",
+    "inject_btn": "Opublikuj w Feedzie",
+    "select_scenario_article": "Wybierz Gotowy Artykuł ze Scenariusza:",
+    "author_name_label": "Nazwa Autora / Medium",
+    "author_handle_label": "Uchwyt Autora (np. @Wiadomosci24)",
+    "headline_label": "Nagłówek",
+    "content_label": "Treść Posta",
+    "media_url_label": "Adres Obrazu / Grafiki (opcjonalnie)",
+    "outrage_label": "Wskaźnik Oburzenia (0.0 - 1.0)",
+    "bias_label": "Nastawienie Ideologiczne (-1.0 do 1.0)",
+    "verified_label": "Oznacz jako Źródło Zweryfikowane",
+    "target_cluster_label": "Docelowa Grupa Demograficzna",
+    "cancel": "Anuluj",
+    "close": "Zamknij"
+  },
+  "classroom": {
+    "title": "Obserwatorium Klasowe",
+    "subtitle": "Telemetria Rozprzestrzeniania i Odtwarzanie Działań Zespołów",
+    "live_mode": "TRYB NA ŻYWO",
+    "playback_mode": "ODTWARZANIE PRZEBIEGU",
+    "posts_column": "Feed Społecznościowy Pulse",
+    "actions_column": "Dziennik Działań Operacyjnych",
+    "metrics_column": "Dynamika i Trajektoria Wskaźników",
+    "step_back": "Poprzedni Krok",
+    "step_forward": "Następny Krok",
+    "play": "Odtwórz Przebieg",
+    "pause": "Wstrzymaj Odtwarzanie",
+    "playback_tick": "Wybrany Krok Czasowy",
+    "all_actions": "Wszystkie Działania",
+    "red_actions": "Operacje Czerwonych",
+    "blue_actions": "Obrona Niebieskich",
+    "admin_injects": "Wstrzyki Moderatora",
+    "cluster_vulnerability": "Podatność Grup Demograficznych",
+    "fullscreen": "Pełny Ekran",
+    "exit_fullscreen": "Opuść Pełny Ekran"
+  },
+  "tutorial": {
+    "btn_title": "Instrukcja Operacyjna",
+    "modal_title": "Podręcznik Taktyczny: Obrona Informacyjna i Zasady Gry",
+    "tab_overview": "Cel Misji i Reguły",
+    "tab_red": "Katalog Zespołu Czerwonych",
+    "tab_blue": "Katalog Zespołu Niebieskich",
+    "tab_economy": "Gospodarka Zasobami i Wskazówki",
+    "close": "Zrozumiałem, Wróć do Areny"
   },
   "debrief": {
     "title": "Podsumowanie i Analiza Ćwiczenia",
     "timeline": "Oś Czasu (Scrubber)",
     "outcome": "Wynik Gry Terenowej",
     "congratulations": "Ćwiczenie Zakończone",
-    "summary": "Podsumowanie Trajektorii Wskaźników"
+    "summary": "Podsumowanie Trajektorii Wskaźników",
+    "return_arena": "Wróć do Areny",
+    "lobby": "Lobby",
+    "victory_red": "ZWYCIĘSTWO DECYDUJĄCE PRZECIWNIKA",
+    "victory_blue": "ZWYCIĘSTWO DECYDUJĄCE OBROŃCÓW",
+    "victory_draw": "NIEROZSTRZYGNIĘTY PAT STRATEGICZNY",
+    "sub_red": "PRZEŁAMANIE MECHANIZMÓW ODPORNOŚCI SPOŁECZNEJ",
+    "sub_blue": "SKUTECZNA OBRONA INTEGRALNOŚCI INFORMACYJNEJ",
+    "sub_draw": "ĆWICZENIE ZAKOŃCZONE PO OSIĄGNIĘCIU LIMITU CZASU"
   }
 }

@@ -22,6 +22,12 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
           <span class="badge badge-green font-mono">DEFENSE</span>
         </div>
 
+        <!-- Status Toast Banner -->
+        <div *ngIf="statusNotice" class="mb-3 p-2.5 rounded-lg bg-[#84AA40]/20 border border-[#84AA40]/60 text-xs text-[#A3E635] font-mono flex items-center gap-2">
+          <span class="text-sm">🛡️</span>
+          <span>{{ statusNotice }}</span>
+        </div>
+
         <!-- Defense Bandwidth Meter -->
         <div class="mt-3">
           <div class="flex justify-between text-xs font-mono mb-1">
@@ -79,14 +85,14 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
 
         <div class="flex gap-2 pt-1">
           <select [(ngModel)]="debunkPostId" class="input-field text-xs py-1.5 flex-1">
-            <option value="">Select Target Post to Debunk...</option>
+            <option value="">Select Target Post to Debunk (or latest)...</option>
             <option *ngFor="let post of posts" [value]="post.id">
               {{ post.headline || post.content.substring(0, 35) }}...
             </option>
           </select>
           <button
             (click)="executeDebunk()"
-            [disabled]="isBusy() || (budgets?.blue_team_bandwidth || 0) < 25 || !debunkPostId"
+            [disabled]="isBusy() || (budgets?.blue_team_bandwidth || 0) < 25 || (!debunkPostId && posts.length === 0)"
             class="btn-primary text-xs py-1.5 px-3">
             Debunk
           </button>
@@ -106,37 +112,39 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
 
         <div class="flex gap-2 pt-1">
           <select [(ngModel)]="frictionPostId" class="input-field text-xs py-1.5 flex-1">
-            <option value="">Global Dampening (All Viral Posts)</option>
+            <option value="">All Feed Posts</option>
             <option *ngFor="let post of posts" [value]="post.id">
-              {{ post.headline || post.content.substring(0, 35) }}...
+              Specific: {{ post.headline || post.content.substring(0, 30) }}...
             </option>
           </select>
           <button
             (click)="executeFriction()"
             [disabled]="isBusy() || (budgets?.blue_team_bandwidth || 0) < 35"
             class="btn-primary text-xs py-1.5 px-3">
-            Apply
+            Throttle
           </button>
         </div>
       </div>
 
-      <!-- Action 4: Public Crisis Advisory -->
+      <!-- Action 4: Official Public Advisory -->
       <div class="p-3.5 rounded-lg bg-[#84AA40]/10 border border-[#84AA40]/20 space-y-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <span class="text-lg">📢</span>
+            <span class="text-lg">🏛️</span>
             <span class="font-bold text-sm text-white">{{ locale.t('actions.blue.advisory') }}</span>
           </div>
           <span class="badge badge-green font-mono text-[10px]">30 Bw</span>
         </div>
         <p class="text-xs text-slate-300">{{ locale.t('actions.blue.advisory_desc') }}</p>
 
-        <button
-          (click)="executeAdvisory()"
-          [disabled]="isBusy() || (budgets?.blue_team_bandwidth || 0) < 30"
-          class="btn-primary w-full text-xs py-2 justify-center">
-          Broadcast Official Government Advisory (+8% Trust)
-        </button>
+        <div class="pt-1">
+          <button
+            (click)="executeAdvisory()"
+            [disabled]="isBusy() || (budgets?.blue_team_bandwidth || 0) < 30"
+            class="btn-primary w-full text-xs py-1.5 justify-center">
+            Issue Official Government Communique
+          </button>
+        </div>
       </div>
     </div>
   `
@@ -152,6 +160,7 @@ export class BlueConsoleComponent {
   public prebunkCluster: DemographicCluster = DemographicCluster.SUSCEPTIBLE_NEUTRALS;
   public debunkPostId = '';
   public frictionPostId = '';
+  public statusNotice = '';
 
   constructor(public locale: LocaleService) {}
 
@@ -160,13 +169,19 @@ export class BlueConsoleComponent {
       actionType: ActionType.PREBUNK_CAMPAIGN,
       targetCluster: this.prebunkCluster
     });
+    this.statusNotice = 'Prebunk inoculation campaign deployed to audience cluster.';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 
   executeDebunk() {
+    const target = this.debunkPostId || (this.posts.length > 0 ? this.posts[0].id : '');
+    if (!target) return;
     this.actionDispatched.emit({
       actionType: ActionType.EVIDENCE_DEBUNK,
-      targetPostId: this.debunkPostId
+      targetPostId: target
     });
+    this.statusNotice = 'Official fact-check warning attached to post.';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 
   executeFriction() {
@@ -174,11 +189,15 @@ export class BlueConsoleComponent {
       actionType: ActionType.VELOCITY_FRICTION,
       targetPostId: this.frictionPostId || undefined
     });
+    this.statusNotice = 'Algorithmic velocity friction active (-60% transmission speed).';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 
   executeAdvisory() {
     this.actionDispatched.emit({
       actionType: ActionType.PUBLIC_ADVISORY
     });
+    this.statusNotice = 'Official alert broadcasted to feed.';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 }

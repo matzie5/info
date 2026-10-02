@@ -53,14 +53,33 @@ def submit_action(session_id: str, req: SubmitActionRequest):
         headline=req.headline,
         content=req.content,
         resource_cost=cost,
-        tick=session.current_tick
+        tick=session.current_tick,
+        is_processed=True
     )
 
+    from app.engine.simulation_orchestrator import SimulationOrchestrator
+    from app.engine.actions_evaluator import ActionsEvaluator
+    from app.engine.token_governor import TokenGovernor
+
+    orchestrator = SimulationOrchestrator.get_instance(session_id)
+    token_governor = TokenGovernor(session.token_usage)
+    current_feed = fs.get_feed_items(session_id)
+
+    # Process action immediately so feed items mutate in real time
+    updated_feed = ActionsEvaluator.process_actions(
+        session=session,
+        network=orchestrator.network,
+        feed_items=current_feed,
+        pending_actions=[action],
+        token_governor=token_governor
+    )
+
+    for item in updated_feed:
+        fs.save_feed_item(session_id, item)
+
+    session.token_usage = token_governor.to_model()
     fs.record_action(session_id, action)
     fs.save_session(session)
-
-    from app.engine.simulation_orchestrator import SimulationOrchestrator
-    SimulationOrchestrator.get_instance(session_id).queue_action(action)
 
     return action
 
@@ -68,3 +87,9 @@ def submit_action(session_id: str, req: SubmitActionRequest):
 def get_feed(session_id: str):
     fs = FirestoreService.get_instance()
     return fs.get_feed_items(session_id)
+
+@router.get("/{session_id}/actions", response_model=List[PlayerAction])
+def get_actions(session_id: str):
+    fs = FirestoreService.get_instance()
+    return fs.get_actions(session_id)
+

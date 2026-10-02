@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FirestoreSyncService } from '../../core/services/firestore-sync.service';
@@ -9,6 +9,7 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
 import { PulseFeedComponent } from './components/pulse-feed/pulse-feed.component';
 import { RedConsoleComponent } from './components/red-console/red-console.component';
 import { BlueConsoleComponent } from './components/blue-console/blue-console.component';
+import { TutorialModalComponent } from './components/tutorial-modal/tutorial-modal.component';
 
 @Component({
   selector: 'app-arena',
@@ -18,7 +19,8 @@ import { BlueConsoleComponent } from './components/blue-console/blue-console.com
     RouterModule,
     PulseFeedComponent,
     RedConsoleComponent,
-    BlueConsoleComponent
+    BlueConsoleComponent,
+    TutorialModalComponent
   ],
   template: `
     <div class="min-h-screen flex flex-col bg-[#0B0F17]">
@@ -35,7 +37,7 @@ import { BlueConsoleComponent } from './components/blue-console/blue-console.com
 
             <div class="flex items-center gap-2">
               <span class="text-xs font-mono bg-white/5 px-2.5 py-1 rounded border border-white/10 text-white font-bold">
-                T+{{ session()?.current_tick || 0 }}h
+                T+{{ session()?.current_tick || 0 }}h / {{ session()?.max_ticks || 40 }}h
               </span>
 
               <span
@@ -52,35 +54,72 @@ import { BlueConsoleComponent } from './components/blue-console/blue-console.com
           <div class="flex items-center gap-6 font-mono text-xs">
             <!-- Platform Trust Index -->
             <div class="flex items-center gap-2">
-              <span class="text-slate-400">Trust:</span>
-              <span class="font-bold text-[#A3E635]">{{ (session()?.metrics?.institutional_trust || 0).toFixed(0) }}%</span>
+              <span class="text-slate-400">{{ locale.t('metrics.trust') }}:</span>
+              <span class="font-bold text-[#A3E635]">{{ ((session()?.metrics?.institutional_trust || 0) * 100).toFixed(0) }}%</span>
               <div class="w-16 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10 hidden md:block">
-                <div class="h-full bg-[#84AA40]" [style.width.%]="session()?.metrics?.institutional_trust || 0"></div>
+                <div class="h-full bg-[#84AA40]" [style.width.%]="(session()?.metrics?.institutional_trust || 0) * 100"></div>
               </div>
             </div>
 
             <!-- Polarization Score -->
             <div class="flex items-center gap-2">
-              <span class="text-slate-400">Polarization:</span>
-              <span class="font-bold text-amber-400">{{ (session()?.metrics?.polarization_score || 0).toFixed(0) }}%</span>
+              <span class="text-slate-400">{{ locale.t('metrics.polarization') }}:</span>
+              <span class="font-bold text-amber-400">{{ ((session()?.metrics?.polarization_score || 0) * 100).toFixed(0) }}%</span>
               <div class="w-16 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10 hidden md:block">
-                <div class="h-full bg-amber-400" [style.width.%]="session()?.metrics?.polarization_score || 0"></div>
+                <div class="h-full bg-amber-400" [style.width.%]="(session()?.metrics?.polarization_score || 0) * 100"></div>
               </div>
             </div>
 
             <!-- Virality Index -->
             <div class="flex items-center gap-2">
-              <span class="text-slate-400">Virality:</span>
-              <span class="font-bold text-red-400">{{ (session()?.metrics?.virality_index || 0).toFixed(0) }}</span>
+              <span class="text-slate-400">{{ locale.t('metrics.virality') }}:</span>
+              <span class="font-bold text-red-400">{{ (session()?.metrics?.virality_index || 0).toFixed(1) }}x</span>
               <div class="w-16 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10 hidden md:block">
-                <div class="h-full bg-red-500" [style.width.%]="session()?.metrics?.virality_index || 0"></div>
+                <div class="h-full bg-red-500" [style.width.%]="((session()?.metrics?.virality_index || 0) / 3) * 100"></div>
               </div>
             </div>
           </div>
 
-          <!-- Right: Role & Controls -->
-          <div class="flex items-center gap-3">
-            <!-- View / Role Switcher for local simulation inspection -->
+          <!-- Right: Role Switcher, Language & Actions -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Language Switcher -->
+            <div class="flex items-center gap-1 border border-white/10 rounded px-2 py-1 bg-black/40 mr-1">
+              <button
+                type="button"
+                (click)="locale.setLanguage('pl')"
+                [class.text-[#84AA40]]="locale.language() === 'pl'"
+                [class.font-bold]="locale.language() === 'pl'"
+                class="text-xs px-1 text-slate-400 hover:text-white transition-colors">
+                PL
+              </button>
+              <span class="text-xs text-white/20">|</span>
+              <button
+                type="button"
+                (click)="locale.setLanguage('en')"
+                [class.text-[#84AA40]]="locale.language() === 'en'"
+                [class.font-bold]="locale.language() === 'en'"
+                class="text-xs px-1 text-slate-400 hover:text-white transition-colors">
+                EN
+              </button>
+            </div>
+
+            <!-- Tutorial / Field Manual Button -->
+            <button
+              type="button"
+              (click)="showTutorialModal = true"
+              class="btn-secondary text-xs py-1 px-2.5 border-[#84AA40]/40 text-[#A3E635] hover:bg-[#84AA40]/10">
+              📖 {{ locale.t('tutorial.btn_title') }}
+            </button>
+
+            <!-- Classroom Presentation View Link -->
+            <a
+              *ngIf="session()?.id"
+              [routerLink]="['/classroom', session()!.id]"
+              class="btn-secondary text-xs py-1 px-2.5 border-purple-500/30 text-purple-300 hover:border-purple-400">
+              📺 {{ locale.t('classroom.title') }}
+            </a>
+
+            <!-- Role Selector Chips -->
             <div class="flex items-center rounded-lg bg-black/40 border border-white/10 p-0.5 text-xs">
               <button
                 type="button"
@@ -181,6 +220,12 @@ import { BlueConsoleComponent } from './components/blue-console/blue-console.com
           </div>
         </section>
       </main>
+
+      <!-- Operational Tutorial Modal -->
+      <app-tutorial-modal
+        *ngIf="showTutorialModal"
+        (close)="showTutorialModal = false">
+      </app-tutorial-modal>
     </div>
   `
 })
@@ -198,6 +243,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
   public SessionStatus = SessionStatus;
 
   public activeRole: UserRole = UserRole.BLUE_TEAM;
+  public showTutorialModal = false;
   private sessionId = '';
 
   isRole(role: UserRole): boolean {

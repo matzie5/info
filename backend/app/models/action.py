@@ -60,3 +60,4 @@ class PlayerAction(BaseModel):
     resource_cost: float = 0.0
     tick: int = 0
     timestamp: float = Field(default_factory=lambda: time.time())
+    is_processed: bool = False

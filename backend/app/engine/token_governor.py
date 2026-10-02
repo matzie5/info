@@ -1,3 +1,4 @@
+from typing import Union
 import logging
 from app.models.session import TokenUsage
 
@@ -16,11 +17,17 @@ class TokenGovernor:
     - Circuit Breaker (>=100% budget): Cuts off live API calls, falls back to seed library.
     """
 
-    def __init__(self, budget_limit_tokens: int = 300000):
-        self.budget_limit_tokens = budget_limit_tokens
-        self.prompt_tokens = 0
-        self.completion_tokens = 0
-        self.requests_count = 0
+    def __init__(self, budget_limit_tokens: Union[int, TokenUsage] = 300000):
+        if isinstance(budget_limit_tokens, TokenUsage):
+            self.budget_limit_tokens = budget_limit_tokens.budget_limit_tokens
+            self.prompt_tokens = budget_limit_tokens.prompt_tokens
+            self.completion_tokens = budget_limit_tokens.completion_tokens
+            self.requests_count = budget_limit_tokens.requests_count
+        else:
+            self.budget_limit_tokens = int(budget_limit_tokens)
+            self.prompt_tokens = 0
+            self.completion_tokens = 0
+            self.requests_count = 0
 
     @property
     def total_tokens(self) -> int:

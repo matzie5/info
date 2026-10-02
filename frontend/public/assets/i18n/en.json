@@ -1,7 +1,11 @@
 {
   "app": {
     "title": "Infosphere Lab",
-    "subtitle": "Information Defense & ABM Simulation Platform"
+    "subtitle": "Information Defense & ABM Simulation Platform",
+    "classroom_view": "Classroom View",
+    "arena_view": "Arena View",
+    "admin_view": "Facilitator HUD",
+    "debrief_view": "Debrief"
   },
   "nav": {
     "arena": "Arena",
@@ -9,7 +13,9 @@
     "radar": "Contagion Radar",
     "hud": "Master HUD",
     "debrief": "Debrief",
-    "language": "Language"
+    "classroom": "Classroom",
+    "language": "Language",
+    "tutorial": "Field Manual"
   },
   "roles": {
     "red_team": "Adversary Cell (Red Team)",
@@ -24,9 +30,26 @@
     "reach": "Disinformation Reach",
     "debunk_rate": "Debunk Effectiveness"
   },
+  "lobby": {
+    "brand_title": "Infosphere Lab • Strategic Information Defense Platform",
+    "host_card_title": "Create New Simulation",
+    "host_card_desc": "Configure scenario parameters, duration, and initialize the Facilitator Master HUD.",
+    "scenario_label": "Operational Scenario",
+    "title_label": "Exercise Title",
+    "max_ticks_label": "Max Duration (1 tick = 10s / 1h scenario time)",
+    "create_btn": "Launch Facilitator HUD",
+    "join_card_title": "Join Active Simulation",
+    "join_card_desc": "Enter an exercise session ID to join as an operative or observer.",
+    "session_id_label": "Exercise Session ID",
+    "handle_label": "Call-sign / Handle",
+    "role_label": "Assigned Operational Role",
+    "join_btn": "Enter Lab Arena",
+    "connecting": "Connecting...",
+    "creating": "Initializing Scenario..."
+  },
   "pulse": {
     "trending": "Trending on Pulse",
-    "verified": "Verified Institution",
+    "verified": "Verified Source",
     "fact_check": "Fact Check Notice",
     "prebunk_shield": "Shielded by Literacy Campaign",
     "shares": "Shares",
@@ -34,32 +57,44 @@
     "comments": "Comments",
     "share_action": "Reshare",
     "comment_action": "Comment",
-    "reply_placeholder": "Write an organic comment..."
+    "reply_placeholder": "Write an organic comment...",
+    "empty": "No viral posts detected yet in the network."
   },
   "actions": {
     "red": {
-      "title": "Information Operations Console",
+      "title": "Adversary Cell Operations",
       "capital": "Adversary Capital",
       "deploy_swarm": "Deploy Bot Swarm",
-      "deploy_swarm_desc": "Mobilize automated accounts to amplify outrage narrative by 300%.",
+      "deploy_swarm_desc": "Mobilize automated accounts to amplify outrage narratives by +300%.",
       "deepfake": "Synthesize AI Deepfake",
-      "deepfake_desc": "Use Gemini Flash to generate breaking disinformation leak.",
+      "deepfake_desc": "Use Generative AI to craft breaking synthetic leaks and spoofed articles.",
       "microtarget": "Microtarget Cluster",
-      "microtarget_desc": "Surgically inject narrative into high-susceptibility demographic.",
+      "microtarget_desc": "Surgically inject polarizing narratives into susceptible demographics.",
       "astroturf": "Astroturf Commentary",
-      "astroturf_desc": "Flood comment sections with synthetic outrage replies."
+      "astroturf_desc": "Flood comment sections with synthetic outrage replies to manufacture consensus.",
+      "cost_capital": "Capital",
+      "target_post": "Target Post",
+      "target_cluster": "Target Demographic Cluster",
+      "headline_label": "Spoofed Headline",
+      "prompt_label": "Custom Disinfo Prompt",
+      "execute": "Deploy Operation"
     },
     "blue": {
-      "title": "Defense Countermeasures Console",
+      "title": "Defense Countermeasures",
       "bandwidth": "Defense Bandwidth",
       "prebunk": "Prebunk Campaign",
       "prebunk_desc": "Inoculate target cluster with media literacy before disinfo strikes.",
       "debunk": "Evidence Debunk",
-      "debunk_desc": "Attach verified fact-check badge and expert analysis to viral post.",
+      "debunk_desc": "Attach verified fact-check badge and expert analysis to viral posts.",
       "friction": "Velocity Friction",
-      "friction_desc": "Throttles recommendation algorithm to dampen viral cascades.",
+      "friction_desc": "Throttles recommendation algorithms to dampen viral cascades.",
       "advisory": "Public Crisis Advisory",
-      "advisory_desc": "Broadcast verified statement from Government Security Centre (RCB)."
+      "advisory_desc": "Broadcast verified statement from Government Security Centre (RCB).",
+      "cost_bandwidth": "Bandwidth",
+      "execute_prebunk": "Inoculate Cluster",
+      "execute_debunk": "Debunk Post",
+      "execute_friction": "Apply Friction",
+      "execute_advisory": "Broadcast Statement"
     }
   },
   "admin": {
@@ -69,16 +104,71 @@
     "pause": "Pause Clock",
     "resume": "Resume Clock",
     "force_tick": "Advance Tick",
-    "emergency_inject": "Trigger Crisis Inject",
-    "token_budget": "Gemini Flash Token Governor",
+    "emergency_inject": "Trigger Crisis Advisory",
+    "token_budget": "AI Engine Token Governor",
     "presence_radar": "Live Participant Presence",
-    "clusters": "Demographic Cluster Telemetry"
+    "clusters": "Demographic Cluster Telemetry",
+    "add_post": "+ Add / Inject Post",
+    "add_post_modal_title": "Inject Scenario Post or Custom Breaking News",
+    "tab_quick_inject": "Quick Scenario Inject",
+    "tab_custom_post": "Custom Post Studio",
+    "inject_btn": "Publish to Live Feed",
+    "select_scenario_article": "Choose Pre-Configured Scenario Article:",
+    "author_name_label": "Author / Media Name",
+    "author_handle_label": "Author Handle (e.g. @NewsOutlet)",
+    "headline_label": "Headline",
+    "content_label": "Post Body / Content",
+    "media_url_label": "Media / Image URL (optional)",
+    "outrage_label": "Initial Outrage Score (0.0 - 1.0)",
+    "bias_label": "Ideological Bias (-1.0 to 1.0)",
+    "verified_label": "Mark as Verified Source",
+    "target_cluster_label": "Target Demographic Cluster",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "classroom": {
+    "title": "Classroom Observatory",
+    "subtitle": "Real-Time Contagion Telemetry & Tactical Debrief Playback",
+    "live_mode": "LIVE OBSERVATORY",
+    "playback_mode": "DEBRIEF PLAYBACK",
+    "posts_column": "Live Pulse Feed",
+    "actions_column": "Tactical Operations Log",
+    "metrics_column": "Contagion Dynamics & Trajectory",
+    "step_back": "Step Back",
+    "step_forward": "Step Forward",
+    "play": "Play Playback",
+    "pause": "Pause Playback",
+    "playback_tick": "Scrubbed Tick",
+    "all_actions": "All Actions",
+    "red_actions": "Red Operations",
+    "blue_actions": "Blue Defenses",
+    "admin_injects": "Admin Injects",
+    "cluster_vulnerability": "Demographic Cluster Vulnerability",
+    "fullscreen": "Fullscreen View",
+    "exit_fullscreen": "Exit Fullscreen"
+  },
+  "tutorial": {
+    "btn_title": "Operational Field Manual",
+    "modal_title": "Information Warfare: Field Manual & Rules of Engagement",
+    "tab_overview": "Mission & Objectives",
+    "tab_red": "Red Team Playbook",
+    "tab_blue": "Blue Team Playbook",
+    "tab_economy": "Resource Economy & Strategies",
+    "close": "Got it, Return to Arena"
   },
   "debrief": {
     "title": "Scenario Analytical Debrief",
     "timeline": "Timeline Playback Scrubber",
     "outcome": "Exercise Outcome",
     "congratulations": "Mission Concluded",
-    "summary": "Telemetry & Vector Trajectory Summary"
+    "summary": "Telemetry & Vector Trajectory Summary",
+    "return_arena": "Return to Arena",
+    "lobby": "Lobby",
+    "victory_red": "ADVERSARY DECISIVE VICTORY",
+    "victory_blue": "DEFENSE DECISIVE VICTORY",
+    "victory_draw": "CONTESTED STALEMATE",
+    "sub_red": "COGNITIVE DEFENSES BREACHED",
+    "sub_blue": "INFORMATION DEFENSES HELD",
+    "sub_draw": "MAX OPERATIONAL TICKS REACHED"
   }
 }

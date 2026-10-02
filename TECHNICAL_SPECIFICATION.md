@@ -8,24 +8,24 @@ The **Infosphere Lab** is the interactive multi-player and single-player simulat
 1. **True Scale-to-Zero Serverless:** Inactive labs incur zero compute costs. Simulation ticks and background mechanics execute on-demand without persistent server overhead.
 2. **Agent-Based Simulation (ABM):** Replaces simplistic scalar formulas with discrete simulated persona agents reacting, sharing, polarizing, or resisting across a realistic social network graph.
 3. **Decoupled Real-time Topology:** Client reads stream directly from Cloud Firestore (`onSnapshot`). Client actions execute via authenticated HTTPS endpoints on Cloud Run. Real-time broadcast does not depend on fragile API Gateway streaming.
-4. **Resilient AI Pipeline:** Vertex AI (Gemini 3.5 Flash) and the Agent Development Kit (ADK) are utilized with strict schema validation (`responseSchema`) and asynchronous queueing for synthetic narrative generation, bot personas, and counter-comments without blocking simulation clock ticks.
+4. **Resilient AI Pipeline:** Generative AI engines via Agent Development Kit (ADK) interfaces are utilized with strict schema validation (`responseSchema`) and asynchronous queueing for synthetic narrative generation, bot personas, and counter-comments without blocking simulation clock ticks.
 5. **Frictionless Onboarding:** Magic signed join links allow students and participants to jump directly into designated team roles without email/password registration.
 6. **Multi-Language Native (i18n):** Full localization support for English (`en`) and Polish (`pl`) across all UI strings, game prompts, feed assets, and synthetic content generation.
 7. **Comprehensive Token & Cost Governance:** Real-time token consumption tracking, soft/hard caps, and an automatic fallback circuit breaker to pre-generated seed libraries.
-8. **Facilitator Master HUD:** Live real-time surveillance of student actions, contagion spread, audience sentiment, and manual game intervention tools.
-9. **Automated Infrastructure as Code (IaC):** 100% turnkey deployment into a single Google Cloud project via Terraform.
+8. **Facilitator Master HUD & Classroom Observatory:** Live real-time surveillance of student actions, contagion spread, audience sentiment, manual post inject studio, and dedicated classroom projector mode with debrief playback.
+9. **Automated Infrastructure as Code (IaC):** 100% turnkey deployment into a cloud project via Terraform.
 
 ---
 
-## 2. Target GCP System Architecture
+## 2. Target System Architecture
 
 ```mermaid
 graph TD
     subgraph Client Tier [Frontend Delivery & Client State]
-        UI[Angular 19 SPA<br/>Firebase Hosting / Cloud Storage + CDN<br/>i18n: EN & PL Support]
+        UI[Angular 19 SPA<br/>Cloud Storage + CDN / Static Hosting<br/>i18n: EN & PL Support]
         UI -->|1. Submit Actions: HTTPS Bearer Token| API[FastAPI Simulation Engine<br/>Cloud Run Gen2]
         FS[(Cloud Firestore<br/>Native Serverless Mode)] -->|2. Real-time State Streaming: onSnapshot| UI
-        ADMIN[Facilitator Master HUD<br/>Live Presence & Telemetry] -->|Interventions & Magic Links| API
+        ADMIN[Facilitator Master HUD & Classroom View<br/>Live Presence & Telemetry] -->|Interventions & Magic Links| API
     end
 
     subgraph Orchestration & Clock Tier [Serverless Ticker]
@@ -39,26 +39,26 @@ graph TD
         ABM -->|Emit Narrative Tasks| PS[Cloud Pub/Sub<br/>Topic: session-ai-tasks]
     end
 
-    subgraph AI & Media Tier [ADK & Vertex AI]
+    subgraph AI & Media Tier [ADK & LLM Engine]
         PS -->|Pull/Push Subscription| WORKER[AI & Telemetry Worker<br/>Cloud Run]
-        WORKER -->|Structured Inference| ADK[ADK / Gemini 3.5 Flash<br/>Vertex AI Engine]
+        WORKER -->|Structured Inference| ADK[ADK / LLM Inference<br/>AI Engine Worker]
         WORKER -->|Token Tracking & Cache Fallback| FS
         WORKER -->|Asset Uploads| GCS[(Cloud Storage<br/>Media & Site Clones)]
     end
 ```
 
-### 2.1 GCP Component Mapping & Cost Profile
+### 2.1 Component Mapping & Cost Profile
 
-| Component | GCP Service | Scaling Policy | Justification & Zero-Cost Behavior |
+| Component | Target Service | Scaling Policy | Justification & Zero-Cost Behavior |
 | :--- | :--- | :--- | :--- |
-| **Frontend Hosting** | Firebase Hosting / Cloud Storage + CDN | Edge Static Delivery | Zero server compute; global CDN caching; free tier coverage for static assets. |
+| **Frontend Hosting** | Cloud Storage + CDN / Static Web Hosting | Edge Static Delivery | Zero server compute; global CDN caching; free tier coverage for static assets. |
 | **Simulation API** | Cloud Run (FastAPI Container) | `minScale: 0`, `maxScale: 100`, `cpu-throttling: true` | Scales to zero when no HTTP requests arrive. Handles actions and tick execution. |
-| **Tick Orchestrator** | Cloud Tasks | Serverless Queue | Fires tick HTTP requests at 10s intervals. Self-terminates when all participants disconnect. |
+| **Tick Orchestrator** | Cloud Tasks / Async Scheduler | Serverless Queue | Fires tick HTTP requests at 10s intervals. Self-terminates when all participants disconnect. |
 | **Simulation State & Feed** | Cloud Firestore | Serverless Native Mode | Document-level real-time synchronization (`onSnapshot`) to all connected Angular clients. |
 | **Event Pipeline** | Cloud Pub/Sub | Fully Managed Message Bus | Offloads expensive LLM narrative generation from the sub-second tick loop. |
-| **Generative AI** | Vertex AI (Gemini 3.5 Flash) + ADK | On-demand API calls | Ultra-fast token generation (<600ms) with enforced JSON schema for synthetic comments and headlines. |
+| **Generative AI** | LLM Engine + ADK | On-demand API calls | Ultra-fast token generation with enforced JSON schema for synthetic comments and headlines. |
 | **Asset Storage** | Cloud Storage (GCS) | Multi-Region Bucket | Stores spoofed media, news site screenshots, deepfake artifacts, and avatar assets. |
-| **Identity & Access** | Firebase Authentication | Identity Platform | Secure JWT issuance; Anonymous Auth + Custom Signed Tokens for frictionless guest access. |
+| **Identity & Access** | Anonymous Auth & Signed Tokens | Identity Platform | Secure JWT issuance; Anonymous Auth + Custom Signed Tokens for frictionless guest access. |
 
 ---
 
@@ -160,7 +160,7 @@ $$T_i(t+1) = \min\left(1.0, T_i(t) + 0.03 \times M_i\right)$$
   $$T_t = 100 \times \frac{1}{N} \sum_{i=1}^N T_i(t)$$
 
 ### 4.3 High-Impact Nodes & ADK Agent Integration
-While the diffusion of shares and likes across 500 nodes is calculated using vectorized NumPy/Python operations in $<50$ms, **qualitative commentary and emergent narrative evolution** are driven by Google Agent Development Kit (ADK) agents:
+While the diffusion of shares and likes across 500 nodes is calculated using vectorized NumPy/Python operations in $<50$ms, **qualitative commentary and emergent narrative evolution** are driven by Agent Development Kit (ADK) agents:
 * **Key Influencer Personas (5–10 per scenario):** Modeled as ADK agents with persistent personas (e.g., investigative journalist, populist commentator, civic activist).
 * When a post exceeds virality threshold ($V_t > 40$), the ADK agent receives the post context and generates a quote-tweet or detailed reaction with structured sentiment:
 ```python
@@ -174,33 +174,46 @@ class AgentCommentary(BaseModel):
 
 ---
 
-## 5. Gameplay Mechanics & Action Economy
+## 5. Gameplay Mechanics, Roles & Economy
 
 ### 5.1 Player Roles
-1. **Facilitator (Instructor/Admin):** Creates scenario, configures initial parameters, pauses/resumes, triggers global injects ("Breaking News Event"), monitors live session in real-time, leads post-game debrief.
-2. **Red Team (Adversary Ops):** Infiltrates feed, crafts synthetic narratives, deploys bot swarms, exploits echo chambers to collapse trust and maximize polarization.
-3. **Blue Team (Integrity & Defense):** Analyzes incoming virality signals, deploys preemptive inoculations (prebunks), issues evidence-grounded fact-checks, applies rate limits.
-4. **Observer (Students/Audience):** Views mock feed, monitors real-time telemetry, tracks network contagion graphs.
+1. **Facilitator (Instructor/Admin):** Creates scenario from 4 curated options, configures initial parameters, pauses/resumes, triggers crisis injects via Quick Scenario Inject or Custom Post Studio, monitors student activity, and orchestrates debriefs.
+2. **Red Team (Adversary Ops):** Infiltrates feed, crafts synthetic narratives, deploys bot swarms, exploits echo chambers to collapse trust and maximize polarization. Guided by in-app Field Manual.
+3. **Blue Team (Integrity & Defense):** Analyzes incoming virality signals, deploys preemptive inoculations (prebunks), issues evidence-grounded fact-checks, applies rate limits. Guided by in-app Field Manual.
+4. **Classroom Spectator / Observatory (`/classroom/:sessionId`):** Fullscreen projector view displaying 3 coordinated columns:
+   - **Column 1 (Pulse Social Feed):** Real-time posts, engagement counters, bot badges, outrage scores.
+   - **Column 2 (Tactical Operations Log):** Filterable timeline of Red attacks, Blue defenses, and Facilitator interventions.
+   - **Column 3 (Strategic Contagion Trajectory):** Dynamic SVG multi-curves (Platform Trust, Polarization, Virality) and demographic vulnerability telemetry.
+   - **Dual Modes:** Live Observatory during active drills and Debrief Playback scrubber for post-exercise analysis.
+5. **Observer:** Passive individual telemetry and timeline tracking.
 
-### 5.2 Action Economy & Balance Matrix
+### 5.2 In-App Team Field Manual / Tutorial
+Embedded directly into the Arena interface via the **📖 Field Manual / Tutorial** button, providing operational intelligence in 4 bilingual tabs:
+1. **Mission & Win Conditions:** Network structure, 10s tick loop, score metrics, and win thresholds.
+2. **Adversary Playbook:** Mechanics of Bot Swarms (+300% virality velocity), AI Deepfakes, Cluster Microtargeting, and Astroturfing.
+3. **Defense Countermeasures:** Prebunk Inoculation shields, Evidence Debunks, Velocity Friction, and Public Crisis Advisories.
+4. **Resource Economy & Strategies:** Bandwidth/Capital generation (+15/tick), cooldown timings, and coordination best practices.
+
+### 5.3 Action Economy & Balance Matrix
 
 | Team | Action Name | Resource Cost | Cooldown | In-Game Effect |
 | :--- | :--- | :--- | :--- | :--- |
 | **Red Team** | `Deploy Bot Swarm` | 25 Capital | 2 Ticks | Deploys 25 bot accounts that retweet and like target post, boosting visibility by $3\times$. |
-| **Red Team** | `AI Deepfake / Spoofed Article` | 40 Capital | 4 Ticks | Invokes ADK/Gemini 3.5 Flash to craft spoofed media asset. High initial outrage ($>0.85$). |
+| **Red Team** | `AI Deepfake / Spoofed Article` | 40 Capital | 4 Ticks | Invokes ADK / LLM engine to craft spoofed media asset. High initial outrage ($>0.85$). |
 | **Red Team** | `Microtarget Susceptible Cluster` | 20 Capital | 1 Tick | Injects narrative directly into highest-vulnerability demographic nodes. |
 | **Red Team** | `Astroturf Comment Storm` | 15 Capital | 1 Tick | Floods comment section with algorithmic noise to bury factual discourse. |
 | **Blue Team** | `Prebunk Campaign (Inoculation)` | 20 Bandwidth | 2 Ticks | Raises $M_i$ (+0.4) across targeted demographic before disinformation strikes. Halves share rate. |
 | **Blue Team** | `Evidence-Based Debunk / Flag` | 25 Bandwidth | 2 Ticks | Attaches verified debunk label. Reduces future reshare probability by $70\%$; recovers trust in skeptic nodes. |
 | **Blue Team** | `Algorithmic Velocity Friction` | 35 Bandwidth | 3 Ticks | Reduces network transmission weight $w_{j,i}$ by $60\%$ for 3 ticks on specific hashtag/topic. |
 | **Blue Team** | `Verified Public Advisory` | 30 Bandwidth | 3 Ticks | Injects pinned banner at top of feed from trusted institution; boosts baseline trust $+8\%$. |
+| **Facilitator** | `Crisis Inject / Post Studio` | 0 Cost | 0 Ticks | Injects scenario template articles or custom breaking posts directly into live feed. |
 
-* Resource Budget: Both teams generate $+10$ points per tick (max capacity: 100 points).
+* Resource Budget: Both teams generate $+15$ points per tick (max capacity: 100 points).
 
-### 5.3 Victory & Conclusion Conditions
+### 5.4 Victory & Conclusion Conditions
 A scenario runs for a maximum of 40 ticks (~6.5 minutes real-time) or concludes immediately if:
 * **Adversary Decisive Victory:** Institutional Trust drops below $20.0$ OR Polarization exceeds $85.0$.
-* **Defense Decisive Victory:** Disinformation Reach remains below $15.0$ and Platform Trust exceeds $75.0$ at tick 30.
+* **Defense Decisive Victory:** Platform Trust exceeds $60.0$ and Disinformation Reach remains suppressed at completion.
 * **Contested Stalemate:** Calculated by comparative score at tick 40.
 
 ---
@@ -264,17 +277,19 @@ The Admin / Facilitator console provides a single-pane-of-glass interface into a
 1. **Live Dual-View Feed:** Simultaneous view of the unfiltered public feed, Red Team's tactical attack queue, and Blue Team's intervention queue.
 2. **Participant Presence Radar:** Real-time list of all connected users with live heartbeat status, assigned team, IP hash, and last interaction timestamp.
 3. **Interactive Contagion Visualizer:** Live canvas showing cluster-by-cluster polarization shifts and information diffusion waves across the 500 simulated nodes.
-4. **God-Mode Control Panel:**
+4. **Scenario Selector & Post Injector Studio:**
+   - **Quick Scenario Inject:** 1-click publishing of pre-configured scenario template articles.
+   - **Custom Post Studio:** Facilitators can author breaking news stories, adjust outrage and bias sliders, select target demographic clusters, and toggle verification badges.
+5. **God-Mode Control Panel:**
    - **Pause / Resume Clock:** Instantly halts task scheduling for classroom explanations.
-   - **Manual Tick Step:** Advance game by 1 tick manually for structured group debriefs.
-   - **Inject Emergency Crisis Event:** Triggers breaking real-world injects (e.g. "Government Grid Operator Statement").
-   - **Rebalance / Mute User:** Move participants between teams or revoke disruptive guest tokens.
+   - **Manual Force Tick:** Advance game by 1 tick manually for structured group debriefs.
+   - **Classroom Projector Launch:** Direct 1-click navigation to `/classroom/:sessionId`.
 
 ### 7.2 AI Token Usage Monitoring & Cost Control
-To prevent runaway billing and ensure predictable classroom operations when using Gemini 3.5 Flash:
+To prevent runaway billing and ensure predictable classroom operations when using live Generative AI:
 
 #### 1. Per-Session Token Ledger (Firestore)
-Every invocation of Vertex AI / ADK records token consumption atomically:
+Every invocation of the AI generation service records token consumption atomically:
 ```json
 "tokenUsage": {
   "promptTokens": 142500,
@@ -288,11 +303,11 @@ Every invocation of Vertex AI / ADK records token consumption atomically:
 ```
 
 #### 2. Three-Tier Governance & Circuit Breaker
-1. **Normal Tier ($<75\%$ budget):** Full on-demand Gemini 3.5 Flash generation for headlines, deepfake narratives, and dynamic influencer comments.
+1. **Normal Tier ($<75\%$ budget):** Full on-demand LLM generation for headlines, deepfake narratives, and dynamic influencer comments.
 2. **Throttled Tier ($75\%\text{–}99\%$ budget):** High-frequency comment generation is reduced; Red Team custom prompt generation is rate-limited to 1 per 3 ticks. Admin receives an alert in the Master HUD.
 3. **Circuit Breaker ($100\%$ budget reached):** 
-   - Live Gemini API calls are immediately suspended.
-   - The simulation automatically falls back to the **High-Fidelity Seed Library** (pre-generated headlines, comments, and personas stored in Cloud Storage / JSON).
+   - Live LLM API calls are immediately suspended.
+   - The simulation automatically falls back to the **High-Fidelity Seed Library** (pre-generated headlines, comments, and personas across all 4 scenarios in English and Polish).
    - Zero gameplay interruption; zero extra cost.
 
 ---
@@ -445,23 +460,23 @@ Simulation feed items and scenario templates store multilingual text natively or
 backend/
 ├── app/
 │   ├── main.py                     # FastAPI entrypoint, CORS, routers
-│   ├── config.py                   # Environment, GCP project, Firestore settings
+│   ├── config.py                   # Environment, project settings
 │   ├── api/
 │   │   ├── v1/
 │   │   │   ├── sessions.py         # Session CRUD, lobby, start/pause/resume
 │   │   │   ├── invites.py          # Signed Magic Join URL generator & validator
-│   │   │   ├── actions.py          # Red/Blue team action ingestion
-│   │   │   ├── admin.py            # Master HUD real-time telemetry & god-mode
-│   │   │   └── ticks.py            # Protected Cloud Tasks /tick endpoint
+│   │   │   ├── actions.py          # Red/Blue team action ingestion & history
+│   │   │   ├── admin.py            # Master HUD telemetry, scenario injects, custom post studio
+│   │   │   └── ticks.py            # Protected /tick endpoint
 │   ├── engine/
-│   │   ├── simulation_orchestrator.py # Session lifecycle & tick loop runner
+│   │   ├── simulation_orchestrator.py # Session lifecycle & continuous tick loop runner
 │   │   ├── network_graph.py        # 500-node scale-free audience graph & diffusion
 │   │   ├── metrics_calculator.py   # Polarization, Virality, Trust calculus
-│   │   ├── token_governor.py       # Gemini 3.5 Flash budget monitoring & circuit breaker
+│   │   ├── token_governor.py       # AI Engine Token budget monitoring & circuit breaker
 │   │   └── actions_evaluator.py    # Rule engine for player action application
 │   ├── ai/
-│   │   ├── adk_service.py          # Google ADK agent integration & Gemini 3.5 Flash
-│   │   ├── seed_library.py         # Offline deterministic fallback assets
+│   │   ├── adk_service.py          # Agent Development Kit (ADK) service & LLM integration
+│   │   ├── seed_library.py         # Offline deterministic fallback assets (4 scenarios, PL/EN)
 │   │   ├── prompt_templates.py     # Multilingual prompt templates (EN & PL)
 │   │   └── schemas.py              # Pydantic schemas for LLM structured output
 │   ├── models/
@@ -469,7 +484,7 @@ backend/
 │   │   ├── action.py
 │   │   └── feed.py
 │   └── services/
-│       ├── firestore_service.py    # Firebase Admin SDK repository
+│       ├── firestore_service.py    # Firestore / In-memory storage repository
 │       └── cloud_tasks_service.py  # Dispatcher for next tick tasks
 ├── tests/
 │   ├── unit/
@@ -479,6 +494,7 @@ backend/
 │   │   └── test_signed_invites.py
 │   └── integration/
 │       ├── test_tick_lifecycle.py
+│       ├── test_e2e_scenario.py
 │       └── test_adk_gemini.py
 ├── requirements.txt
 ├── Dockerfile                      # Optimized Python 3.12 slim (<90MB base)
@@ -493,22 +509,26 @@ backend/
 ```
 frontend/src/app/
 ├── core/
-│   ├── auth/                       # Firebase Auth signals, anonymous custom token handler
+│   ├── auth/                       # Auth signals, anonymous custom token handler
 │   ├── i18n/                       # LocaleService (en/pl signals, dictionary loader)
 │   ├── services/
-│   │   ├── firestore-sync.service.ts # Real-time onSnapshot to Signals bridge
-│   │   ├── lab-api.service.ts       # Action dispatcher (HTTP to Cloud Run)
+│   │   ├── firestore-sync.service.ts # Real-time state synchronization
+│   │   ├── lab-api.service.ts       # Action & scenario dispatcher (HTTP)
 │   │   └── heartbeat.service.ts     # 15s interval player presence ping
 ├── features/
 │   ├── join/                       # Magic link landing & automatic guest sign-in
-│   ├── lobby/                      # Session creation, PIN entry, role picker
+│   ├── lobby/                      # Session creation with 4-scenario picker & role selector
 │   ├── admin-hud/                  # Facilitator Master Dashboard & Live Telemetry
 │   │   ├── live-radar/             # Network Contagion 2D canvas
-│   │   ├── token-meter/            # Gemini 3.5 Flash cost & quota gauge
-│   │   └── intervention-panel/     # Pause/Step/Inject emergency controls
+│   │   ├── token-meter/            # AI Engine Token Governor cost & quota gauge
+│   │   ├── intervention-panel/     # Pause/Step/Inject emergency controls
+│   │   └── add-post-modal/         # Scenario Injects & Custom Post Studio
+│   ├── classroom/                  # Classroom Presentation Observatory & Debrief Playback
+│   │   ├── classroom.component.ts  # 3-Column layout, SVG trajectory curves, time scrubber
 │   ├── lab-arena/
 │   │   ├── arena.component.ts       # Parent layout & role-based HUD switcher
 │   │   ├── components/
+│   │   │   ├── tutorial-modal/      # Interactive 4-tab Team Field Manual / Tutorial
 │   │   │   ├── pulse-feed/          # The interactive social media feed
 │   │   │   │   ├── feed-card/       # Individual post with like/retweet actions
 │   │   │   │   └── comment-drawer/  # Threaded commentary & bot swarms
@@ -524,7 +544,7 @@ frontend/src/app/
 
 ### 11.2 Frontend Design System, Typography & Theme Tokens
 
-#### 1. Typography: Google Font Lato
+#### 1. Typography: Lato Webfont
 The platform standardizes on **Lato** for high readability, modern editorial aesthetics, and cross-platform consistency across English and Polish diacritics:
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -631,7 +651,7 @@ service cloud.firestore {
 
 ## 13. Turnkey Infrastructure as Code (Terraform)
 
-The entire application infrastructure deploys into a single Google Cloud project using modular Terraform code.
+The entire application infrastructure deploys into a cloud project using modular Terraform code.
 
 ### 13.1 Terraform Module Directory
 ```
@@ -800,8 +820,9 @@ backend/tests/
 │   ├── test_token_governor.py     # Verifies quota thresholding and fallback activation
 │   └── test_signed_invites.py    # Ensures cryptographic validity & expiration of magic tokens
 └── integration/
-    ├── test_tick_lifecycle.py     # Validates auto-pause on zero heartbeats and Cloud Task rescheduling
-    └── test_adk_gemini.py         # Tests Gemini 3.5 Flash JSON schema outputs and fallback cache
+    ├── test_tick_lifecycle.py     # Validates auto-pause on zero heartbeats and scheduler loop
+    ├── test_e2e_scenario.py       # Full end-to-end multi-tick simulation flow with actions
+    └── test_adk_gemini.py         # Tests ADK agent structured JSON schema outputs and fallback cache
 ```
 
 #### Sample Test Case: ABM Math Stability & Bounding (`test_diffusion_math.py`)

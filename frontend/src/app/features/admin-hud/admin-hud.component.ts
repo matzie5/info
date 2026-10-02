@@ -21,44 +21,77 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
             <a routerLink="/" class="text-white font-black text-lg tracking-tight hover:opacity-80 transition-opacity">
               INFOSPHERE<span class="text-[#84AA40]">.LAB</span>
             </a>
-            <span class="badge badge-amber text-xs">FACILITATOR HUD</span>
+            <span class="badge badge-amber text-xs uppercase">{{ locale.t('admin.title') }}</span>
             <span class="text-xs font-mono text-slate-400">ID: {{ sessionId }}</span>
           </div>
 
-          <!-- God Mode Control Buttons -->
-          <div class="flex items-center gap-2">
+          <!-- God Mode Control Buttons & Language -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- Language Switcher -->
+            <div class="flex items-center gap-1 border border-white/10 rounded px-2 py-1 bg-black/40 mr-2">
+              <button
+                type="button"
+                (click)="locale.setLanguage('pl')"
+                [class.text-[#84AA40]]="locale.language() === 'pl'"
+                [class.font-bold]="locale.language() === 'pl'"
+                class="text-xs px-1 text-slate-400 hover:text-white transition-colors">
+                PL
+              </button>
+              <span class="text-xs text-white/20">|</span>
+              <button
+                type="button"
+                (click)="locale.setLanguage('en')"
+                [class.text-[#84AA40]]="locale.language() === 'en'"
+                [class.font-bold]="locale.language() === 'en'"
+                class="text-xs px-1 text-slate-400 hover:text-white transition-colors">
+                EN
+              </button>
+            </div>
+
+            <!-- Add / Inject Post Button -->
+            <button
+              (click)="openAddPostModal = true; loadScenarioArticles()"
+              class="btn-primary text-xs py-1.5 px-3 bg-[#84AA40] hover:bg-[#739636] text-black font-bold">
+              {{ locale.t('admin.add_post') }}
+            </button>
+
             <button
               *ngIf="session()?.status === SessionStatus.LOBBY"
               (click)="startSession()"
               class="btn-primary text-xs py-1.5 px-3">
-              ▶ Start Exercise
+              ▶ {{ locale.t('admin.start') }}
             </button>
             <button
               *ngIf="session()?.status === SessionStatus.ACTIVE"
               (click)="pauseSession()"
               class="btn-secondary text-xs py-1.5 px-3">
-              ⏸ Pause
+              ⏸ {{ locale.t('admin.pause') }}
             </button>
             <button
               *ngIf="session()?.status === SessionStatus.PAUSED"
               (click)="resumeSession()"
               class="btn-primary text-xs py-1.5 px-3">
-              ▶ Resume
+              ▶ {{ locale.t('admin.resume') }}
             </button>
             <button
               (click)="forceTick()"
               class="btn-secondary text-xs py-1.5 px-3 border-amber-500/30 text-amber-300">
-              ⏭ Force Tick
+              ⏭ {{ locale.t('admin.force_tick') }}
             </button>
             <button
               (click)="openInjectModal = true"
               class="btn-adversary text-xs py-1.5 px-3">
-              ⚠️ Trigger Crisis Inject
+              ⚠️ {{ locale.t('admin.emergency_inject') }}
             </button>
+            <a
+              [routerLink]="['/classroom', sessionId]"
+              class="btn-secondary text-xs py-1.5 px-3 border-purple-500/30 text-purple-300 hover:border-purple-400">
+              📺 {{ locale.t('classroom.title') }}
+            </a>
             <a
               [routerLink]="['/arena', sessionId]"
               class="btn-secondary text-xs py-1.5 px-3">
-              Arena View
+              {{ locale.t('app.arena_view') }}
             </a>
           </div>
         </div>
@@ -70,7 +103,7 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
           <!-- Exercise Clock & Status -->
           <div class="glass-panel p-5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase text-slate-400">Exercise Clock</span>
+              <span class="text-xs font-mono uppercase text-slate-400">{{ locale.t('admin.god_mode') }}</span>
               <span
                 class="badge text-[10px]"
                 [class.badge-green]="session()?.status === SessionStatus.ACTIVE"
@@ -85,6 +118,9 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
             <p class="text-xs text-slate-400">
               1 tick = 10s real-time / 1 hour operational scenario time.
             </p>
+            <div class="text-[11px] font-mono text-slate-400 border-t border-white/5 pt-2">
+              <span class="text-slate-500">Scenario:</span> {{ session()?.scenario_id }} ({{ session()?.language?.toUpperCase() }})
+            </div>
           </div>
 
           <!-- Token Governor Meter -->
@@ -92,7 +128,7 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                <span class="text-xs font-mono uppercase text-slate-400">Gemini 3.5 Flash Token Governor</span>
+                <span class="text-xs font-mono uppercase text-slate-400">{{ locale.t('admin.token_budget') }}</span>
               </div>
               <span
                 class="badge text-[10px]"
@@ -110,174 +146,356 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
                   {{ session()?.token_usage?.total_tokens || 0 }} / {{ session()?.token_usage?.budget_limit_tokens || 300000 }} tokens
                 </span>
                 <span class="text-slate-400">
-                  Est. Cost: <strong class="text-white">&dollar;{{ (session()?.token_usage?.cost_usd_estimated || 0).toFixed(4) }} USD</strong>
+                  {{ tokenUsagePercentage() | number:'1.0-1' }}%
                 </span>
               </div>
-              <div class="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
+              <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                 <div
-                  class="h-full bg-blue-500 transition-all duration-300"
+                  class="h-full transition-all duration-500 rounded-full"
+                  [class.bg-green-500]="tokenUsagePercentage() < 70"
+                  [class.bg-amber-500]="tokenUsagePercentage() >= 70 && tokenUsagePercentage() < 90"
+                  [class.bg-red-500]="tokenUsagePercentage() >= 90"
                   [style.width.%]="tokenUsagePercentage()">
                 </div>
               </div>
             </div>
 
-            <div class="text-[11px] text-slate-400 flex gap-4 pt-1">
-              <span>Prompt: {{ session()?.token_usage?.prompt_tokens || 0 }}</span>
-              <span>Completion: {{ session()?.token_usage?.completion_tokens || 0 }}</span>
-              <span>Requests: {{ session()?.token_usage?.requests_count || 0 }}</span>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+              <span>Throttle Threshold: 70% ({{ (session()?.token_usage?.budget_limit_tokens || 300000) * 0.7 | number:'1.0-0' }} tokens)</span>
+              <span>Circuit Breaker: 90% (Offline Fallback Ready)</span>
             </div>
           </div>
         </div>
 
-        <!-- Middle Section: Participant Presence Radar & Magic Links -->
-        <div class="grid md:grid-cols-2 gap-6">
-          <!-- Participant Presence Radar -->
-          <div class="glass-panel p-5 space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-                <h3 class="font-bold text-sm text-white uppercase tracking-wider">
-                  Participant Presence Radar
-                </h3>
-              </div>
-              <span class="badge badge-green font-mono text-[10px]">
-                {{ activeParticipantCount() }} ACTIVE
-              </span>
+        <!-- Participants & Invite Generation Bar -->
+        <div class="glass-panel p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <span>{{ locale.t('admin.presence_radar') }}</span>
+                <span class="badge badge-green text-xs">{{ activeParticipantCount() }} Active</span>
+              </h2>
+              <p class="text-xs text-slate-400">
+                Live heartbeat monitor tracking active operatives in this simulation.
+              </p>
             </div>
 
-            <div class="space-y-2 max-h-56 overflow-y-auto pr-1">
-              <div *ngIf="presenceList().length === 0" class="text-xs text-slate-500 text-center py-6">
-                No participants joined yet. Share invite links below.
-              </div>
-
-              <div *ngFor="let p of presenceList()" class="p-2.5 rounded bg-black/40 border border-white/5 flex items-center justify-between text-xs font-mono">
-                <div class="flex items-center gap-2">
-                  <span
-                    class="w-2 h-2 rounded-full"
-                    [class.bg-emerald-400]="p.is_active"
-                    [class.bg-slate-600]="!p.is_active">
-                  </span>
-                  <span class="text-white font-bold">{{ p.handle }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span
-                    class="badge text-[9px]"
-                    [class.badge-red]="p.role === UserRole.RED_TEAM"
-                    [class.badge-blue]="p.role === UserRole.BLUE_TEAM"
-                    [class.badge-green]="p.role === UserRole.FACILITATOR">
-                    {{ p.role }}
-                  </span>
-                  <span class="text-[10px] text-slate-400">
-                    {{ p.seconds_since_last_seen }}s ago
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Signed Magic Invite Generator -->
-          <div class="glass-panel p-5 space-y-4">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">🔗</span>
-              <h3 class="font-bold text-sm text-white uppercase tracking-wider">
-                Magic Join Token Links
-              </h3>
-            </div>
-            <p class="text-xs text-slate-400">
-              Generate signed HMAC URLs for seamless zero-auth onboarding into Red or Blue team.
-            </p>
-
-            <div class="space-y-2">
+            <!-- Generate Invite Links -->
+            <div class="flex items-center gap-2 flex-wrap">
               <button
                 (click)="generateInvite(UserRole.RED_TEAM)"
-                class="btn-adversary w-full text-xs py-2 justify-center">
-                Generate Red Team Invite URL
+                class="btn-adversary text-xs py-1 px-2.5">
+                + Invite Red Team
               </button>
               <button
                 (click)="generateInvite(UserRole.BLUE_TEAM)"
-                class="btn-primary w-full text-xs py-2 justify-center">
-                Generate Blue Team Invite URL
+                class="btn-defense text-xs py-1 px-2.5">
+                + Invite Blue Team
+              </button>
+              <button
+                (click)="generateInvite(UserRole.OBSERVER)"
+                class="btn-secondary text-xs py-1 px-2.5">
+                + Invite Observer
               </button>
             </div>
-
-            <div *ngIf="generatedInviteUrl" class="p-3 rounded bg-black/60 border border-white/10 space-y-1">
-              <span class="text-[10px] text-slate-400 uppercase font-mono block">Signed Shareable Link</span>
-              <input
-                type="text"
-                readonly
-                [value]="generatedInviteUrl"
-                (click)="copyInvite()"
-                class="input-field text-xs font-mono py-1 cursor-pointer" />
-              <span *ngIf="copied" class="text-[10px] text-[#A3E635] font-mono block">Copied to clipboard!</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Demographic Cluster Telemetry Breakdown -->
-        <div class="glass-panel p-5 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="font-bold text-sm text-white uppercase tracking-wider">
-              500-Node Demographic Cluster Telemetry
-            </h3>
-            <span class="text-xs text-slate-400 font-mono">Agent-Based Network Model</span>
           </div>
 
+          <!-- Invite URL Display -->
+          <div *ngIf="generatedInviteUrl" class="p-3 bg-black/40 border border-white/10 rounded flex items-center justify-between gap-3 animate-fade-in">
+            <span class="font-mono text-xs text-slate-300 truncate select-all">{{ generatedInviteUrl }}</span>
+            <button
+              (click)="copyInvite()"
+              class="btn-secondary text-xs py-1 px-2.5 whitespace-nowrap">
+              {{ copied ? 'Copied!' : 'Copy Link' }}
+            </button>
+          </div>
+
+          <!-- Participant Table -->
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs font-mono">
-              <thead>
-                <tr class="border-b border-white/10 text-slate-400">
-                  <th class="py-2">Cluster</th>
-                  <th class="py-2">Avg Trust</th>
-                  <th class="py-2">Ideological Bias</th>
-                  <th class="py-2">Outrage Sensitivity</th>
-                  <th class="py-2">Prebunk Shield</th>
-                  <th class="py-2">Nodes</th>
+            <table class="w-full text-left text-xs">
+              <thead class="text-slate-400 border-b border-white/10 font-mono uppercase">
+                <tr>
+                  <th class="py-2">User / Handle</th>
+                  <th class="py-2">Role</th>
+                  <th class="py-2">Last Seen</th>
+                  <th class="py-2">Heartbeat Status</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-white/5">
-                <tr *ngFor="let item of clusterMetricsList()">
-                  <td class="py-2 text-white font-bold">{{ item.name }}</td>
-                  <td class="py-2 text-[#A3E635]">{{ (item.avg_trust * 100).toFixed(1) }}%</td>
-                  <td class="py-2" [class.text-red-400]="item.avg_bias > 0.3" [class.text-blue-400]="item.avg_bias < -0.3">
-                    {{ item.avg_bias.toFixed(2) }}
+              <tbody class="divide-y divide-white/5 font-mono">
+                <tr *ngFor="let p of presenceList()" class="hover:bg-white/[0.02]">
+                  <td class="py-2.5 font-bold text-white">{{ p.handle || p.user_id }}</td>
+                  <td class="py-2.5">
+                    <span
+                      class="badge text-[10px]"
+                      [class.badge-red]="p.role === 'RED_TEAM'"
+                      [class.badge-blue]="p.role === 'BLUE_TEAM'"
+                      [class.badge-green]="p.role === 'FACILITATOR'"
+                      [class.badge-amber]="p.role === 'OBSERVER'">
+                      {{ p.role }}
+                    </span>
                   </td>
-                  <td class="py-2 text-amber-400">{{ (item.avg_outrage * 100).toFixed(1) }}%</td>
-                  <td class="py-2 text-[#84AA40]">{{ (item.avg_prebunk_shield * 100).toFixed(1) }}%</td>
-                  <td class="py-2 text-slate-300">{{ item.total_nodes }}</td>
+                  <td class="py-2.5 text-slate-400">{{ p.seconds_since_last_seen }}s ago</td>
+                  <td class="py-2.5">
+                    <span
+                      class="inline-flex items-center gap-1.5"
+                      [class.text-green-400]="p.is_active"
+                      [class.text-red-400]="!p.is_active">
+                      <span class="w-1.5 h-1.5 rounded-full" [class.bg-green-400]="p.is_active" [class.bg-red-400]="!p.is_active"></span>
+                      {{ p.is_active ? 'CONNECTED' : 'DISCONNECTED' }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="presenceList().length === 0">
+                  <td colspan="4" class="py-4 text-center text-slate-500 font-sans">
+                    No participants connected yet. Generate invite links above to onboard teams.
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+
+        <!-- Audience Demographic Cluster Telemetry -->
+        <div class="glass-panel p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <span>{{ locale.t('admin.clusters') }}</span>
+              <span class="text-xs text-slate-400 font-normal">(500 synthetic agent nodes)</span>
+            </h2>
+          </div>
+
+          <div class="grid md:grid-cols-5 gap-4">
+            <div
+              *ngFor="let c of clusterMetricsList()"
+              class="glass-panel p-4 space-y-2 border-white/5 hover:border-white/20 transition-all">
+              <div class="text-xs font-bold text-slate-200 truncate" [title]="c.name">{{ c.name }}</div>
+              <div class="space-y-1 font-mono text-[11px]">
+                <div class="flex justify-between text-slate-400">
+                  <span>Size:</span>
+                  <span class="text-white">{{ c.size }}</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                  <span>Avg Trust:</span>
+                  <span [class.text-green-400]="c.avg_trust >= 0.5" [class.text-red-400]="c.avg_trust < 0.5">
+                    {{ c.avg_trust | number:'1.2-2' }}
+                  </span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                  <span>Inoculated:</span>
+                  <span class="text-blue-400">{{ c.pct_inoculated | number:'1.0-0' }}%</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                  <span>Infected:</span>
+                  <span class="text-red-400">{{ c.pct_infected | number:'1.0-0' }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
 
-      <!-- Emergency Crisis Inject Modal -->
-      <div *ngIf="openInjectModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="glass-panel p-6 max-w-lg w-full space-y-4 border-amber-500/40">
-          <div class="flex items-center gap-2">
-            <span class="text-2xl">⚠️</span>
-            <h3 class="text-lg font-bold text-white">Trigger Government Crisis Advisory (RCB)</h3>
+      <!-- MODAL: ADD / INJECT POST INTO LIVE FEED -->
+      <div *ngIf="openAddPostModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+        <div class="glass-panel w-full max-w-2xl p-6 space-y-4 border-white/20 shadow-2xl max-h-[90vh] flex flex-col">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <span>📢</span>
+              <span>{{ locale.t('admin.add_post_modal_title') }}</span>
+            </h3>
+            <button (click)="openAddPostModal = false" class="text-slate-400 hover:text-white text-lg font-mono">✕</button>
           </div>
+
+          <!-- Tabs: Quick Scenario Inject vs Custom Post -->
+          <div class="flex border-b border-white/10 gap-2">
+            <button
+              type="button"
+              (click)="activeAddPostTab = 'quick'"
+              [class.border-[#84AA40]]="activeAddPostTab === 'quick'"
+              [class.text-[#84AA40]]="activeAddPostTab === 'quick'"
+              class="pb-2 text-xs font-bold border-b-2 px-3 transition-colors border-transparent text-slate-400 hover:text-white">
+              {{ locale.t('admin.tab_quick_inject') }}
+            </button>
+            <button
+              type="button"
+              (click)="activeAddPostTab = 'custom'"
+              [class.border-[#84AA40]]="activeAddPostTab === 'custom'"
+              [class.text-[#84AA40]]="activeAddPostTab === 'custom'"
+              class="pb-2 text-xs font-bold border-b-2 px-3 transition-colors border-transparent text-slate-400 hover:text-white">
+              {{ locale.t('admin.tab_custom_post') }}
+            </button>
+          </div>
+
+          <!-- Content Area (Scrollable) -->
+          <div class="flex-1 overflow-y-auto space-y-4 pr-1">
+            <!-- TAB 1: QUICK SCENARIO INJECT -->
+            <div *ngIf="activeAddPostTab === 'quick'" class="space-y-3">
+              <p class="text-xs text-slate-400">
+                {{ locale.t('admin.select_scenario_article') }}
+              </p>
+
+              <div *ngIf="scenarioArticles().length === 0" class="text-center p-6 text-slate-500 text-xs font-mono">
+                Loading scenario article templates...
+              </div>
+
+              <div
+                *ngFor="let art of scenarioArticles()"
+                class="glass-panel p-4 space-y-2 border-white/10 hover:border-[#84AA40]/50 transition-colors">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <h4 class="text-sm font-bold text-white leading-tight mb-1">{{ art.headline }}</h4>
+                    <span class="text-xs text-slate-400 font-mono">{{ art.author_name }} ({{ art.author_handle }})</span>
+                  </div>
+                  <span class="badge badge-amber text-[10px] whitespace-nowrap">
+                    Outrage: {{ art.outrage_score | number:'1.2-2' }}
+                  </span>
+                </div>
+                <p class="text-xs text-slate-300 line-clamp-2">{{ art.body_text }}</p>
+                <div class="flex items-center justify-between pt-2 border-t border-white/5">
+                  <span class="text-[10px] font-mono text-slate-400">Target: {{ art.target_cluster || 'All Demographics' }}</span>
+                  <button
+                    (click)="injectScenarioArticle(art)"
+                    class="btn-primary text-xs py-1 px-3 bg-[#84AA40] hover:bg-[#739636] text-black font-bold">
+                    {{ locale.t('admin.inject_btn') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: CUSTOM POST STUDIO -->
+            <div *ngIf="activeAddPostTab === 'custom'" class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  {{ locale.t('admin.headline_label') }}
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="customPost.headline"
+                  placeholder="e.g. PILNE: Nieoficjalne doniesienia o spadkach napięcia"
+                  class="input-field" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                  {{ locale.t('admin.content_label') }} *
+                </label>
+                <textarea
+                  [(ngModel)]="customPost.content"
+                  rows="3"
+                  placeholder="Full post narrative text..."
+                  class="input-field"></textarea>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                    {{ locale.t('admin.author_name_label') }}
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="customPost.author_name"
+                    class="input-field" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                    {{ locale.t('admin.author_handle_label') }}
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="customPost.author_handle"
+                    class="input-field" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                    {{ locale.t('admin.outrage_label') }} ({{ customPost.outrage_score }})
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    [(ngModel)]="customPost.outrage_score"
+                    class="w-full accent-amber-500" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+                    {{ locale.t('admin.target_cluster_label') }}
+                  </label>
+                  <select [(ngModel)]="customPost.target_cluster" class="input-field bg-slate-900 border-white/20 text-white w-full">
+                    <option value="">-- All Demographics --</option>
+                    <option value="Hyper-Partisan A">Hyper-Partisan A</option>
+                    <option value="Hyper-Partisan B">Hyper-Partisan B</option>
+                    <option value="Institutional Skeptics">Institutional Skeptics</option>
+                    <option value="Susceptible Neutrals">Susceptible Neutrals</option>
+                    <option value="Apolitical Youth">Apolitical Youth</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 pt-1">
+                <input type="checkbox" id="verified_cb" [(ngModel)]="customPost.is_verified" class="accent-[#84AA40] rounded" />
+                <label for="verified_cb" class="text-xs text-slate-300">
+                  {{ locale.t('admin.verified_label') }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-2 border-t border-white/10 pt-3">
+            <button
+              (click)="openAddPostModal = false"
+              class="btn-secondary text-xs py-1.5 px-3">
+              {{ locale.t('admin.cancel') }}
+            </button>
+            <button
+              *ngIf="activeAddPostTab === 'custom'"
+              (click)="submitCustomPost()"
+              [disabled]="!customPost.content.trim()"
+              class="btn-primary text-xs py-1.5 px-4 bg-[#84AA40] hover:bg-[#739636] text-black font-bold">
+              {{ locale.t('admin.inject_btn') }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL: TRIGGER EMERGENCY CRISIS INJECT -->
+      <div *ngIf="openInjectModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+        <div class="glass-panel w-full max-w-lg p-6 space-y-4 border-red-500/30 shadow-2xl">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-red-400 flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{{ locale.t('admin.emergency_inject') }}</span>
+            </h3>
+            <button (click)="openInjectModal = false" class="text-slate-400 hover:text-white">✕</button>
+          </div>
+
           <p class="text-xs text-slate-300">
-            Broadcasting an official Government Security Centre (RCB) alert will pin a verified advisory across all feeds and immediately increase platform trust by +8-10%.
+            Broadcasting an official Government Security Centre (RCB) advisory immediately dampens viral virality across all demographics by 40% and restores institutional trust.
           </p>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-1">Custom Advisory Statement (Optional)</label>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+              Custom Advisory Text (Leave blank to use pre-configured official advisory)
+            </label>
             <textarea
               [(ngModel)]="injectCustomText"
-              rows="3"
-              placeholder="Leave empty to use official pre-validated RCB advisory..."
-              class="input-field text-xs font-mono">
-            </textarea>
+              rows="4"
+              placeholder="Official advisory statement..."
+              class="input-field text-sm"></textarea>
           </div>
 
-          <div class="flex justify-end gap-2 pt-2">
-            <button (click)="openInjectModal = false" class="btn-secondary text-xs">
-              Cancel
+          <div class="flex justify-end gap-2">
+            <button
+              (click)="openInjectModal = false"
+              class="btn-secondary text-xs py-1.5 px-3">
+              {{ locale.t('admin.cancel') }}
             </button>
-            <button (click)="submitInject()" class="btn-adversary text-xs">
-              Broadcast Crisis Alert
+            <button
+              (click)="submitInject()"
+              class="btn-adversary text-xs py-1.5 px-4">
+              Broadcast Emergency Advisory
             </button>
           </div>
         </div>
@@ -286,23 +504,39 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
   `
 })
 export class AdminHudComponent implements OnInit, OnDestroy {
-  private route = inject(ActivatedRoute);
-  private api = inject(LabApiService);
-  public sync = inject(FirestoreSyncService);
-  private heartbeat = inject(HeartbeatService);
   public locale = inject(LocaleService);
+  private api = inject(LabApiService);
+  private sync = inject(FirestoreSyncService);
+  private heartbeat = inject(HeartbeatService);
+  private route = inject(ActivatedRoute);
 
   public sessionId = '';
-  public session = this.sync.session;
   public UserRole = UserRole;
   public SessionStatus = SessionStatus;
 
+  public session = this.sync.session;
   public presenceList = signal<any[]>([]);
   public telemetryData = signal<any>(null);
   public generatedInviteUrl = '';
   public copied = false;
   public openInjectModal = false;
   public injectCustomText = '';
+
+  // Add / Inject Post state
+  public openAddPostModal = false;
+  public activeAddPostTab: 'quick' | 'custom' = 'quick';
+  public scenarioArticles = signal<any[]>([]);
+  public customPost = {
+    headline: '',
+    content: '',
+    author_name: 'Alert Informacyjny PL',
+    author_handle: '@AlertInfoPL',
+    media_url: '',
+    outrage_score: 0.70,
+    bias_score: 0.0,
+    is_verified: false,
+    target_cluster: ''
+  };
 
   private adminPollTimer: any = null;
 
@@ -332,6 +566,15 @@ export class AdminHudComponent implements OnInit, OnDestroy {
       this.telemetryData.set(tel);
     } catch (e) {
       console.warn('Could not load admin HUD telemetry:', e);
+    }
+  }
+
+  async loadScenarioArticles() {
+    try {
+      const arts = await this.api.getScenarioArticles(this.sessionId);
+      this.scenarioArticles.set(arts || []);
+    } catch (e) {
+      console.warn('Could not load scenario articles:', e);
     }
   }
 
@@ -381,6 +624,49 @@ export class AdminHudComponent implements OnInit, OnDestroy {
     this.injectCustomText = '';
     this.sync.fetchData(this.sessionId);
     this.loadAdminData();
+  }
+
+  async injectScenarioArticle(art: any) {
+    try {
+      await this.api.createAdminPost(this.sessionId, {
+        headline: art.headline,
+        content: art.body_text,
+        author_name: art.author_name,
+        author_handle: art.author_handle,
+        media_url: art.media_url,
+        outrage_score: art.outrage_score,
+        bias_score: art.bias_score,
+        target_cluster: art.target_cluster,
+        is_verified: false
+      });
+      this.openAddPostModal = false;
+      this.sync.fetchData(this.sessionId);
+    } catch (e: any) {
+      alert('Error injecting post: ' + (e.message || e));
+    }
+  }
+
+  async submitCustomPost() {
+    if (!this.customPost.content.trim()) return;
+    try {
+      await this.api.createAdminPost(this.sessionId, {
+        headline: this.customPost.headline.trim() || undefined,
+        content: this.customPost.content.trim(),
+        author_name: this.customPost.author_name.trim() || 'Centrum Informacji',
+        author_handle: this.customPost.author_handle.trim() || '@CentrumInfo',
+        media_url: this.customPost.media_url.trim() || undefined,
+        outrage_score: Number(this.customPost.outrage_score),
+        bias_score: Number(this.customPost.bias_score),
+        is_verified: Boolean(this.customPost.is_verified),
+        target_cluster: this.customPost.target_cluster || undefined
+      });
+      this.openAddPostModal = false;
+      this.customPost.headline = '';
+      this.customPost.content = '';
+      this.sync.fetchData(this.sessionId);
+    } catch (e: any) {
+      alert('Error publishing custom post: ' + (e.message || e));
+    }
   }
 
   async generateInvite(role: UserRole) {

@@ -117,3 +117,20 @@ export interface Session {
   players: Record<string, PlayerPresence>;
   history_metrics: any[];
 }
+
+export interface PlayerAction {
+  id: string;
+  session_id: string;
+  user_id: string;
+  team: UserRole;
+  action_type: ActionType;
+  target_post_id?: string;
+  target_cluster?: string;
+  headline?: string;
+  content?: string;
+  resource_cost?: number;
+  tick?: number;
+  timestamp?: number;
+  is_processed?: boolean;
+}
+

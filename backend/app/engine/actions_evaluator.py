@@ -36,6 +36,8 @@ class ActionsEvaluator:
             if action.action_type == ActionType.DEPLOY_BOT_SWARM:
                 # Find target post
                 target = next((item for item in updated_feed if item.id == action.target_post_id), None)
+                if not target and updated_feed:
+                    target = updated_feed[0]
                 if target:
                     target.is_amplified = True
                     target.virality_velocity = 2.5
@@ -98,6 +100,8 @@ class ActionsEvaluator:
 
             elif action.action_type == ActionType.ASTROTURF_COMMENTS:
                 target = next((item for item in updated_feed if item.id == action.target_post_id), None)
+                if not target and updated_feed:
+                    target = updated_feed[0]
                 if target:
                     bot_comments = adk_service.generate_bot_comments(
                         headline=target.headline or target.content[:50],
@@ -130,6 +134,8 @@ class ActionsEvaluator:
 
             elif action.action_type == ActionType.EVIDENCE_DEBUNK:
                 target = next((item for item in updated_feed if item.id == action.target_post_id), None)
+                if not target and updated_feed:
+                    target = updated_feed[0]
                 if target:
                     target.is_debunked = True
                     target.debunk_friction = 0.70

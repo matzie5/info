@@ -36,24 +36,21 @@ class SimulationOrchestrator:
     def _init_starter_feed_if_empty(self):
         items = self.fs.get_feed_items(self.session_id)
         if not items:
-            # Seed initial scenario post
-            initial_post = FeedItem(
-                id=f"post_{uuid.uuid4().hex[:6]}",
-                session_id=self.session_id,
-                author_name="Alert Informacyjny PL",
-                author_handle="@AlertInfoPL",
-                author_avatar="https://storage.googleapis.com/infosphere-lab-assets/avatars/news_alert.png",
-                is_verified=False,
-                headline="Niepotwierdzone doniesienia o zakłóceniach w stacji przesyłowej Kozienice",
-                content="Mieszkańcy okolicznych powiatów donoszą o spadkach napięcia w godzinach wieczornych. Służby techniczne badają sprawę.",
-                created_at_tick=0,
-                outrage_score=0.65,
-                bias_score=0.40,
-                virality_velocity=1.0,
-                shares_count=12,
-                likes_count=35
-            )
+            session = self.fs.get_session(self.session_id)
+            lang = session.language if session else "pl"
+            scen = session.scenario_id if session else "poland-grid-panic-2026"
+            from app.ai.seed_library import SeedLibrary
+            initial_post = SeedLibrary.get_scenario_starter_post(scen, lang, self.session_id)
             self.fs.save_feed_item(self.session_id, initial_post)
+
+    def check_inactivity_timeout(self, session: Session) -> bool:
+        """
+        Returns True if the session has registered players and all have stopped heartbeating (>60s).
+        Returns False if no players have registered yet (facilitator solo mode).
+        """
+        if not session.players or len(session.players) == 0:
+            return False
+        return not self.fs.has_active_players(session.id, threshold_seconds=60)
 
     def queue_action(self, action: PlayerAction):
         self._pending_actions.append(action)
@@ -79,23 +76,30 @@ class SimulationOrchestrator:
         # 5. Fetch any pending actions recorded in Firestore
         tick_actions = self.fs.get_actions(session.id, tick=session.current_tick - 1)
         tick_actions.extend(self._pending_actions)
-        # Deduplicate actions
+        # Deduplicate actions and ignore already processed
         seen_ids = set()
         unique_actions = []
         for a in tick_actions:
             if a.id not in seen_ids:
                 seen_ids.add(a.id)
-                unique_actions.append(a)
+                if not getattr(a, "is_processed", False):
+                    unique_actions.append(a)
         self._pending_actions.clear()
 
-        # 6. Apply actions to feed and network
-        updated_feed = ActionsEvaluator.process_actions(
-            session=session,
-            network=self.network,
-            feed_items=feed_items,
-            pending_actions=unique_actions,
-            token_governor=self.token_governor
-        )
+        # 6. Apply actions to feed and network if any pending
+        if unique_actions:
+            updated_feed = ActionsEvaluator.process_actions(
+                session=session,
+                network=self.network,
+                feed_items=feed_items,
+                pending_actions=unique_actions,
+                token_governor=self.token_governor
+            )
+            for a in unique_actions:
+                a.is_processed = True
+                self.fs.record_action(session.id, a)
+        else:
+            updated_feed = feed_items
 
         # 7. Propagate feed diffusion through audience graph
         new_shares = self.network.propagate_tick(updated_feed)

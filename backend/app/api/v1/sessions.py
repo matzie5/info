@@ -1,4 +1,5 @@
 import uuid
+import asyncio
 from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -34,10 +35,12 @@ def get_session(session_id: str):
     session = fs.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    if session.status == SessionStatus.ACTIVE:
+        _ensure_tick_running(session_id, interval=session.time_per_tick_seconds)
     return session
 
 @router.post("/{session_id}/start", response_model=Session)
-def start_session(session_id: str):
+async def start_session(session_id: str):
     fs = FirestoreService.get_instance()
     session = fs.get_session(session_id)
     if not session:
@@ -48,42 +51,30 @@ def start_session(session_id: str):
 
     # Initialize initial breaking news seed post if feed is empty
     if len(fs.get_feed_items(session_id)) == 0:
-        import uuid
         from app.ai.seed_library import SeedLibrary
-        from app.models.feed import FeedItem
-        seed_art = SeedLibrary.get_article(language=session.language)
-        init_item = FeedItem(
-            id=f"feed-{uuid.uuid4().hex[:8]}",
-            session_id=session_id,
-            author_name=seed_art.author_name,
-            author_handle=seed_art.author_handle,
-            author_avatar="",
-            is_verified=True,
-            headline=seed_art.headline,
-            content=seed_art.body_text,
-            media_url=seed_art.media_url,
-            outrage_score=seed_art.outrage_score,
-            virality_velocity=1.2,
-            targeted_clusters=[seed_art.target_cluster] if seed_art.target_cluster else []
+        init_item = SeedLibrary.get_scenario_starter_post(
+            session.scenario_id, session.language, session_id
         )
         fs.save_feed_item(session_id, init_item)
 
     # Trigger first tick immediately
     cloud_tasks_service.enqueue_tick(session_id, delay_seconds=0)
+    _ensure_tick_running(session_id, interval=session.time_per_tick_seconds)
     return session
 
 @router.post("/{session_id}/pause", response_model=Session)
-def pause_session(session_id: str):
+async def pause_session(session_id: str):
     fs = FirestoreService.get_instance()
     session = fs.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
     session.status = SessionStatus.PAUSED
+    _cancel_tick_running(session_id)
     return fs.save_session(session)
 
 @router.post("/{session_id}/resume", response_model=Session)
-def resume_session(session_id: str):
+async def resume_session(session_id: str):
     fs = FirestoreService.get_instance()
     session = fs.get_session(session_id)
     if not session:
@@ -92,4 +83,58 @@ def resume_session(session_id: str):
     session.status = SessionStatus.ACTIVE
     fs.save_session(session)
     cloud_tasks_service.enqueue_tick(session_id, delay_seconds=0)
+    _ensure_tick_running(session_id, interval=session.time_per_tick_seconds)
     return session
+
+
+_active_tick_tasks = {}
+
+async def _local_simulation_loop(session_id: str, interval: int = 10):
+    import logging
+    logger = logging.getLogger("infosphere.clock")
+    fs = FirestoreService.get_instance()
+    from app.engine.simulation_orchestrator import SimulationOrchestrator
+    logger.info("Starting local 10s tick loop for session %s (interval=%ds)", session_id, interval)
+    try:
+        while True:
+            await asyncio.sleep(interval)
+            sess = fs.get_session(session_id)
+            if not sess or sess.status != SessionStatus.ACTIVE:
+                logger.info("Ending tick loop for session %s (status=%s)", session_id, getattr(sess, 'status', None))
+                break
+            orchestrator = SimulationOrchestrator.get_instance(session_id)
+            if orchestrator.check_inactivity_timeout(sess):
+                logger.info("Session %s paused due to player inactivity (>60s)", session_id)
+                sess.status = SessionStatus.PAUSED
+                fs.save_session(sess)
+                break
+            updated_sess = orchestrator.step_tick(sess)
+            fs.save_session(updated_sess)
+            logger.info("Auto-tick advanced to T+%d for session %s", updated_sess.current_tick, session_id)
+            if updated_sess.status == SessionStatus.COMPLETED:
+                logger.info("Session %s reached terminal condition", session_id)
+                break
+    except asyncio.CancelledError:
+        logger.info("Local tick loop cancelled for session %s", session_id)
+    except Exception as e:
+        logger.error("Error in local tick loop for %s: %s", session_id, e, exc_info=True)
+    finally:
+        _active_tick_tasks.pop(session_id, None)
+
+def _ensure_tick_running(session_id: str, interval: int = 10):
+    from app.config import settings
+    if not settings.SERVICE_URL:
+        existing = _active_tick_tasks.get(session_id)
+        if not existing or existing.done():
+            try:
+                loop = asyncio.get_running_loop()
+                task = loop.create_task(_local_simulation_loop(session_id, interval))
+                _active_tick_tasks[session_id] = task
+            except RuntimeError:
+                pass
+
+def _cancel_tick_running(session_id: str):
+    task = _active_tick_tasks.pop(session_id, None)
+    if task and not task.done():
+        task.cancel()
+

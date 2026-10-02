@@ -11,6 +11,10 @@ from app.engine.simulation_orchestrator import SimulationOrchestrator
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+import uuid
+from app.models.feed import FeedItem
+from app.ai.seed_library import SeedLibrary
+
 class EmergencyInjectRequest(BaseModel):
     statement: Optional[str] = None
     institution: Optional[str] = None
@@ -20,6 +24,95 @@ class EmergencyInjectRequest(BaseModel):
 class RebalanceUserRequest(BaseModel):
     user_id: str
     new_role: UserRole
+
+
+class AdminCreatePostRequest(BaseModel):
+    headline: Optional[str] = None
+    content: str
+    author_name: Optional[str] = "Centrum Informacji"
+    author_handle: Optional[str] = "@CentrumInfo"
+    author_avatar: Optional[str] = ""
+    media_url: Optional[str] = None
+    is_verified: Optional[bool] = False
+    outrage_score: Optional[float] = 0.5
+    bias_score: Optional[float] = 0.0
+    virality_velocity: Optional[float] = 1.0
+    target_cluster: Optional[str] = None
+
+
+@router.get("/scenarios")
+def list_scenarios():
+    """Returns all pre-configured simulation scenarios."""
+    return SeedLibrary.get_scenarios()
+
+
+@router.get("/sessions/{session_id}/scenario-articles")
+def get_scenario_articles(session_id: str):
+    """Returns curated inject articles for the current session's scenario and language."""
+    fs = FirestoreService.get_instance()
+    session = fs.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    articles = SeedLibrary.get_scenario_articles(session.scenario_id, session.language)
+    return articles
+
+
+@router.post("/sessions/{session_id}/posts", response_model=FeedItem)
+def create_admin_post(session_id: str, req: AdminCreatePostRequest):
+    """Allows facilitator to inject a new scenario event / breaking post into the live feed."""
+    fs = FirestoreService.get_instance()
+    session = fs.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    post_id = f"post_admin_{uuid.uuid4().hex[:6]}"
+    feed_item = FeedItem(
+        id=post_id,
+        session_id=session_id,
+        author_name=req.author_name or "Centrum Informacji",
+        author_handle=req.author_handle or "@CentrumInfo",
+        author_avatar=req.author_avatar or "",
+        is_verified=bool(req.is_verified),
+        headline=req.headline,
+        content=req.content,
+        media_url=req.media_url,
+        created_at_tick=session.current_tick,
+        timestamp=time.time(),
+        outrage_score=float(req.outrage_score if req.outrage_score is not None else 0.5),
+        bias_score=float(req.bias_score if req.bias_score is not None else 0.0),
+        virality_velocity=float(req.virality_velocity if req.virality_velocity is not None else 1.0),
+        shares_count=5,
+        likes_count=15,
+        targeted_clusters=[req.target_cluster] if req.target_cluster else []
+    )
+    fs.save_feed_item(session_id, feed_item)
+
+    # Record facilitator action
+    cluster_val = None
+    if req.target_cluster:
+        try:
+            cluster_val = DemographicCluster(req.target_cluster)
+        except Exception:
+            cluster_val = None
+
+    action = PlayerAction(
+        id=f"act-admin-{uuid.uuid4().hex[:6]}",
+        session_id=session_id,
+        user_id="facilitator_admin",
+        team=UserRole.FACILITATOR,
+        action_type=ActionType.CRISIS_INJECT,
+        headline=req.headline,
+        content=req.content,
+        target_post_id=post_id,
+        target_cluster=cluster_val,
+        resource_cost=0.0,
+        tick=session.current_tick,
+        is_processed=True
+    )
+    fs.record_action(session_id, action)
+
+    return feed_item
+
 
 
 @router.get("/sessions/{session_id}/presence")

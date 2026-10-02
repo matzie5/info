@@ -22,6 +22,12 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
           <span class="badge badge-red font-mono">ADVERSARY</span>
         </div>
 
+        <!-- Status Toast Banner -->
+        <div *ngIf="statusNotice" class="mb-3 p-2.5 rounded-lg bg-red-950/80 border border-red-500/60 text-xs text-red-200 font-mono flex items-center gap-2">
+          <span class="text-sm">🤖</span>
+          <span>{{ statusNotice }}</span>
+        </div>
+
         <!-- Adversary Capital Meter -->
         <div class="mt-3">
           <div class="flex justify-between text-xs font-mono mb-1">
@@ -51,14 +57,14 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
 
         <div class="flex gap-2 pt-1">
           <select [(ngModel)]="swarmPostId" class="input-field text-xs py-1.5 flex-1">
-            <option value="">Select Target Post...</option>
+            <option value="">Select Target Post (or defaults to latest)...</option>
             <option *ngFor="let post of posts" [value]="post.id">
               {{ post.headline || post.content.substring(0, 35) }}...
             </option>
           </select>
           <button
             (click)="executeSwarm()"
-            [disabled]="isBusy() || (budgets?.red_team_capital || 0) < 25 || !swarmPostId"
+            [disabled]="isBusy() || (budgets?.red_team_capital || 0) < 25 || (!swarmPostId && posts.length === 0)"
             class="btn-adversary text-xs py-1.5 px-3">
             Deploy
           </button>
@@ -118,15 +124,16 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
             </option>
           </select>
           <select [(ngModel)]="microtargetCluster" class="input-field text-xs py-1.5">
-            <option [value]="DemographicCluster.HYPER_PARTISAN_A">Partisan A</option>
-            <option [value]="DemographicCluster.HYPER_PARTISAN_B">Partisan B</option>
+            <option [value]="DemographicCluster.HYPER_PARTISAN_A">Hyper-Partisan A</option>
+            <option [value]="DemographicCluster.HYPER_PARTISAN_B">Hyper-Partisan B</option>
             <option [value]="DemographicCluster.INSTITUTIONAL_SKEPTICS">Skeptics</option>
             <option [value]="DemographicCluster.SUSCEPTIBLE_NEUTRALS">Neutrals</option>
+            <option [value]="DemographicCluster.APOLITICAL_YOUTH">Youth</option>
           </select>
         </div>
         <button
           (click)="executeMicrotarget()"
-          [disabled]="isBusy() || (budgets?.red_team_capital || 0) < 20 || !targetPostId"
+          [disabled]="isBusy() || (budgets?.red_team_capital || 0) < 20 || (!targetPostId && posts.length === 0)"
           class="btn-adversary w-full text-xs py-1.5 justify-center">
           Execute Microtarget
         </button>
@@ -145,14 +152,14 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
 
         <div class="flex gap-2 pt-1">
           <select [(ngModel)]="astroturfPostId" class="input-field text-xs py-1.5 flex-1">
-            <option value="">Select Target Post...</option>
+            <option value="">Select Target Post (or defaults to latest)...</option>
             <option *ngFor="let post of posts" [value]="post.id">
               {{ post.headline || post.content.substring(0, 35) }}...
             </option>
           </select>
           <button
             (click)="executeAstroturf()"
-            [disabled]="isBusy() || (budgets?.red_team_capital || 0) < 15 || !astroturfPostId"
+            [disabled]="isBusy() || (budgets?.red_team_capital || 0) < 15 || (!astroturfPostId && posts.length === 0)"
             class="btn-adversary text-xs py-1.5 px-3">
             Flood
           </button>
@@ -175,14 +182,19 @@ export class RedConsoleComponent {
   public targetPostId = '';
   public microtargetCluster: DemographicCluster = DemographicCluster.HYPER_PARTISAN_A;
   public astroturfPostId = '';
+  public statusNotice = '';
 
   constructor(public locale: LocaleService) {}
 
   executeSwarm() {
+    const target = this.swarmPostId || (this.posts.length > 0 ? this.posts[0].id : '');
+    if (!target) return;
     this.actionDispatched.emit({
       actionType: ActionType.DEPLOY_BOT_SWARM,
-      targetPostId: this.swarmPostId
+      targetPostId: target
     });
+    this.statusNotice = 'Bot swarm deployed! Engagement accelerated (+120 likes, +45 shares, 3 bot comments).';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 
   executeDeepfake() {
@@ -192,20 +204,30 @@ export class RedConsoleComponent {
       targetCluster: this.deepfakeCluster
     });
     this.deepfakePrompt = '';
+    this.statusNotice = 'Deepfake article synthesized and injected into feed.';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 
   executeMicrotarget() {
+    const target = this.targetPostId || (this.posts.length > 0 ? this.posts[0].id : '');
+    if (!target) return;
     this.actionDispatched.emit({
       actionType: ActionType.MICROTARGET_CLUSTER,
-      targetPostId: this.targetPostId,
+      targetPostId: target,
       targetCluster: this.microtargetCluster
     });
+    this.statusNotice = 'Cluster microtargeting initiated.';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 
   executeAstroturf() {
+    const target = this.astroturfPostId || (this.posts.length > 0 ? this.posts[0].id : '');
+    if (!target) return;
     this.actionDispatched.emit({
       actionType: ActionType.ASTROTURF_COMMENTS,
-      targetPostId: this.astroturfPostId
+      targetPostId: target
     });
+    this.statusNotice = 'Astroturf comment storm injected (+4 bot replies).';
+    setTimeout(() => this.statusNotice = '', 8000);
   }
 }

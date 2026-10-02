@@ -31,13 +31,13 @@ export class LabApiService {
     }
   }
 
-  async createSession(title: string, language: string = 'pl', maxTicks: number = 40): Promise<Session> {
+  async createSession(title: string, scenarioId: string = 'poland-grid-panic-2026', language: string = 'pl', maxTicks: number = 40): Promise<Session> {
     const res = await this.fetchApi('/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         title,
-        scenario_id: 'poland-grid-panic-2026',
+        scenario_id: scenarioId,
         language,
         max_ticks: maxTicks
       })
@@ -157,7 +157,50 @@ export class LabApiService {
     return res.ok;
   }
 
+  async getActions(sessionId: string): Promise<any[]> {
+    const res = await this.fetchApi(`/sessions/${sessionId}/actions`);
+    if (!res.ok) throw new Error(`Get actions failed: ${res.statusText}`);
+    return res.json();
+  }
+
   // Facilitator Master HUD Admin calls
+  async getScenarios(): Promise<any[]> {
+    const res = await this.fetchApi('/admin/scenarios');
+    if (!res.ok) throw new Error(`Get scenarios failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async getScenarioArticles(sessionId: string): Promise<any[]> {
+    const res = await this.fetchApi(`/admin/sessions/${sessionId}/scenario-articles`);
+    if (!res.ok) throw new Error(`Get scenario articles failed: ${res.statusText}`);
+    return res.json();
+  }
+
+  async createAdminPost(sessionId: string, postData: {
+    headline?: string;
+    content: string;
+    author_name?: string;
+    author_handle?: string;
+    author_avatar?: string;
+    media_url?: string;
+    is_verified?: boolean;
+    outrage_score?: number;
+    bias_score?: number;
+    virality_velocity?: number;
+    target_cluster?: string;
+  }): Promise<FeedItem> {
+    const res = await this.fetchApi(`/admin/sessions/${sessionId}/posts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || `Create post failed: ${res.statusText}`);
+    }
+    return res.json();
+  }
+
   async adminForceTick(sessionId: string): Promise<any> {
     const res = await this.fetchApi(`/admin/sessions/${sessionId}/force-tick`, { method: 'POST' });
     if (!res.ok) throw new Error(`Force tick failed: ${res.statusText}`);
@@ -186,3 +229,4 @@ export class LabApiService {
     return res.json();
   }
 }
+
