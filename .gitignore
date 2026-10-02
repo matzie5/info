@@ -1,0 +1,132 @@
+# ==============================================================================
+# Global Repository .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Operating System & Archive Files
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+__MACOSX/
+
+# ------------------------------------------------------------------------------
+# IDEs and Editors
+# ------------------------------------------------------------------------------
+.idea/
+.history/
+*.sublime-project
+*.sublime-workspace
+
+# ------------------------------------------------------------------------------
+# Python / Backend
+# ------------------------------------------------------------------------------
+# Bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.env
+.env.*
+!.env.example
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+.cache
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ------------------------------------------------------------------------------
+# Node.js / Angular Frontend
+# ------------------------------------------------------------------------------
+node_modules/
+/frontend/dist/
+dist/
+/.angular/cache/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# ------------------------------------------------------------------------------
+# Terraform / OpenTofu
+# ------------------------------------------------------------------------------
+# Local provider/module cache directory
+**/.terraform/*
+.terraform/
+
+# State files and backups
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Sensitive variable definitions
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Plan files
+*.tfplan*
+
+# CLI configurations and logs
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+
+# Keep Terraform lock file tracked
+!**/.terraform.lock.hcl

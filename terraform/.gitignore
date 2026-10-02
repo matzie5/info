@@ -1,0 +1,33 @@
+# Local .terraform directories and cached provider binaries
+.terraform/
+
+# State files and backups
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Sensitive variables
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Plan files
+*.tfplan*
+
+# Logs and config
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+
+# OS files
+.DS_Store
+
+# Keep lock file tracked
+!*.lock.hcl
