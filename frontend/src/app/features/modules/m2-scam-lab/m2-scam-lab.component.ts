@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 export interface ScamTurn {
   role: 'operative' | 'defender';
@@ -51,10 +52,12 @@ export interface TurnResponse {
   coach_evaluation: ScamCoachEvaluation;
 }
 
+import { RouterModule } from '@angular/router';
+
 @Component({
   selector: 'app-m2-scam-lab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 p-6 flex flex-col gap-6 transition-colors duration-200">
       <!-- Header Banner -->
@@ -289,6 +292,12 @@ export interface TurnResponse {
               </span>
             </div>
 
+            <!-- Points Awarded Gamification Banner -->
+            <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
+              <span>🏆 Drill Passed! +150 Points awarded to your dashboard.</span>
+              <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
+            </div>
+
             <!-- Score Visualizer -->
             <div class="flex flex-col gap-1.5">
               <div class="flex items-center justify-between text-xs font-mono">
@@ -408,6 +417,7 @@ export interface TurnResponse {
 })
 export class M2ScamLabComponent implements OnInit {
   private http = inject(HttpClient);
+  public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
 
@@ -420,6 +430,7 @@ export class M2ScamLabComponent implements OnInit {
   latestTactics = signal<string[]>([]);
   latestScore = signal<number>(50.0);
   isLoading = signal<boolean>(false);
+  pointsAwarded = signal<boolean>(false);
 
   userMessageText = '';
   activeTools = {
@@ -442,8 +453,9 @@ export class M2ScamLabComponent implements OnInit {
 
   startNewDrill(): void {
     this.isLoading.set(true);
+    this.pointsAwarded.set(false);
     const body = {
-      user_id: 'demo_user',
+      user_id: this.auth.currentUser()?.id || 'demo_user',
       scenario_id: this.selectedScenario(),
       operative_model: this.selectedModel()
     };
@@ -463,7 +475,7 @@ export class M2ScamLabComponent implements OnInit {
         // Fallback demo state if backend not immediately reachable
         this.session.set({
           drill_id: 'scam-mock-01',
-          user_id: 'demo_user',
+          user_id: this.auth.currentUser()?.id || 'demo_user',
           scenario_id: this.selectedScenario(),
           operative_model: this.selectedModel(),
           provider_type: this.selectedModel().startsWith('deepseek') ? 'deepseek_api_key_litellm' : 'vertex_ai_keyless_adc',
@@ -506,6 +518,18 @@ export class M2ScamLabComponent implements OnInit {
         this.latestTactics.set(res.operative_reply.manipulation_tactics_used || []);
         this.userMessageText = '';
         this.isLoading.set(false);
+
+        const user = this.auth.currentUser();
+        if (user && res.coach_evaluation.resilience_score >= 70) {
+          this.http.post(`/api/v1/users/${user.id}/modules/m2_scam_lab/complete`, {
+            module_id: 'm2_scam_lab',
+            score: res.coach_evaluation.resilience_score,
+            takeaway: res.coach_evaluation.coach_feedback.slice(0, 100)
+          }).subscribe({
+            next: () => this.pointsAwarded.set(true),
+            error: () => {}
+          });
+        }
       },
       error: (err) => {
         console.error('Failed to submit turn:', err);

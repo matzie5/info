@@ -10,6 +10,9 @@ from app.api.v1.invites import router as invites_router
 from app.api.v1.actions import router as actions_router
 from app.api.v1.simulation import router as simulation_router
 from app.api.v1.admin import router as admin_router
+from app.api.v1.auth import router as auth_router
+from app.api.v1.cohorts import router as cohorts_router
+from app.api.v1.progress import router as progress_router
 
 from app.platform.plugin_registry import platform_registry
 from app.platform.passport_service import passport_service, DigitalHygienePassport
@@ -119,7 +122,12 @@ app.include_router(actions_router, prefix="/api/v1")
 app.include_router(simulation_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
 
-# 2. Mount All 5 Modular Platform Routers under /api/v1/modules/{m1-disinfo..m5-echo}
+# 2. Mount Authentication, Cohorts, and Progress Routers
+app.include_router(auth_router, prefix="/api/v1")
+app.include_router(cohorts_router, prefix="/api/v1")
+app.include_router(progress_router, prefix="/api/v1")
+
+# 3. Mount All 5 Modular Platform Routers under /api/v1/modules/{m1-disinfo..m5-echo}
 platform_registry.mount_all_routers(app, base_prefix="/api/v1/modules")
 
 

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { RouterModule } from '@angular/router';
 
 export interface MediaArtifactSample {
   sample_id: string;
@@ -32,7 +34,7 @@ export interface DeepfakeForensicReport {
 @Component({
   selector: 'app-m3-deepfake-lab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 p-6 flex flex-col gap-6 transition-colors duration-200">
       <!-- Header Banner -->
@@ -235,6 +237,12 @@ export interface DeepfakeForensicReport {
             </div>
 
             <div *ngIf="report() && !isInspecting()" class="flex flex-col gap-4">
+              <!-- Points Awarded Gamification Banner -->
+              <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
+                <span>🏆 Deepfake Analysis Succeeded! +150 Points awarded to your dashboard.</span>
+                <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
+              </div>
+
               <!-- Verdict & Provenance Badges Row -->
               <div class="grid grid-cols-2 gap-3">
                 <!-- C2PA Badge -->
@@ -348,6 +356,7 @@ export interface DeepfakeForensicReport {
 })
 export class M3DeepfakeLabComponent implements OnInit {
   private http = inject(HttpClient);
+  public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
 
@@ -358,6 +367,7 @@ export class M3DeepfakeLabComponent implements OnInit {
   isInspecting = signal<boolean>(false);
   report = signal<DeepfakeForensicReport | null>(null);
   accuracyScore = signal<number>(75.0);
+  pointsAwarded = signal<boolean>(false);
 
   availableMarkers = [
     'Asymmetric corneal specular reflection between left/right pupils',
@@ -451,8 +461,9 @@ export class M3DeepfakeLabComponent implements OnInit {
     if (!sample) return;
 
     this.isInspecting.set(true);
+    this.pointsAwarded.set(false);
     const body = {
-      user_id: 'demo_user',
+      user_id: this.auth.currentUser()?.id || 'demo_user',
       sample_id: sample.sample_id,
       user_verdict_is_synthetic: this.userVerdict(),
       user_spotted_markers: this.selectedMarkers()
@@ -463,6 +474,18 @@ export class M3DeepfakeLabComponent implements OnInit {
         this.report.set(res);
         this.accuracyScore.set(res.user_accuracy_score);
         this.isInspecting.set(false);
+
+        const user = this.auth.currentUser();
+        if (user && res.user_accuracy_score >= 70) {
+          this.http.post(`/api/v1/users/${user.id}/modules/m3_deepfake_lab/complete`, {
+            module_id: 'm3_deepfake_lab',
+            score: res.user_accuracy_score,
+            takeaway: 'Verified C2PA cryptographic manifests and acoustic SynthID watermarks.'
+          }).subscribe({
+            next: () => this.pointsAwarded.set(true),
+            error: () => {}
+          });
+        }
       },
       error: (err) => {
         console.error('Failed to run deepfake inspection:', err);
@@ -483,6 +506,18 @@ export class M3DeepfakeLabComponent implements OnInit {
           citations: ['C2PA-SPEC-2.1', 'NIST-SP-800-218']
         });
         this.isInspecting.set(false);
+
+        const user = this.auth.currentUser();
+        if (user && score >= 70) {
+          this.http.post(`/api/v1/users/${user.id}/modules/m3_deepfake_lab/complete`, {
+            module_id: 'm3_deepfake_lab',
+            score: score,
+            takeaway: 'Identified synthetic artifacts and verified C2PA provenance.'
+          }).subscribe({
+            next: () => this.pointsAwarded.set(true),
+            error: () => {}
+          });
+        }
       }
     });
   }

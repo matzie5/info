@@ -148,7 +148,7 @@ This implementation plan governs the end-to-end upgrade of Infosphere to the **5
 ## Phase 6: Automated Testing, Golden Evaluation & Documentation Synchronization
 
 - [x] **Task 6.1: Unit & Integration Test Execution**
-  - Executed 20 passing unit and integration tests covering ABM graph, bounded diffusion math, token governor, signed invites, and tick lifecycle.
+  - Executed 44 passing unit, integration, and golden eval tests covering ABM graph, bounded diffusion math, token governor, signed invites, and tick lifecycle.
 - [x] **Task 6.2: OpenAPI 3.1 Schema Export (`docs/openapi.json`)**
   - Exported complete OpenAPI 3.1 schema directly from the live FastAPI application:
     ```bash
@@ -160,18 +160,72 @@ This implementation plan governs the end-to-end upgrade of Infosphere to the **5
 
 ---
 
+## Phase 7: Architectural Redesign — Role Separation, Cohorts, Individual Logins & Gamification
+
+### 1. Identity & Role-Based Access Control (RBAC) Architecture
+- [ ] **Task 7.1: User Accounts & Authentication Engine (`backend/app/services/user_service.py`, `backend/app/api/v1/auth.py`)**
+  - Implement `User` model with salted password hashing, roles (`ADMIN` vs `PLAYER`), and cohort membership.
+  - Implement endpoints: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, and `GET /api/v1/auth/demo-users`.
+  - Issue cryptographically signed JWT tokens with claims (`sub`, `username`, `role`, `cohort_id`).
+  - Provide pre-seeded test accounts: `admin` (`ADMIN`), `player1` (`PLAYER`), `player2` (`PLAYER`).
+
+### 2. Cohort Play Configuration Architecture
+- [ ] **Task 7.2: Cohort Management Engine (`backend/app/services/cohort_service.py`, `backend/app/api/v1/cohorts.py`)**
+  - Implement `Cohort` model containing play configuration (`module_configs` for M1–M5), points rewards, pass thresholds, and enrolled player rosters.
+  - Implement Admin endpoints:
+    - `POST /api/v1/cohorts` (create cohort)
+    - `GET /api/v1/cohorts` (list cohorts with role-based filtering)
+    - `GET /api/v1/cohorts/{cohort_id}` (cohort details & play configuration)
+    - `PUT /api/v1/cohorts/{cohort_id}/config` (update module play configuration)
+    - `POST /api/v1/cohorts/{cohort_id}/members` (assign players to cohort)
+    - `GET /api/v1/cohorts/{cohort_id}/analytics` (aggregate cohort progress, completion percentages, average scores)
+    - `GET /api/v1/cohorts/{cohort_id}/leaderboard` (cohort leaderboard ranked by points)
+
+### 3. Points Collection & Progress Tracking (Gamification & Passport)
+- [ ] **Task 7.3: Points & Progress Tracking Engine (`backend/app/services/progress_service.py`, `backend/app/api/v1/progress.py`)**
+  - Implement `UserProgress` model tracking total points, completed modules, best scores, attempt counts, and earned cyber defense badges.
+  - Implement `POST /api/v1/users/{user_id}/modules/{module_id}/complete`:
+    - Evaluates exercise score against cohort configuration.
+    - Awards module points and unlocks badges (`SCAM_RESILIENT`, `SYNTHID_FORENSIC`, `DLP_GUARDIAN`, `ECHO_CHAMBER_BREAKER`, `DISINFO_DEFENDER`).
+    - Synchronizes directly with `DigitalHygienePassportService` to update the user's STIX 2.1 passport.
+  - Implement `GET /api/v1/users/{user_id}/progress` returning live player progress.
+
+### 4. Frontend Role Separation & User Dashboards
+- [ ] **Task 7.4: Angular Authentication & Role Service (`frontend/src/app/core/auth/auth.service.ts`)**
+  - Reactive `AuthService` managing `currentUser`, `isLoggedIn`, `isAdmin`, `isPlayer`, JWT token persistence, and HTTP Bearer token injection.
+  - Demo user switcher allowing seamless 1-click toggling between Admin and Player roles.
+- [ ] **Task 7.5: Player Progress Dashboard (`frontend/src/app/features/dashboard/player-dashboard.component.ts`)**
+  - Dedicated Player Dashboard route `/dashboard` displaying:
+    - Points accumulator & completion progress bar across all 5 modules.
+    - 5 Interactive Module Challenge cards with live status (✓ COMPLETED, IN PROGRESS, NOT STARTED), points earned, and direct launch actions.
+    - Cyber Defense Badges trophy gallery.
+    - Cohort Leaderboard preview.
+    - Digital Hygiene Passport posture summary with STIX 2.1 bundle export.
+- [ ] **Task 7.6: Admin Cohort Console (`frontend/src/app/features/admin/admin-cohorts.component.ts`)**
+  - Dedicated Admin Console route `/admin/cohorts` displaying:
+    - Cohort creator and selector.
+    - Play Configuration Editor: customize points, pass score thresholds, allowed AI models, and scenario parameters for each module for the cohort.
+    - Cohort Telemetry & Analytics: completion percentages per module, score distribution, and enrolled player roster.
+- [ ] **Task 7.7: Platform Shell & Module Role-Separation Integration**
+  - Update `PlatformShellComponent` header with user identity badge, role pill, points badge, and cohort indicator.
+  - Dynamic role-based navigation tabs:
+    - Player: `Dashboard`, `M1 Disinfo`, `M2 Scam`, `M3 Deepfake`, `M4 OSINT`, `M5 Echo`.
+    - Admin: `Cohort Console`, `Cohort Analytics`, `Modules Preview`.
+  - Add in-module point claiming feedback in M1–M5 allowing players to submit drills and collect points toward their cohort progress.
+
+---
+
 ## How to Verify the Implementation
 
 ```bash
-# 1. Verify static OpenAPI 3.1 specification artifact
-test -s docs/openapi.json && echo "docs/openapi.json is present and valid."
-
-# 2. Run backend pytest suite (100% offline pass)
+# 1. Verify backend pytest suite with new Auth, Cohort, and Progress tests
 PYTHONPATH=backend backend/.venv/bin/pytest backend/tests/ -v
 
-# 3. Verify Angular production build
+# 2. Verify Angular build & specs
 npm --prefix frontend run build
+npx --prefix frontend tsc --project frontend/tsconfig.spec.json --noEmit
 
-# 4. Verify all 5 Architecture Decision Records exist
-ls -la docs/adr/*.md
+# 3. Verify static OpenAPI 3.1 specification artifact includes new auth, cohort, and progress endpoints
+PYTHONPATH=backend backend/.venv/bin/python -c "import json; from app.main import app; open('docs/openapi.json', 'w').write(json.dumps(app.openapi(), indent=2))"
+test -s docs/openapi.json && grep -q "/api/v1/cohorts" docs/openapi.json && grep -q "/api/v1/auth" docs/openapi.json && echo "OpenAPI 3.1 schema valid."
 ```

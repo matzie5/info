@@ -367,6 +367,43 @@ The discrete simulation clock endpoint (`POST /api/v1/sessions/{id}/tick`) is pr
 Infrastructure is codified in Terraform ([`terraform/`](file:///home/admin_/info/terraform)):
 * `main.tf`: Enables required Google Cloud APIs, configures Cloud Run Gen2, Cloud Tasks, Cloud Firestore, Cloud Pub/Sub, Cloud Storage, and IAM roles.
 * `variables.tf` & `outputs.tf`: Parameterizes environment resources and exposes service URIs.
-* `environments/*.tfvars`: Separate configurations for `dev`, `staging`, and `prod`.
-
 Continuous delivery is automated via [`backend/cloudbuild.yaml`](file:///home/admin_/info/backend/cloudbuild.yaml), building multi-stage container images and deploying to Cloud Run with enforced IAM authentication.
+
+---
+
+## 12. Role Separation, Cohort Play Configuration & Gamified Progress Tracking
+
+### 12.1 Identity Architecture & Role Separation (Player vs Admin)
+The platform enforces strict separation of concerns between **Admins** (instructors, security directors, facilitators) and **Players** (trainees, analysts, operators):
+* **Admin Capabilities**:
+  * Create, configure, and monitor organizational cohorts.
+  * Define module parameters (target pass scores, points values, allowed LLM providers, and scenario templates) per cohort.
+  * Access real-time cohort analytics (completion rates, score distribution, risk identification).
+* **Player Capabilities**:
+  * Individual authenticated access via JWT credentials.
+  * Execute drills and simulations across M1–M5 according to their cohort's configuration.
+  * Accumulate points, unlock defense badges, and track progress via the dedicated Player Dashboard.
+  * Generate and export updated Digital Hygiene Passports (STIX 2.1).
+
+### 12.2 Cohort Play Configuration Engine
+Cohorts define organizational training scopes with customized play parameters:
+* **Cohort Schema**:
+  * `id`: Unique identifier (e.g., `cohort_cyber_defense_2026`).
+  * `name`: Descriptive cohort name.
+  * `module_configs`: Custom hyperparameters per module:
+    * `m1_disinfo`: Scenario ID, max simulation ticks, point allocation.
+    * `m2_scam_lab`: Allowed generative operative models, passing score threshold.
+    * `m3_deepfake_lab`: Forensic verification threshold and point allocation.
+    * `m4_osint_lab`: DLP hardening pass score and point allocation.
+    * `m5_algo_echo`: Target Shannon entropy, maximum echo-chamber radius, and point allocation.
+  * `assigned_user_ids`: Enrolled player accounts.
+
+### 12.3 Gamification, Points & Progress Tracking
+Learners earn points and unlock badges by completing module challenges:
+* **Completion & Scoring Pipeline**:
+  1. Learner finishes an interactive drill or exercise in M1, M2, M3, M4, or M5.
+  2. The exercise score is evaluated against the cohort's passing threshold.
+  3. Points are awarded and added to the player's total.
+  4. The module is marked completed, and earned badges (`SCAM_RESILIENT`, `SYNTHID_FORENSIC`, `DLP_GUARDIAN`, `ECHO_CHAMBER_BREAKER`, `DISINFO_DEFENDER`) are unlocked.
+  5. The result is synchronized with `DigitalHygienePassportService`, updating the learner's overall hygiene index and maturity tier.
+

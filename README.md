@@ -29,6 +29,7 @@
   - [Digital Hygiene Passport & STIX 2.1 Threat Intel Bundle](#digital-hygiene-passport--stix-21-threat-intel-bundle)
   - [Automated DLP Guardrail & Prompt-Injection Firewall](#automated-dlp-guardrail--prompt-injection-firewall)
   - [Scale-to-Zero Simulation Clock via Cloud Tasks](#scale-to-zero-simulation-clock-via-cloud-tasks)
+  - [Role Separation, Cohort Play Configuration & Gamified Dashboard](#role-separation-cohort-play-configuration--gamified-dashboard)
 - [5. Quantized Impact & Performance Benchmarks](#5-quantized-impact--performance-benchmarks)
 - [6. Architecture Decision Records (ADRs)](#6-architecture-decision-records-adrs)
 - [7. Repository Structure](#7-repository-structure)
@@ -260,6 +261,12 @@ Cloud Run instances with `cpu-throttling: true` freeze execution between incomin
 1. Advancing the simulation executes via `POST /api/v1/sessions/{id}/tick`.
 2. Cloud Tasks invokes the endpoint every 10 seconds authenticated via Google Cloud OIDC tokens (`verify_oidc_tick_token`).
 3. If no active player heartbeats arrive within 60 seconds, the session auto-pauses (`status = "PAUSED"`), halting further task scheduling and allowing Cloud Run to scale to zero instances.
+
+### Role Separation, Cohort Play Configuration & Gamified Dashboard
+To support structured enterprise deployments and classroom training, the platform separates Player and Admin roles:
+* **Individual Authenticated Logins**: Cryptographically signed JWT tokens for individual accounts (`ADMIN` or `PLAYER`).
+* **Admin Cohort Play Configuration**: Administrators configure module parameters (pass scores, point values, allowed models, scenario templates) for designated user cohorts.
+* **Gamified Player Dashboard**: Players accumulate points by completing module drills, unlock cybersecurity badges (`SCAM_RESILIENT`, `SYNTHID_FORENSIC`, `DLP_GUARDIAN`, `ECHO_CHAMBER_BREAKER`, `DISINFO_DEFENDER`), view cohort leaderboard standings, and monitor their Digital Hygiene Passport maturity tier.
 
 ---
 

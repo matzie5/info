@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { RouterModule } from '@angular/router';
 
 export interface CandidateFeedPost {
   post_id: string;
@@ -27,7 +29,7 @@ export interface RecommenderSimulationResult {
 @Component({
   selector: 'app-m5-echo-lab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 p-6 flex flex-col gap-6 transition-colors duration-200">
       <!-- Header Banner -->
@@ -205,6 +207,12 @@ export interface RecommenderSimulationResult {
               </span>
             </div>
 
+            <!-- Points Awarded Gamification Banner -->
+            <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
+              <span>🏆 Algorithm Balanced! +150 Points awarded to your dashboard.</span>
+              <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
+            </div>
+
             <!-- Telemetry Metrics Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <!-- Shannon Viewpoint Entropy -->
@@ -340,6 +348,7 @@ export interface RecommenderSimulationResult {
 })
 export class M5EchoLabComponent implements OnInit {
   private http = inject(HttpClient);
+  public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
 
@@ -355,6 +364,7 @@ export class M5EchoLabComponent implements OnInit {
   autonomyScore = signal<number>(45.0);
   coachExplanation = signal<string>('');
   isSimulating = signal<boolean>(false);
+  pointsAwarded = signal<boolean>(false);
 
   ngOnInit(): void {
     this.simulateFeed();
@@ -383,8 +393,9 @@ export class M5EchoLabComponent implements OnInit {
 
   simulateFeed(): void {
     this.isSimulating.set(true);
+    this.pointsAwarded.set(false);
     const body = {
-      user_id: 'demo_user',
+      user_id: this.auth.currentUser()?.id || 'demo_user',
       user_interest_query: this.interestQuery,
       w_outrage: this.wOutrage,
       w_affinity: this.wAffinity,
@@ -401,6 +412,18 @@ export class M5EchoLabComponent implements OnInit {
         this.autonomyScore.set(res.autonomy_resilience_score);
         this.coachExplanation.set(res.adk_coach_explanation);
         this.isSimulating.set(false);
+
+        const user = this.auth.currentUser();
+        if (user && res.autonomy_resilience_score >= 70) {
+          this.http.post(`/api/v1/users/${user.id}/modules/m5_algo_echo/complete`, {
+            module_id: 'm5_algo_echo',
+            score: res.autonomy_resilience_score,
+            takeaway: 'Maximized Shannon viewpoint entropy and collapsed algorithmic echo chamber.'
+          }).subscribe({
+            next: () => this.pointsAwarded.set(true),
+            error: () => {}
+          });
+        }
       },
       error: (err) => {
         console.error('Failed to simulate recommender feed:', err);

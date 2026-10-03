@@ -12,7 +12,28 @@ export const routes: Routes = [
     path: '',
     component: PlatformShellComponent,
     children: [
-      { path: '', component: LobbyComponent, pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/player-dashboard.component').then(
+            (m) => m.PlayerDashboardComponent
+          ),
+      },
+      {
+        path: 'admin/cohorts',
+        loadComponent: () =>
+          import('./features/admin/admin-cohorts.component').then(
+            (m) => m.AdminCohortsComponent
+          ),
+      },
+      {
+        path: 'login',
+        loadComponent: () =>
+          import('./features/auth/login.component').then(
+            (m) => m.LoginComponent
+          ),
+      },
       { path: 'modules/disinfo', component: LobbyComponent },
       { path: 'arena/:sessionId', component: ArenaComponent },
       { path: 'admin/:sessionId', component: AdminHudComponent },

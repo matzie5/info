@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { RouterModule } from '@angular/router';
 
 export interface OSINTExposureReport {
   adk_pipeline_name: string;
@@ -20,7 +22,7 @@ export interface OSINTExposureReport {
 @Component({
   selector: 'app-m4-osint-lab',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="min-h-screen bg-slate-50 dark:bg-[#0B0F17] text-slate-900 dark:text-slate-100 p-6 flex flex-col gap-6 transition-colors duration-200">
       <!-- Header Banner -->
@@ -135,6 +137,12 @@ export interface OSINTExposureReport {
             </div>
 
             <div *ngIf="report() && !isAnalyzing()" class="flex flex-col gap-4">
+              <!-- Points Awarded Gamification Banner -->
+              <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
+                <span>🏆 Footprint Hardened! +150 Points awarded to your dashboard.</span>
+                <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
+              </div>
+
               <!-- Score Cards Row -->
               <div class="grid grid-cols-3 gap-3">
                 <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
@@ -239,6 +247,7 @@ export interface OSINTExposureReport {
 })
 export class M4OsintLabComponent implements OnInit {
   private http = inject(HttpClient);
+  public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
 
@@ -246,6 +255,7 @@ export class M4OsintLabComponent implements OnInit {
   isAnalyzing = signal<boolean>(false);
   report = signal<OSINTExposureReport | null>(null);
   hygieneScore = signal<number>(65.0);
+  pointsAwarded = signal<boolean>(false);
 
   ngOnInit(): void {
     this.runAnalysis();
@@ -265,8 +275,9 @@ export class M4OsintLabComponent implements OnInit {
     if (!this.bioInput.trim()) return;
 
     this.isAnalyzing.set(true);
+    this.pointsAwarded.set(false);
     const body = {
-      user_id: 'demo_user',
+      user_id: this.auth.currentUser()?.id || 'demo_user',
       public_bio_and_posts: this.bioInput
     };
 
@@ -275,6 +286,18 @@ export class M4OsintLabComponent implements OnInit {
         this.report.set(res);
         this.hygieneScore.set(res.hygiene_resilience_score);
         this.isAnalyzing.set(false);
+
+        const user = this.auth.currentUser();
+        if (user && res.hygiene_resilience_score >= 70) {
+          this.http.post(`/api/v1/users/${user.id}/modules/m4_osint_lab/complete`, {
+            module_id: 'm4_osint_lab',
+            score: res.hygiene_resilience_score,
+            takeaway: 'Scrubbed PII footprint and verified automated DLP sanitization.'
+          }).subscribe({
+            next: () => this.pointsAwarded.set(true),
+            error: () => {}
+          });
+        }
       },
       error: (err) => {
         console.error('Failed to analyze OSINT footprint:', err);
