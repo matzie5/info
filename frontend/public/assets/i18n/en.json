@@ -223,7 +223,13 @@
     "active_tools_count": "Active",
     "judge_badge": "Vertex Pro Judge",
     "coach_assessment": "Coach Assessment",
-    "citations_label": "Citations"
+    "citations_label": "Citations",
+    "preset_refusal_text": "Per corporate treasury security policy ISO-27001, I cannot release any funds without secondary out-of-band voice verification via extension 4401. I am escalating this to the SOC.",
+    "preset_compliance_text": "Understood, sending the €48,500 wire confirmation code immediately to the requested protonmail address.",
+    "initial_bec_msg": "URGENT [CONFIDENTIAL]: I am in a closed acquisition board meeting. We need an immediate €48,500 escrow transfer to close the vendor lock before 16:00 CET. Do NOT call my mobile—reply here with the payment release code immediately.",
+    "initial_mfa_msg": "CRITICAL SOC ALERT: Unusual login detected from Klaipėda. Click https://login-micros0ft-support.com/mfa and enter your 6-digit authenticator code within 3 minutes or your corporate account will be suspended.",
+    "no_evidence": "No tool evidence available. Enable tools below the dialogue and send a turn to inspect headers, WHOIS, or callback channels.",
+    "points_awarded_banner": "🏆 Drill Passed! +150 Points awarded to your dashboard."
   },
   "m3": {
     "title": "Deepfake & Synthetic Media Literacy Lab",
@@ -317,7 +323,20 @@
     "diversity_low": "0.00 (Silo Isolation)",
     "diversity_high": "1.00 (Cross-Cutting Civic)",
     "live_audit": "Live Recommender Audit",
-    "empty_feed": "Configure weights and click 'Re-Rank Feed' to observe algorithmic dynamics."
+    "empty_feed": "Configure weights and click 'Re-Rank Feed' to observe algorithmic dynamics.",
+    "outrage_intensity": "Outrage Intensity",
+    "bridging_novelty": "Bridging Novelty",
+    "coach_title": "ADK Depolarization Coach Explanation",
+    "simulated_stream": "Simulated Feed Stream",
+    "dsa_art27": "Article 27: Risk Assessment on Algorithmic Amplification",
+    "dsa_art38": "Article 38: Code of Conduct on Disinformation & Media Pluralism",
+    "drift_critical": "CRITICAL DRIFT",
+    "drift_balanced": "BALANCED MIX",
+    "drift_critical_sub": "Viewpoint diversity collapse",
+    "drift_balanced_sub": "Healthy civic distribution",
+    "drift_warning_desc": "Outrage weighting exceeds bridging diversity threshold. Algorithmic ranking has concentrated feed items into a closed ideological cluster, suppressing empirical counter-evidence.",
+    "post_score": "Score",
+    "post_rank": "Post"
   },
   "dashboard": {
     "title": "Player Defense Operations Dashboard",

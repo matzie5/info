@@ -183,13 +183,13 @@ export class AuthService {
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const token = auth.token();
+  const setHeaders: { [header: string]: string } = {};
   if (token && !req.headers.has('Authorization')) {
-    const cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return next(cloned);
+    setHeaders['Authorization'] = `Bearer ${token}`;
   }
-  return next(req);
+  const cloned = req.clone({
+    setHeaders,
+    withCredentials: true,
+  });
+  return next(cloned);
 };

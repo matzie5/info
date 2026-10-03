@@ -32,6 +32,32 @@ SCENARIOS_DATA = {
                 "likes_count": 38,
                 "target_cluster": "Hyper-Partisan A"
             },
+                        "de": {
+                "author_name": "Netz-Eilmeldungen DE/EU",
+                "author_handle": "@NetzEilmeldung",
+                "author_avatar": "",
+                "headline": "Unbestätigte Berichte über Frequenzeinbrüche im Übertragungsknoten Kozienice",
+                "content": "Anwohner melden Spannungsschwankungen in den Abendstunden. Die Netzbetreiber prüfen die regionale Stabilität.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
+            "uk": {
+                "author_name": "Енерго-Сповіщення UA/PL",
+                "author_handle": "@EnergoAlertUA",
+                "author_avatar": "",
+                "headline": "Непідтверджені дані про коливання частоти на підстанції Козеніце",
+                "content": "Мешканці прилеглих районів повідомляють про перепади напруги у вечірній час. Енергодиспетчери перевіряють баланс мережі.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
             "en": {
                 "author_name": "Central Grid Alerts",
                 "author_handle": "@GridAlertsEU",
@@ -200,6 +226,32 @@ SCENARIOS_DATA = {
                 "likes_count": 42,
                 "target_cluster": "Susceptible Neutrals"
             },
+                        "de": {
+                "author_name": "Netz-Eilmeldungen DE/EU",
+                "author_handle": "@NetzEilmeldung",
+                "author_avatar": "",
+                "headline": "Unbestätigte Berichte über Frequenzeinbrüche im Übertragungsknoten Kozienice",
+                "content": "Anwohner melden Spannungsschwankungen in den Abendstunden. Die Netzbetreiber prüfen die regionale Stabilität.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
+            "uk": {
+                "author_name": "Енерго-Сповіщення UA/PL",
+                "author_handle": "@EnergoAlertUA",
+                "author_avatar": "",
+                "headline": "Непідтверджені дані про коливання частоти на підстанції Козеніце",
+                "content": "Мешканці прилеглих районів повідомляють про перепади напруги у вечірній час. Енергодиспетчери перевіряють баланс мережі.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
             "en": {
                 "author_name": "Financial Markets Wire",
                 "author_handle": "@FinMarketsWire",
@@ -326,6 +378,32 @@ SCENARIOS_DATA = {
                 "likes_count": 30,
                 "target_cluster": "Institutional Skeptics"
             },
+                        "de": {
+                "author_name": "Netz-Eilmeldungen DE/EU",
+                "author_handle": "@NetzEilmeldung",
+                "author_avatar": "",
+                "headline": "Unbestätigte Berichte über Frequenzeinbrüche im Übertragungsknoten Kozienice",
+                "content": "Anwohner melden Spannungsschwankungen in den Abendstunden. Die Netzbetreiber prüfen die regionale Stabilität.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
+            "uk": {
+                "author_name": "Енерго-Сповіщення UA/PL",
+                "author_handle": "@EnergoAlertUA",
+                "author_avatar": "",
+                "headline": "Непідтверджені дані про коливання частоти на підстанції Козеніце",
+                "content": "Мешканці прилеглих районів повідомляють про перепади напруги у вечірній час. Енергодиспетчери перевіряють баланс мережі.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
             "en": {
                 "author_name": "Municipal Water Authority",
                 "author_handle": "@WaterAuthAlert",
@@ -420,6 +498,32 @@ SCENARIOS_DATA = {
                 "virality_velocity": 1.0,
                 "shares_count": 15,
                 "likes_count": 35,
+                "target_cluster": "Hyper-Partisan A"
+            },
+                        "de": {
+                "author_name": "Netz-Eilmeldungen DE/EU",
+                "author_handle": "@NetzEilmeldung",
+                "author_avatar": "",
+                "headline": "Unbestätigte Berichte über Frequenzeinbrüche im Übertragungsknoten Kozienice",
+                "content": "Anwohner melden Spannungsschwankungen in den Abendstunden. Die Netzbetreiber prüfen die regionale Stabilität.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
+            "uk": {
+                "author_name": "Енерго-Сповіщення UA/PL",
+                "author_handle": "@EnergoAlertUA",
+                "author_avatar": "",
+                "headline": "Непідтверджені дані про коливання частоти на підстанції Козеніце",
+                "content": "Мешканці прилеглих районів повідомляють про перепади напруги у вечірній час. Енергодиспетчери перевіряють баланс мережі.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
                 "target_cluster": "Hyper-Partisan A"
             },
             "en": {
@@ -595,7 +699,33 @@ INFLUENCER_RESPONSES = {
             )
         ]
     },
-    "en": {
+                "de": {
+                "author_name": "Netz-Eilmeldungen DE/EU",
+                "author_handle": "@NetzEilmeldung",
+                "author_avatar": "",
+                "headline": "Unbestätigte Berichte über Frequenzeinbrüche im Übertragungsknoten Kozienice",
+                "content": "Anwohner melden Spannungsschwankungen in den Abendstunden. Die Netzbetreiber prüfen die regionale Stabilität.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
+            "uk": {
+                "author_name": "Енерго-Сповіщення UA/PL",
+                "author_handle": "@EnergoAlertUA",
+                "author_avatar": "",
+                "headline": "Непідтверджені дані про коливання частоти на підстанції Козеніце",
+                "content": "Мешканці прилеглих районів повідомляють про перепади напруги у вечірній час. Енергодиспетчери перевіряють баланс мережі.",
+                "outrage_score": 0.65,
+                "bias_score": 0.35,
+                "virality_velocity": 1.0,
+                "shares_count": 14,
+                "likes_count": 38,
+                "target_cluster": "Hyper-Partisan A"
+            },
+            "en": {
         "investigative_journalist": [
             AgentCommentary(
                 sentiment="SKEPTICAL",
@@ -690,7 +820,7 @@ class SeedLibrary:
 
     @staticmethod
     def get_scenario_starter_post(scenario_id: str, language: str = "en", session_id: str = "") -> FeedItem:
-        lang = "pl" if language.lower() == "pl" else "en"
+        lang = language.lower() if language.lower() in ["pl", "de", "uk"] else "en"
         scen = SCENARIOS_DATA.get(scenario_id, SCENARIOS_DATA["poland-grid-panic-2026"])
         starter_dict = scen["starter_post"].get(lang, scen["starter_post"]["en"])
 
@@ -716,13 +846,13 @@ class SeedLibrary:
 
     @staticmethod
     def get_scenario_articles(scenario_id: str, language: str = "en") -> List[SpoofedArticle]:
-        lang = "pl" if language.lower() == "pl" else "en"
+        lang = language.lower() if language.lower() in ["pl", "de", "uk"] else "en"
         scen = SCENARIOS_DATA.get(scenario_id, SCENARIOS_DATA["poland-grid-panic-2026"])
         return scen["articles"].get(lang, scen["articles"].get("en", []))
 
     @staticmethod
     def get_article(scenario_id: Optional[str] = None, language: str = "en", cluster: Optional[str] = None) -> SpoofedArticle:
-        lang = "pl" if language.lower() == "pl" else "en"
+        lang = language.lower() if language.lower() in ["pl", "de", "uk"] else "en"
         scen_id = scenario_id or "poland-grid-panic-2026"
         scen = SCENARIOS_DATA.get(scen_id, SCENARIOS_DATA["poland-grid-panic-2026"])
         articles = scen["articles"].get(lang, scen["articles"].get("en", []))
@@ -736,7 +866,7 @@ class SeedLibrary:
 
     @staticmethod
     def get_influencer_comment(language: str = "en", persona_role: Optional[str] = None) -> AgentCommentary:
-        lang = "pl" if language.lower() == "pl" else "en"
+        lang = language.lower() if language.lower() in ["pl", "de", "uk"] else "en"
         resp_dict = INFLUENCER_RESPONSES.get(lang, INFLUENCER_RESPONSES["en"])
         if persona_role and persona_role in resp_dict:
             comments = resp_dict[persona_role]
@@ -749,14 +879,14 @@ class SeedLibrary:
 
     @staticmethod
     def get_bot_comments(language: str = "en", count: int = 3) -> List[str]:
-        lang = "pl" if language.lower() == "pl" else "en"
+        lang = language.lower() if language.lower() in ["pl", "de", "uk"] else "en"
         pool = BOT_COMMENTS.get(lang, BOT_COMMENTS["en"])
         k = min(count, len(pool))
         return random.sample(pool, k)
 
     @staticmethod
     def get_crisis_inject(scenario_id: Optional[str] = None, language: str = "en") -> CrisisInjectPayload:
-        lang = "pl" if language.lower() == "pl" else "en"
+        lang = language.lower() if language.lower() in ["pl", "de", "uk"] else "en"
         scen_id = scenario_id or "poland-grid-panic-2026"
         scen = SCENARIOS_DATA.get(scen_id, SCENARIOS_DATA["poland-grid-panic-2026"])
         inject = scen.get("crisis_inject", {}).get(lang)

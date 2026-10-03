@@ -74,6 +74,7 @@ ECHO_CANDIDATE_POOL: List[CandidateFeedPost] = [
 
 class RecommenderTuningRequest(BaseModel):
     user_id: str = "demo_user"
+    language: str = "en"
     user_interest_query: str = "grid blackout outrage sabotage"
     w_outrage: float = Field(default=0.85, ge=0.0, le=1.0)
     w_affinity: float = Field(default=0.75, ge=0.0, le=1.0)
@@ -90,6 +91,46 @@ class RecommenderSimulationResult(BaseModel):
     adk_coach_explanation: str
     dsa_compliance_citations: List[str]
 
+
+
+LOCALIZED_ECHO_HEADLINES = {
+    "p-alarm-1": {
+        "en": "THEY ARE HIDING THE TRUTH: Secret Grid Rationing List Leaked!",
+        "pl": "UKRYWAJĄ PRAWDĘ: Wyciekła tajna lista stopni zasilania i odłączeń prądu!",
+        "de": "SIE VERHEIMLICHEN DIE WAHRHEIT: Geheime Stromrationierungsliste durchgesickert!",
+        "uk": "ВОНИ ПРИХОВУЮТЬ ПРАВДУ: Злито таємний графік аварійних відключень електроенергії!"
+    },
+    "p-alarm-2": {
+        "en": "Outrage grows as insiders claim transformers were sabotaged!",
+        "pl": "Oburzenie rośnie po doniesieniach informatorów o celowym sabotażu transformatorów!",
+        "de": "Empörung wächst nach Hinweisen auf gezielte Sabotage an Transformatoren!",
+        "uk": "Обурення зростає: інсайдери заявляють про диверсію на підстанціях!"
+    },
+    "p-polar-1": {
+        "en": "Why District B Always Gets Priority Power While Our Neighborhoods Pay!",
+        "pl": "Dlaczego Dzielnica B ma zawsze prąd priorytetowo, podczas gdy nasze osiedla płacą rachunki!",
+        "de": "Warum Bezirk B immer Vorrang bei Strom bekommt, während unsere Viertel zahlen!",
+        "uk": "Чому Район Б завжди зі світлом, тоді як наші квартали сидять у темряві!"
+    },
+    "p-bridge-1": {
+        "en": "Cross-Party Municipal Audit Explains How Grid Load-Balancing Protects Hospitals",
+        "pl": "Niezależny audyt międzypartyjny wyjaśnia, jak bilansowanie mocy chroni szpitale i infrastrukturę krytyczną",
+        "de": "Überparteilicher Prüfbericht erläutert, wie Netzlastverteilung Krankenhäuser schützt",
+        "uk": "Міжпартійний муніципальний аудит пояснює, як балансування мережі захищає лікарні"
+    },
+    "p-tech-1": {
+        "en": "PSE Open Telemetry Dashboard: Live 50.00 Hz Frequency & HVDC Reserve Data",
+        "pl": "Oficjalny monitoring PSE: Bieżąca częstotliwość 50,00 Hz i dane rezerw interkonektorów HVDC",
+        "de": "Offizielles PSE-Netzmonitoring: Live 50,00 Hz Frequenz- und HVDC-Reservedaten",
+        "uk": "Офіційний дашборд PSE: Поточна частота 50,00 Гц та дані резервів HVDC"
+    },
+    "p-bridge-2": {
+        "en": "Community Workshop: How Neighboring Districts Coordinate Emergency Microgrids",
+        "pl": "Warsztaty społeczne: Jak sąsiednie dzielnice koordynują awaryjne mikrosieci energetyczne",
+        "de": "Bürger-Workshop: Wie benachbarte Bezirke Notfall-Mikronetze koordinieren",
+        "uk": "Громадський семінар: Як сусідні райони координують аварійні мікромережі"
+    }
+}
 
 class Module5AlgoEchoPlugin(DigitalHygieneModulePlugin):
     def get_metadata(self) -> ModuleMetadata:

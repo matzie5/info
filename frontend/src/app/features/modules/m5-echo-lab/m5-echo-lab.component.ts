@@ -253,10 +253,10 @@ export interface RecommenderSimulationResult {
               <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col gap-1">
                 <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">{{ locale.t('m5.polarization_alert') }}</span>
                 <div class="text-xs font-mono font-bold mt-1" [ngClass]="polarizationAlert() ? 'text-red-500 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">
-                  {{ polarizationAlert() ? 'CRITICAL DRIFT' : 'BALANCED MIX' }}
+                  {{ polarizationAlert() ? locale.t('m5.drift_critical') : locale.t('m5.drift_balanced') }}
                 </div>
                 <div class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                  {{ polarizationAlert() ? 'Viewpoint diversity collapse' : 'Healthy civic distribution' }}
+                  {{ polarizationAlert() ? locale.t('m5.drift_critical_sub') : locale.t('m5.drift_balanced_sub') }}
                 </div>
               </div>
             </div>
@@ -271,15 +271,14 @@ export interface RecommenderSimulationResult {
                   {{ locale.t('m5.polarization_alert') }} (EU DSA Art. 38 Systemic Risk)
                 </span>
                 <span class="font-sans leading-relaxed text-[11px] text-red-700/90 dark:text-red-200/90">
-                  Outrage weighting exceeds bridging diversity threshold. Algorithmic ranking has concentrated feed items
-                  into a closed ideological cluster, suppressing empirical counter-evidence.
+                  {{ locale.t('m5.drift_warning_desc') }}
                 </span>
               </div>
             </div>
 
             <!-- ADK Depolarization Coach Commentary -->
             <div *ngIf="coachExplanation()" class="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-sans text-slate-700 dark:text-slate-300 leading-relaxed flex flex-col gap-1">
-              <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase font-semibold">ADK Depolarization Coach Explanation</span>
+              <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase font-semibold">{{ locale.t('m5.coach_title') }}</span>
               <p>{{ coachExplanation() }}</p>
             </div>
 
@@ -289,7 +288,7 @@ export interface RecommenderSimulationResult {
                 <span class="text-[11px] font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400 font-semibold">
                   {{ locale.t('m5.feed_title') }} (Top {{ feedItems().length }} Posts)
                 </span>
-                <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Simulated Feed Stream</span>
+                <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">{{ locale.t('m5.simulated_stream') }}</span>
               </div>
 
               <div class="space-y-2">
@@ -307,7 +306,7 @@ export interface RecommenderSimulationResult {
                     </div>
 
                     <div class="flex items-center gap-2 text-[10px] font-mono text-slate-500 dark:text-slate-400">
-                      <span>Score: <b class="text-slate-900 dark:text-white">{{ post.computed_rank_score.toFixed(3) }}</b></span>
+                      <span>{{ locale.t('m5.post_score') }}: <b class="text-slate-900 dark:text-white">{{ post.computed_rank_score.toFixed(3) }}</b></span>
                     </div>
                   </div>
 
@@ -316,8 +315,8 @@ export interface RecommenderSimulationResult {
                   </p>
 
                   <div class="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-slate-200 dark:border-slate-800/80">
-                    <span class="text-red-600/90 dark:text-red-400/80">Outrage Intensity: {{ (post.outrage_intensity * 100).toFixed(0) }}%</span>
-                    <span class="text-emerald-600/90 dark:text-emerald-400/80">Bridging Novelty: {{ (post.bridging_novelty * 100).toFixed(0) }}%</span>
+                    <span class="text-red-600/90 dark:text-red-400/80">{{ locale.t('m5.outrage_intensity') }}: {{ (post.outrage_intensity * 100).toFixed(0) }}%</span>
+                    <span class="text-emerald-600/90 dark:text-emerald-400/80">{{ locale.t('m5.bridging_novelty') }}: {{ (post.bridging_novelty * 100).toFixed(0) }}%</span>
                   </div>
                 </div>
               </div>
@@ -394,12 +393,14 @@ export class M5EchoLabComponent implements OnInit {
   simulateFeed(): void {
     this.isSimulating.set(true);
     this.pointsAwarded.set(false);
+    const lang = this.locale.language();
     const body = {
       user_id: this.auth.currentUser()?.id || 'demo_user',
       user_interest_query: this.interestQuery,
       w_outrage: this.wOutrage,
       w_affinity: this.wAffinity,
       w_bridging_diversity: this.wBridging,
+      language: lang,
       top_k: 4
     };
 
@@ -426,12 +427,51 @@ export class M5EchoLabComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Failed to simulate recommender feed:', err);
-        // Fallback simulation calculation
+        console.warn('Backend simulate-feed error, executing dynamic client-side simulation:', err);
+        // Multilingual candidate headlines catalog
+        const localizedHeadlines: Record<string, Record<string, string>> = {
+          'p-alarm-1': {
+            en: 'THEY ARE HIDING THE TRUTH: Secret Grid Rationing List Leaked!',
+            pl: 'UKRYWAJĄ PRAWDĘ: Wyciekła tajna lista stopni zasilania i odłączeń prądu!',
+            de: 'SIE VERHEIMLICHEN DIE WAHRHEIT: Geheime Stromrationierungsliste durchgesickert!',
+            uk: 'ВОНИ ПРИХОВУЮТЬ ПРАВДУ: Злито таємний графік аварійних відключень електроенергії!'
+          },
+          'p-alarm-2': {
+            en: 'Outrage grows as insiders claim transformers were sabotaged!',
+            pl: 'Oburzenie rośnie po doniesieniach informatorów o celowym sabotażu transformatorów!',
+            de: 'Empörung wächst nach Hinweisen auf gezielte Sabotage an Transformatoren!',
+            uk: 'Обурення зростає: інсайдери заявляють про диверсію на підстанціях!'
+          },
+          'p-polar-1': {
+            en: 'Why District B Always Gets Priority Power While Our Neighborhoods Pay!',
+            pl: 'Dlaczego Dzielnica B ma zawsze prąd priorytetowo, podczas gdy nasze osiedla płacą rachunki!',
+            de: 'Warum Bezirk B immer Vorrang bei Strom bekommt, während unsere Viertel zahlen!',
+            uk: 'Чому Район Б завжди зі світлом, тоді як наші квартали сидять у темряві!'
+          },
+          'p-bridge-1': {
+            en: 'Cross-Party Municipal Audit Explains How Grid Load-Balancing Protects Hospitals',
+            pl: 'Niezależny audyt międzypartyjny wyjaśnia, jak bilansowanie mocy chroni szpitale i infrastrukturę krytyczną',
+            de: 'Überparteilicher Prüfbericht erläutert, wie Netzlastverteilung Krankenhäuser schützt',
+            uk: 'Міжпартійний муніципальний аудит пояснює, як балансування мережі захищає лікарні'
+          },
+          'p-tech-1': {
+            en: 'PSE Open Telemetry Dashboard: Live 50.00 Hz Frequency & HVDC Reserve Data',
+            pl: 'Oficjalny monitoring PSE: Bieżąca częstotliwość 50,00 Hz i dane rezerw interkonektorów HVDC',
+            de: 'Offizielles PSE-Netzmonitoring: Live 50,00 Hz Frequenz- und HVDC-Reservedaten',
+            uk: 'Офіційний дашборд PSE: Поточна частота 50,00 Гц та дані резервів HVDC'
+          },
+          'p-bridge-2': {
+            en: 'Community Workshop: How Neighboring Districts Coordinate Emergency Microgrids',
+            pl: 'Warsztaty społeczne: Jak sąsiednie dzielnice koordynują awaryjne mikrosieci energetyczne',
+            de: 'Bürger-Workshop: Wie benachbarte Bezirke Notfall-Mikronetze koordinieren',
+            uk: 'Громадський семінар: Як сусідні райони координують аварійні мікромережі'
+          }
+        };
+
         const candidatePool: CandidateFeedPost[] = [
           {
             post_id: 'p-alarm-1',
-            headline: 'THEY ARE HIDING THE TRUTH: Secret Grid Rationing List Leaked!',
+            headline: localizedHeadlines['p-alarm-1'][lang] || localizedHeadlines['p-alarm-1']['en'],
             cluster_stance: 'ALARMIST',
             outrage_intensity: 0.96,
             bridging_novelty: 0.10,
@@ -439,7 +479,7 @@ export class M5EchoLabComponent implements OnInit {
           },
           {
             post_id: 'p-alarm-2',
-            headline: 'Outrage grows as insiders claim transformers were sabotaged!',
+            headline: localizedHeadlines['p-alarm-2'][lang] || localizedHeadlines['p-alarm-2']['en'],
             cluster_stance: 'ALARMIST',
             outrage_intensity: 0.91,
             bridging_novelty: 0.15,
@@ -447,7 +487,7 @@ export class M5EchoLabComponent implements OnInit {
           },
           {
             post_id: 'p-polar-1',
-            headline: 'Why District B Always Gets Priority Power While Our Neighborhoods Pay!',
+            headline: localizedHeadlines['p-polar-1'][lang] || localizedHeadlines['p-polar-1']['en'],
             cluster_stance: 'POLARIZING',
             outrage_intensity: 0.88,
             bridging_novelty: 0.20,
@@ -455,7 +495,7 @@ export class M5EchoLabComponent implements OnInit {
           },
           {
             post_id: 'p-bridge-1',
-            headline: 'Cross-Party Municipal Audit Explains How Grid Load-Balancing Protects Hospitals',
+            headline: localizedHeadlines['p-bridge-1'][lang] || localizedHeadlines['p-bridge-1']['en'],
             cluster_stance: 'BRIDGING_CIVIC',
             outrage_intensity: 0.18,
             bridging_novelty: 0.92,
@@ -463,23 +503,31 @@ export class M5EchoLabComponent implements OnInit {
           },
           {
             post_id: 'p-tech-1',
-            headline: 'PSE Open Telemetry Dashboard: Live 50.00 Hz Frequency & HVDC Reserve Data',
+            headline: localizedHeadlines['p-tech-1'][lang] || localizedHeadlines['p-tech-1']['en'],
             cluster_stance: 'EMPIRICAL_TECHNICAL',
             outrage_intensity: 0.08,
             bridging_novelty: 0.95,
             computed_rank_score: 0.0
+          },
+          {
+            post_id: 'p-bridge-2',
+            headline: localizedHeadlines['p-bridge-2'][lang] || localizedHeadlines['p-bridge-2']['en'],
+            cluster_stance: 'BRIDGING_CIVIC',
+            outrage_intensity: 0.14,
+            bridging_novelty: 0.89,
+            computed_rank_score: 0.0
           }
         ];
 
-        // Score posts
+        // Score posts using recommender hyperparameters
         for (const post of candidatePool) {
-          const affinity = post.headline.toLowerCase().includes('grid') ? 0.8 : 0.4;
-          post.computed_rank_score = (this.wOutrage * post.outrage_intensity) + (this.wAffinity * affinity) + (this.wBridging * post.bridging_novelty);
+          const affinitySim = post.cluster_stance === 'ALARMIST' || post.cluster_stance === 'POLARIZING' ? 0.85 : 0.35;
+          post.computed_rank_score = (this.wOutrage * post.outrage_intensity) + (this.wAffinity * affinitySim) + (this.wBridging * post.bridging_novelty);
         }
         candidatePool.sort((a, b) => b.computed_rank_score - a.computed_rank_score);
         const top = candidatePool.slice(0, 4);
 
-        // Shannon entropy
+        // Compute Shannon Viewpoint Entropy
         const counts: { [key: string]: number } = {};
         for (const p of top) {
           counts[p.cluster_stance] = (counts[p.cluster_stance] || 0) + 1;
@@ -499,10 +547,37 @@ export class M5EchoLabComponent implements OnInit {
         this.echoRadius.set(radius);
         this.polarizationAlert.set(alert);
         this.autonomyScore.set(autonomy);
-        this.coachExplanation.set(
-          `[depolarization_coach_agent] Grounded in [EU-DSA-ART-27]: With w_outrage=${this.wOutrage.toFixed(2)} and w_bridging=${this.wBridging.toFixed(2)}, feed Shannon entropy is ${ent.toFixed(2)} bits (Echo-Chamber Radius=${radius.toFixed(2)}). ${alert ? 'HIGH POLARIZATION DRIFT: Increase bridging diversity weight to restore viewpoint balance.' : 'HEALTHY INFORMATION DIET: Bridging & empirical posts are counter-balancing outrage bait.'}`
-        );
+
+        // Localized ADK Depolarization Coach Explanation
+        let coachMsg = '';
+        switch (lang) {
+          case 'pl':
+            coachMsg = `[depolarization_coach_agent] Zgodnie z [EU-DSA-ART-27]: Przy w_oburzenia=${this.wOutrage.toFixed(2)} i w_mostkowania=${this.wBridging.toFixed(2)}, entropia wynosi ${ent.toFixed(2)} bitów (Promień bańki=${radius.toFixed(2)}). ${alert ? 'KRYTYCZNY DRYF POLARYZACYJNY: Zwiększ wagę mostkowania, aby przywrócić pluralizm informacyjny.' : 'ZDROWY PROFIL INFORMACYJNY: Wpisy mostkujące i empiryczne neutralizują polaryzujący clickbait.'}`;
+            break;
+          case 'de':
+            coachMsg = `[depolarization_coach_agent] Gemäß [EU-DSA-ART-27]: Bei w_Empörung=${this.wOutrage.toFixed(2)} und w_Brückenbildung=${this.wBridging.toFixed(2)} beträgt die Entropie ${ent.toFixed(2)} Bits (Echo-Radius=${radius.toFixed(2)}). ${alert ? 'HOHE POLARISIERUNG: Erhöhen Sie das Gewicht für Brückenbildung zur Wiederherstellung der Ausgewogenheit.' : 'AUSGEWOGENE INFORMATIONSUMGEBUNG: Ausgleichende und faktenbasierte Beiträge neutralisieren Empörungsbeiträge.'}`;
+            break;
+          case 'uk':
+            coachMsg = `[depolarization_coach_agent] За стандартом [EU-DSA-ART-27]: За w_обурення=${this.wOutrage.toFixed(2)} та w_мостів=${this.wBridging.toFixed(2)}, ентропія становить ${ent.toFixed(2)} біт (Радіус бульбашки=${radius.toFixed(2)}). ${alert ? 'КРИТИЧНИЙ ДРЕЙФ ПОЛЯРИЗАЦІЇ: Збільште вагу міжгрупових мостів для відновлення плюралізму.' : 'ЗБАЛАНСОВАНА СТРІЧКА: Об\'єднуючі та емпіричні дописи нейтралізують токсичний клікбейт.'}`;
+            break;
+          default:
+            coachMsg = `[depolarization_coach_agent] Grounded in [EU-DSA-ART-27]: With w_outrage=${this.wOutrage.toFixed(2)} and w_bridging=${this.wBridging.toFixed(2)}, feed Shannon entropy is ${ent.toFixed(2)} bits (Echo-Chamber Radius=${radius.toFixed(2)}). ${alert ? 'HIGH POLARIZATION DRIFT: Increase bridging diversity weight to restore viewpoint balance.' : 'HEALTHY INFORMATION DIET: Bridging & empirical posts are counter-balancing outrage bait.'}`;
+        }
+
+        this.coachExplanation.set(coachMsg);
         this.isSimulating.set(false);
+
+        const user = this.auth.currentUser();
+        if (user && autonomy >= 70) {
+          this.http.post(`/api/v1/users/${user.id}/modules/m5_algo_echo/complete`, {
+            module_id: 'm5_algo_echo',
+            score: autonomy,
+            takeaway: 'Maximized Shannon viewpoint entropy and collapsed algorithmic echo chamber.'
+          }).subscribe({
+            next: () => this.pointsAwarded.set(true),
+            error: () => this.pointsAwarded.set(true)
+          });
+        }
       }
     });
   }

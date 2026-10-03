@@ -9,8 +9,12 @@ export class LabApiService {
 
   private async fetchApi(path: string, options?: RequestInit): Promise<Response> {
     const primaryUrl = `${this.baseUrl}${path}`;
+    const fetchOptions: RequestInit = {
+      credentials: 'include',
+      ...options
+    };
     try {
-      const res = await fetch(primaryUrl, options);
+      const res = await fetch(primaryUrl, fetchOptions);
       const contentType = res.headers.get('content-type') || '';
 
       // If server returned HTML (e.g. Angular index.html when proxy is not forwarding)

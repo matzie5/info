@@ -97,7 +97,7 @@ export interface DeepfakeForensicReport {
             <div class="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800/80">
               <span class="flex items-center gap-1.5">
                 <span class="h-2 w-2 rounded-full" [ngClass]="sample.synthid_watermark_detected ? 'bg-cyan-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-600'"></span>
-                SynthID: {{ sample.synthid_watermark_detected ? (locale.language() === 'pl' ? 'Wykryto' : 'Detected') : (locale.language() === 'pl' ? 'Brak' : 'None') }}
+                SynthID: {{ getSynthIdStatus(sample.synthid_watermark_detected) }}
               </span>
               <span class="text-slate-400 dark:text-slate-500">ID: {{ sample.sample_id }}</span>
             </div>
@@ -552,5 +552,20 @@ export class M3DeepfakeLabComponent implements OnInit {
     if (score >= 80) return 'text-[#84AA40]';
     if (score >= 50) return 'text-[#F9A81C]';
     return 'text-red-500 dark:text-red-400';
+  }
+
+  getSynthIdStatus(detected: boolean): string {
+    const lang = this.locale.language();
+    if (detected) {
+      if (lang === 'pl') return 'Wykryto';
+      if (lang === 'de') return 'Erkannt';
+      if (lang === 'uk') return 'Виявлено';
+      return 'Detected';
+    } else {
+      if (lang === 'pl') return 'Brak';
+      if (lang === 'de') return 'Keine';
+      if (lang === 'uk') return 'Відсутній';
+      return 'None';
+    }
   }
 }

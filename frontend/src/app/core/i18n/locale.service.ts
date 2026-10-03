@@ -241,7 +241,13 @@ export const CORE_DICTIONARY_EN: Record<string, any> = {
     "active_tools_count": "Active",
     "judge_badge": "Vertex Pro Judge",
     "coach_assessment": "Coach Assessment",
-    "citations_label": "Citations"
+    "citations_label": "Citations",
+    "preset_refusal_text": "Per corporate treasury security policy ISO-27001, I cannot release any funds without secondary out-of-band voice verification via extension 4401. I am escalating this to the SOC.",
+    "preset_compliance_text": "Understood, sending the €48,500 wire confirmation code immediately to the requested protonmail address.",
+    "initial_bec_msg": "URGENT [CONFIDENTIAL]: I am in a closed acquisition board meeting. We need an immediate €48,500 escrow transfer to close the vendor lock before 16:00 CET. Do NOT call my mobile—reply here with the payment release code immediately.",
+    "initial_mfa_msg": "CRITICAL SOC ALERT: Unusual login detected from Klaipėda. Click https://login-micros0ft-support.com/mfa and enter your 6-digit authenticator code within 3 minutes or your corporate account will be suspended.",
+    "no_evidence": "No tool evidence available. Enable tools below the dialogue and send a turn to inspect headers, WHOIS, or callback channels.",
+    "points_awarded_banner": "🏆 Drill Passed! +150 Points awarded to your dashboard."
   },
   "m3": {
     "title": "Deepfake & Synthetic Media Literacy Lab",
@@ -335,7 +341,20 @@ export const CORE_DICTIONARY_EN: Record<string, any> = {
     "diversity_low": "0.00 (Silo Isolation)",
     "diversity_high": "1.00 (Cross-Cutting Civic)",
     "live_audit": "Live Recommender Audit",
-    "empty_feed": "Configure weights and click 'Re-Rank Feed' to observe algorithmic dynamics."
+    "empty_feed": "Configure weights and click 'Re-Rank Feed' to observe algorithmic dynamics.",
+    "outrage_intensity": "Outrage Intensity",
+    "bridging_novelty": "Bridging Novelty",
+    "coach_title": "ADK Depolarization Coach Explanation",
+    "simulated_stream": "Simulated Feed Stream",
+    "dsa_art27": "Article 27: Risk Assessment on Algorithmic Amplification",
+    "dsa_art38": "Article 38: Code of Conduct on Disinformation & Media Pluralism",
+    "drift_critical": "CRITICAL DRIFT",
+    "drift_balanced": "BALANCED MIX",
+    "drift_critical_sub": "Viewpoint diversity collapse",
+    "drift_balanced_sub": "Healthy civic distribution",
+    "drift_warning_desc": "Outrage weighting exceeds bridging diversity threshold. Algorithmic ranking has concentrated feed items into a closed ideological cluster, suppressing empirical counter-evidence.",
+    "post_score": "Score",
+    "post_rank": "Post"
   },
   "dashboard": {
     "title": "Player Defense Operations Dashboard",
@@ -643,7 +662,13 @@ export const CORE_DICTIONARY_PL: Record<string, any> = {
     "active_tools_count": "Aktywne",
     "judge_badge": "Sędzia Vertex Pro",
     "coach_assessment": "Ekspertyza Trenera AI",
-    "citations_label": "Źródła i Standardy"
+    "citations_label": "Źródła i Standardy",
+    "preset_refusal_text": "Zgodnie z procedurą bezpieczeństwa ISO-27001 i polityką finansową firmy, nie mogę zrealizować przelewu bez dodatkowej weryfikacji telefonicznej przez centralę (wewn. 4401). Sprawa zostaje przekazana do SOC.",
+    "preset_compliance_text": "Zrozumiałem, przesyłam kod autoryzacji przelewu na kwotę 48 500 € niezwłocznie na wskazany adres protonmail.",
+    "initial_bec_msg": "PILNE [POUFNE]: Jestem na zamkniętym posiedzeniu zarządu w sprawie przejęcia. Potrzebujemy natychmiastowego przelewu powierniczego na 48 500 € przed 16:00 CET. NIE dzwoń na moją komórkę — odpowiedz tutaj bezpośrednio z kodem autoryzacji płatności.",
+    "initial_mfa_msg": "KRYTYCZNY ALERT SOC: Wykryto nietypowe logowanie z Kłajpedy. Wejdź na https://login-micros0ft-support.com/mfa i wprowadź 6-cyfrowy kod z aplikacji uwierzytelniającej w ciągu 3 minut, inaczej Twoje konto firmowe zostanie zawieszone.",
+    "no_evidence": "Brak danych telemetrycznych. Aktywuj narzędzia poniżej czatu i wyślij odpowiedź, aby zbadać nagłówki, WHOIS lub kanał weryfikacji.",
+    "points_awarded_banner": "🏆 Ćwiczenie zaliczone! +150 punktów dodano do Twojego profilu."
   },
   "m3": {
     "title": "Laboratorium Rozpoznawania Deepfake i Mediów Syntetycznych",
@@ -737,7 +762,20 @@ export const CORE_DICTIONARY_PL: Record<string, any> = {
     "diversity_low": "0.00 (Izolacja)",
     "diversity_high": "1.00 (Szerokie Mosty Społeczne)",
     "live_audit": "Audyt Rekomendacji na Żywo",
-    "empty_feed": "Skonfiguruj wagi i kliknij 'Przelicz Ranking', aby zaobserwować dynamikę algorytmiczną."
+    "empty_feed": "Skonfiguruj wagi i kliknij 'Przelicz Ranking', aby zaobserwować dynamikę algorytmiczną.",
+    "outrage_intensity": "Intensywność oburzenia",
+    "bridging_novelty": "Mostkowanie społeczne",
+    "coach_title": "Komentarz trenera depolaryzacji ADK",
+    "simulated_stream": "Symulowany strumień feedu",
+    "dsa_art27": "Artykuł 27: Ocena ryzyka amplifikacji algorytmicznej",
+    "dsa_art38": "Artykuł 38: Kodeks postępowania w zakresie dezinformacji i pluralizmu mediów",
+    "drift_critical": "KRYTYCZNY DRYF",
+    "drift_balanced": "ZRÓWNOWAŻONY MIKS",
+    "drift_critical_sub": "Załamanie różnorodności poglądów",
+    "drift_balanced_sub": "Zdrowy profil obywatelski",
+    "drift_warning_desc": "Waga oburzenia przekracza próg różnorodności mostkującej. Ranking algorytmiczny skoncentrował feed w zamkniętej bańce ideologicznej, tłumiąc dowody empiryczne.",
+    "post_score": "Wynik",
+    "post_rank": "Wpis"
   },
   "dashboard": {
     "title": "Pulpit Operacyjny Higieny Cyfrowej",
@@ -1045,7 +1083,13 @@ export const CORE_DICTIONARY_DE: Record<string, any> = {
     "active_tools_count": "Aktiv",
     "judge_badge": "Vertex Pro Gutachter",
     "coach_assessment": "Coach-Gutachten",
-    "citations_label": "Referenzen"
+    "citations_label": "Referenzen",
+    "preset_refusal_text": "Gemäß der Richtlinie ISO-27001 kann ich keine Gelder ohne sekundäre Verifizierung über die Durchwahl 4401 freigeben. Ich leite diesen Vorgang an das SOC weiter.",
+    "preset_compliance_text": "Verstanden, ich sende den Freigabecode für die 48.500 € Überweisung sofort an die angegebene Protonmail-Adresse.",
+    "initial_bec_msg": "DRINGEND [VERTRAULICH]: Ich befinde mich in einer geschlossenen Vorstandssitzung zur Übernahme. Wir benötigen eine sofortige Treuhandüberweisung von 48.500 € vor 16:00 Uhr CET. Bitte NICHT auf dem Handy anrufen – antworten Sie hier direkt mit dem Freigabecode.",
+    "initial_mfa_msg": "KRITISCHER SOC-ALARM: Ungewöhnliche Anmeldung aus Klaipėda festgestellt. Öffnen Sie https://login-micros0ft-support.com/mfa und geben Sie innerhalb von 3 Minuten Ihren 6-stelligen Authenticator-Code ein, andernfalls wird Ihr Firmenkonto gesperrt.",
+    "no_evidence": "Keine forensischen Daten verfügbar. Aktivieren Sie die Werkzeuge unterhalb des Dialogs und senden Sie eine Antwort zur Prüfung.",
+    "points_awarded_banner": "🏆 Übung bestanden! +150 Punkte für Ihr Dashboard gutgeschrieben."
   },
   "m3": {
     "title": "Labor für Deepfake- & Synthetische Medienforensik",
@@ -1139,7 +1183,20 @@ export const CORE_DICTIONARY_DE: Record<string, any> = {
     "diversity_low": "0.00 (Silo-Isolation)",
     "diversity_high": "1.00 (Breite gesellschaftliche Brücken)",
     "live_audit": "Live Empfehlungs-Audit",
-    "empty_feed": "Gewichte konfigurieren und 'Feed neu bewerten' klicken, um algorithmische Effekte zu sehen."
+    "empty_feed": "Gewichte konfigurieren und 'Feed neu bewerten' klicken, um algorithmische Effekte zu sehen.",
+    "outrage_intensity": "Empörungsintensität",
+    "bridging_novelty": "Brückenbildungs-Neuheit",
+    "coach_title": "Erklärung des ADK-Depolarisierungs-Coaches",
+    "simulated_stream": "Simulierter Feed-Stream",
+    "dsa_art27": "Artikel 27: Risikobewertung algorithmischer Verstärkung",
+    "dsa_art38": "Artikel 38: Verhaltenskodex zu Desinformation und Medienpluralismus",
+    "drift_critical": "KRITISCHE ABWEICHUNG",
+    "drift_balanced": "AUSGEWOGENER MIX",
+    "drift_critical_sub": "Zusammenbruch der Meinungsvielfalt",
+    "drift_balanced_sub": "Gesunde bürgerliche Verteilung",
+    "drift_warning_desc": "Das Empörungsgewicht überschreitet die Schwelle zur Brückenbildung. Das algorithmische Ranking hat Beiträge in einem geschlossenen ideologischen Cluster gebündelt und empirische Gegenbeweise unterdrückt.",
+    "post_score": "Score",
+    "post_rank": "Beitrag"
   },
   "dashboard": {
     "title": "Operator-Dashboard für digitale Hygiene",
@@ -1447,7 +1504,13 @@ export const CORE_DICTIONARY_UK: Record<string, any> = {
     "active_tools_count": "Активно",
     "judge_badge": "Суддя Vertex Pro",
     "coach_assessment": "Експертна оцінка тренера",
-    "citations_label": "Джерела"
+    "citations_label": "Джерела",
+    "preset_refusal_text": "Згідно з політикою безпеки ISO-27001, я не можу переказати кошти без вторинної перевірки за внутрішнім номером 4401. Передаю запит до SOC.",
+    "preset_compliance_text": "Зрозуміло, негайно надсилаю код підтвердження переказу на 48 500 € на вказану адресу protonmail.",
+    "initial_bec_msg": "ТЕРМІНОВО [КОНФІДЕНЦІЙНО]: Я перебуваю на закритому засіданні ради директорів щодо поглинання компанії. Нам потрібен негайний переказ 48 500 € на ескроу-рахунок до 16:00 CET. НЕ телефонуйте мені на мобільний — надішліть код підтвердження платежу сюди негайно.",
+    "initial_mfa_msg": "КРИТИЧНИЙ АЛЕРТ SOC: Виявлено підозрілий вхід із Клайпеди. Перейдіть за посиланням https://login-micros0ft-support.com/mfa та введіть 6-значний код автентифікатора протягом 3 хвилин, інакше корпоративний обліковий запис буде заблоковано.",
+    "no_evidence": "Немає форензік-даних. Увімкніть інструменти під діалогом і надішліть відповідь для перевірки заголовків, WHOIS або дзвінка.",
+    "points_awarded_banner": "🏆 Навчання пройдено! +150 балів нараховано на ваш дашборд."
   },
   "m3": {
     "title": "Лабораторія розпізнавання діпфейків та синтетичних медіа",
@@ -1541,7 +1604,20 @@ export const CORE_DICTIONARY_UK: Record<string, any> = {
     "diversity_low": "0.00 (Ізоляція)",
     "diversity_high": "1.00 (Широкі суспільні мости)",
     "live_audit": "Аудит алгоритму наживо",
-    "empty_feed": "Налаштуйте ваги та натисніть 'Перерахувати стрічку', щоб оцінити алгоритмічні ефекти."
+    "empty_feed": "Налаштуйте ваги та натисніть 'Перерахувати стрічку', щоб оцінити алгоритмічні ефекти.",
+    "outrage_intensity": "Рівень обурення",
+    "bridging_novelty": "Міжгрупові мости",
+    "coach_title": "Пояснення коуча з деполяризації ADK",
+    "simulated_stream": "Симульований потік стрічки",
+    "dsa_art27": "Стаття 27: Оцінка ризиків алгоритмічного посилення",
+    "dsa_art38": "Стаття 38: Кодекс поведінки щодо дезінформації та плюралізму медіа",
+    "drift_critical": "КРИТИЧНИЙ ДРЕЙФ",
+    "drift_balanced": "ЗБАЛАНСОВАНИЙ МІКС",
+    "drift_critical_sub": "Втрата різноманітності поглядів",
+    "drift_balanced_sub": "Здоровий громадський розподіл",
+    "drift_warning_desc": "Вага обурення перевищує поріг міжгрупових мостів. Алгоритмічне ранжування сконцентрувало дописи в закритій ідеологічній бульбашці, придушуючи емпіричні факти.",
+    "post_score": "Оцінка",
+    "post_rank": "Допис"
   },
   "dashboard": {
     "title": "Операційна панель цифрової гігієни",

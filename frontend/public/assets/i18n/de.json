@@ -223,7 +223,13 @@
     "active_tools_count": "Aktiv",
     "judge_badge": "Vertex Pro Gutachter",
     "coach_assessment": "Coach-Gutachten",
-    "citations_label": "Referenzen"
+    "citations_label": "Referenzen",
+    "preset_refusal_text": "Gemäß der Richtlinie ISO-27001 kann ich keine Gelder ohne sekundäre Verifizierung über die Durchwahl 4401 freigeben. Ich leite diesen Vorgang an das SOC weiter.",
+    "preset_compliance_text": "Verstanden, ich sende den Freigabecode für die 48.500 € Überweisung sofort an die angegebene Protonmail-Adresse.",
+    "initial_bec_msg": "DRINGEND [VERTRAULICH]: Ich befinde mich in einer geschlossenen Vorstandssitzung zur Übernahme. Wir benötigen eine sofortige Treuhandüberweisung von 48.500 € vor 16:00 Uhr CET. Bitte NICHT auf dem Handy anrufen – antworten Sie hier direkt mit dem Freigabecode.",
+    "initial_mfa_msg": "KRITISCHER SOC-ALARM: Ungewöhnliche Anmeldung aus Klaipėda festgestellt. Öffnen Sie https://login-micros0ft-support.com/mfa und geben Sie innerhalb von 3 Minuten Ihren 6-stelligen Authenticator-Code ein, andernfalls wird Ihr Firmenkonto gesperrt.",
+    "no_evidence": "Keine forensischen Daten verfügbar. Aktivieren Sie die Werkzeuge unterhalb des Dialogs und senden Sie eine Antwort zur Prüfung.",
+    "points_awarded_banner": "🏆 Übung bestanden! +150 Punkte für Ihr Dashboard gutgeschrieben."
   },
   "m3": {
     "title": "Labor für Deepfake- & Synthetische Medienforensik",
@@ -317,7 +323,20 @@
     "diversity_low": "0.00 (Silo-Isolation)",
     "diversity_high": "1.00 (Breite gesellschaftliche Brücken)",
     "live_audit": "Live Empfehlungs-Audit",
-    "empty_feed": "Gewichte konfigurieren und 'Feed neu bewerten' klicken, um algorithmische Effekte zu sehen."
+    "empty_feed": "Gewichte konfigurieren und 'Feed neu bewerten' klicken, um algorithmische Effekte zu sehen.",
+    "outrage_intensity": "Empörungsintensität",
+    "bridging_novelty": "Brückenbildungs-Neuheit",
+    "coach_title": "Erklärung des ADK-Depolarisierungs-Coaches",
+    "simulated_stream": "Simulierter Feed-Stream",
+    "dsa_art27": "Artikel 27: Risikobewertung algorithmischer Verstärkung",
+    "dsa_art38": "Artikel 38: Verhaltenskodex zu Desinformation und Medienpluralismus",
+    "drift_critical": "KRITISCHE ABWEICHUNG",
+    "drift_balanced": "AUSGEWOGENER MIX",
+    "drift_critical_sub": "Zusammenbruch der Meinungsvielfalt",
+    "drift_balanced_sub": "Gesunde bürgerliche Verteilung",
+    "drift_warning_desc": "Das Empörungsgewicht überschreitet die Schwelle zur Brückenbildung. Das algorithmische Ranking hat Beiträge in einem geschlossenen ideologischen Cluster gebündelt und empirische Gegenbeweise unterdrückt.",
+    "post_score": "Score",
+    "post_rank": "Beitrag"
   },
   "dashboard": {
     "title": "Operator-Dashboard für digitale Hygiene",
