@@ -10,7 +10,6 @@ from app.engine.network_graph import AudienceNetwork
 from app.engine.metrics_calculator import calculate_metrics, evaluate_victory_condition
 from app.engine.token_governor import TokenGovernor
 from app.engine.actions_evaluator import ActionsEvaluator
-from app.ai.adk_service import adk_service
 from app.services.firestore_service import FirestoreService
 
 logger = logging.getLogger(__name__)
@@ -24,6 +23,9 @@ class SimulationOrchestrator:
         self.network = AudienceNetwork(num_nodes=num_nodes)
         self.token_governor = TokenGovernor()
         self.fs = FirestoreService.get_instance()
+        snapshot = self.fs.load_network_snapshot(self.session_id)
+        if snapshot:
+            self.network.restore_snapshot(snapshot)
         self._pending_actions: List[PlayerAction] = []
         self._init_starter_feed_if_empty()
 
@@ -109,6 +111,8 @@ class SimulationOrchestrator:
         for item in updated_feed:
             if item.shares_count > 60 and not any(not c.is_bot for c in item.comments):
                 # Trigger qualitative influencer reaction
+                from app.ai.adk_service import adk_service
+
                 commentary = adk_service.generate_influencer_comment(
                     headline=item.headline or "",
                     body=item.content,
@@ -165,5 +169,8 @@ class SimulationOrchestrator:
         # 13. Persist updated feed items
         for item in updated_feed:
             self.fs.save_feed_item(session.id, item)
+
+        # 14. Persist network graph snapshot for scale-to-zero / multi-instance state
+        self.fs.save_network_snapshot(session.id, self.network.export_snapshot())
 
         return session

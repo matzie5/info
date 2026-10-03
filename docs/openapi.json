@@ -1,0 +1,3422 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Infosphere Digital Hygiene Platform API",
+    "description": "5-Module Agentic Digital Hygiene & Information Defense Platform (Google ADK + Keyless Vertex AI + DeepSeek LiteLlm)",
+    "version": "3.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness Check",
+        "operationId": "readiness_check_readyz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/modules": {
+      "get": {
+        "tags": [
+          "Platform Core"
+        ],
+        "summary": "List Platform Modules",
+        "operationId": "list_platform_modules_api_v1_platform_modules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/passport/{subject_id}": {
+      "get": {
+        "tags": [
+          "Platform Core"
+        ],
+        "summary": "Get Digital Hygiene Passport",
+        "operationId": "get_digital_hygiene_passport_api_v1_platform_passport__subject_id__get",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subject Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalHygienePassport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/platform/passport/{subject_id}/stix21": {
+      "get": {
+        "tags": [
+          "Platform Core"
+        ],
+        "summary": "Export Passport Stix21",
+        "operationId": "export_passport_stix21_api_v1_platform_passport__subject_id__stix21_get",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Subject Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Create Session",
+        "operationId": "create_session_api_v1_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Get Session",
+        "operationId": "get_session_api_v1_sessions__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/start": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Start Session",
+        "operationId": "start_session_api_v1_sessions__session_id__start_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/pause": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Pause Session",
+        "operationId": "pause_session_api_v1_sessions__session_id__pause_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/resume": {
+      "post": {
+        "tags": [
+          "sessions"
+        ],
+        "summary": "Resume Session",
+        "operationId": "resume_session_api_v1_sessions__session_id__resume_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/invites": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Create Invite",
+        "operationId": "create_invite_api_v1_sessions__session_id__invites_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateInviteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/join-by-token": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Join By Token",
+        "operationId": "join_by_token_api_v1_sessions__session_id__join_by_token_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinByTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinByTokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/heartbeat": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Heartbeat",
+        "operationId": "heartbeat_api_v1_sessions__session_id__heartbeat_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/actions": {
+      "post": {
+        "tags": [
+          "actions"
+        ],
+        "summary": "Submit Action",
+        "operationId": "submit_action_api_v1_sessions__session_id__actions_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerAction"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "actions"
+        ],
+        "summary": "Get Actions",
+        "operationId": "get_actions_api_v1_sessions__session_id__actions_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlayerAction"
+                  },
+                  "title": "Response Get Actions Api V1 Sessions  Session Id  Actions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/feed": {
+      "get": {
+        "tags": [
+          "actions"
+        ],
+        "summary": "Get Feed",
+        "operationId": "get_feed_api_v1_sessions__session_id__feed_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedItem"
+                  },
+                  "title": "Response Get Feed Api V1 Sessions  Session Id  Feed Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sessions/{session_id}/tick": {
+      "post": {
+        "tags": [
+          "simulation"
+        ],
+        "summary": "Process Tick",
+        "operationId": "process_tick_api_v1_sessions__session_id__tick_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/scenarios": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List Scenarios",
+        "description": "Returns all pre-configured simulation scenarios.",
+        "operationId": "list_scenarios_api_v1_admin_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/sessions/{session_id}/scenario-articles": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Scenario Articles",
+        "description": "Returns curated inject articles for the current session's scenario and language.",
+        "operationId": "get_scenario_articles_api_v1_admin_sessions__session_id__scenario_articles_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/sessions/{session_id}/posts": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create Admin Post",
+        "description": "Allows facilitator to inject a new scenario event / breaking post into the live feed.",
+        "operationId": "create_admin_post_api_v1_admin_sessions__session_id__posts_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreatePostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/sessions/{session_id}/presence": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Participant Presence",
+        "operationId": "get_participant_presence_api_v1_admin_sessions__session_id__presence_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/sessions/{session_id}/telemetry": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Get Session Telemetry",
+        "operationId": "get_session_telemetry_api_v1_admin_sessions__session_id__telemetry_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/sessions/{session_id}/force-tick": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Force Tick",
+        "operationId": "force_tick_api_v1_admin_sessions__session_id__force_tick_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/sessions/{session_id}/inject": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Trigger Crisis Inject",
+        "operationId": "trigger_crisis_inject_api_v1_admin_sessions__session_id__inject_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmergencyInjectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/sessions/{session_id}/rebalance": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Rebalance Participant",
+        "operationId": "rebalance_participant_api_v1_admin_sessions__session_id__rebalance_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RebalanceUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions": {
+      "post": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "sessions"
+        ],
+        "summary": "Create Session",
+        "operationId": "create_session_api_v1_modules_m1_disinfo_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "sessions"
+        ],
+        "summary": "Get Session",
+        "operationId": "get_session_api_v1_modules_m1_disinfo_sessions__session_id__get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions/{session_id}/start": {
+      "post": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "sessions"
+        ],
+        "summary": "Start Session",
+        "operationId": "start_session_api_v1_modules_m1_disinfo_sessions__session_id__start_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions/{session_id}/pause": {
+      "post": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "sessions"
+        ],
+        "summary": "Pause Session",
+        "operationId": "pause_session_api_v1_modules_m1_disinfo_sessions__session_id__pause_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions/{session_id}/resume": {
+      "post": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "sessions"
+        ],
+        "summary": "Resume Session",
+        "operationId": "resume_session_api_v1_modules_m1_disinfo_sessions__session_id__resume_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions/{session_id}/actions": {
+      "post": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "actions"
+        ],
+        "summary": "Submit Action",
+        "operationId": "submit_action_api_v1_modules_m1_disinfo_sessions__session_id__actions_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerAction"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "actions"
+        ],
+        "summary": "Get Actions",
+        "operationId": "get_actions_api_v1_modules_m1_disinfo_sessions__session_id__actions_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlayerAction"
+                  },
+                  "title": "Response Get Actions Api V1 Modules M1 Disinfo Sessions  Session Id  Actions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions/{session_id}/feed": {
+      "get": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "actions"
+        ],
+        "summary": "Get Feed",
+        "operationId": "get_feed_api_v1_modules_m1_disinfo_sessions__session_id__feed_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedItem"
+                  },
+                  "title": "Response Get Feed Api V1 Modules M1 Disinfo Sessions  Session Id  Feed Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/sessions/{session_id}/tick": {
+      "post": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab",
+          "simulation"
+        ],
+        "summary": "Process Tick",
+        "operationId": "process_tick_api_v1_modules_m1_disinfo_sessions__session_id__tick_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m1-disinfo/overview": {
+      "get": {
+        "tags": [
+          "Module 1: Macro Disinfo Lab"
+        ],
+        "summary": "Get M1 Overview",
+        "operationId": "get_m1_overview_api_v1_modules_m1_disinfo_overview_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m2-scam/drills": {
+      "post": {
+        "tags": [
+          "Module 2: Scam Resilience Lab"
+        ],
+        "summary": "Create Drill",
+        "operationId": "create_drill_api_v1_modules_m2_scam_drills_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartScamDrillRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScamDrillSession"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m2-scam/drills/turn": {
+      "post": {
+        "tags": [
+          "Module 2: Scam Resilience Lab"
+        ],
+        "summary": "Submit Turn",
+        "operationId": "submit_turn_api_v1_modules_m2_scam_drills_turn_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScamTurnRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m2-scam/models": {
+      "get": {
+        "tags": [
+          "Module 2: Scam Resilience Lab"
+        ],
+        "summary": "List Supported Models",
+        "operationId": "list_supported_models_api_v1_modules_m2_scam_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m3-deepfake/samples": {
+      "get": {
+        "tags": [
+          "Module 3: Deepfake Literacy Lab"
+        ],
+        "summary": "List Media Samples",
+        "operationId": "list_media_samples_api_v1_modules_m3_deepfake_samples_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MediaArtifactSample"
+                  },
+                  "type": "array",
+                  "title": "Response List Media Samples Api V1 Modules M3 Deepfake Samples Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m3-deepfake/inspect": {
+      "post": {
+        "tags": [
+          "Module 3: Deepfake Literacy Lab"
+        ],
+        "summary": "Run Inspection",
+        "operationId": "run_inspection_api_v1_modules_m3_deepfake_inspect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeepfakeInspectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeepfakeForensicReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m4-osint/analyze": {
+      "post": {
+        "tags": [
+          "Module 4: OSINT & DLP Lab"
+        ],
+        "summary": "Analyze Osint Exposure",
+        "operationId": "analyze_osint_exposure_api_v1_modules_m4_osint_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OSINTFootprintSubmission"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OSINTExposureReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/m5-echo/simulate-feed": {
+      "post": {
+        "tags": [
+          "Module 5: Echo Chamber Lab"
+        ],
+        "summary": "Simulate Recommender Feed",
+        "operationId": "simulate_recommender_feed_api_v1_modules_m5_echo_simulate_feed_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommenderTuningRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommenderSimulationResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionType": {
+        "type": "string",
+        "enum": [
+          "DEPLOY_BOT_SWARM",
+          "AI_DEEPFAKE_ARTICLE",
+          "MICROTARGET_CLUSTER",
+          "ASTROTURF_COMMENTS",
+          "PREBUNK_CAMPAIGN",
+          "EVIDENCE_DEBUNK",
+          "VELOCITY_FRICTION",
+          "PUBLIC_ADVISORY",
+          "CRISIS_INJECT"
+        ],
+        "title": "ActionType"
+      },
+      "AdminCreatePostRequest": {
+        "properties": {
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Name",
+            "default": "Centrum Informacji"
+          },
+          "author_handle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Handle",
+            "default": "@CentrumInfo"
+          },
+          "author_avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Avatar",
+            "default": ""
+          },
+          "media_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Url"
+          },
+          "is_verified": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Verified",
+            "default": false
+          },
+          "outrage_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outrage Score",
+            "default": 0.5
+          },
+          "bias_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bias Score",
+            "default": 0.0
+          },
+          "virality_velocity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Virality Velocity",
+            "default": 1.0
+          },
+          "target_cluster": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Cluster"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "title": "AdminCreatePostRequest"
+      },
+      "CandidateFeedPost": {
+        "properties": {
+          "post_id": {
+            "type": "string",
+            "title": "Post Id"
+          },
+          "headline": {
+            "type": "string",
+            "title": "Headline"
+          },
+          "cluster_stance": {
+            "type": "string",
+            "title": "Cluster Stance"
+          },
+          "outrage_intensity": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Outrage Intensity"
+          },
+          "bridging_novelty": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Bridging Novelty"
+          },
+          "computed_rank_score": {
+            "type": "number",
+            "title": "Computed Rank Score",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "post_id",
+          "headline",
+          "cluster_stance",
+          "outrage_intensity",
+          "bridging_novelty"
+        ],
+        "title": "CandidateFeedPost"
+      },
+      "Comment": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "author_handle": {
+            "type": "string",
+            "title": "Author Handle"
+          },
+          "author_avatar": {
+            "type": "string",
+            "title": "Author Avatar"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "is_bot": {
+            "type": "boolean",
+            "title": "Is Bot",
+            "default": false
+          },
+          "likes_count": {
+            "type": "integer",
+            "title": "Likes Count",
+            "default": 0
+          },
+          "created_at": {
+            "type": "number",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "author_name",
+          "author_handle",
+          "author_avatar",
+          "content"
+        ],
+        "title": "Comment"
+      },
+      "CreateInviteRequest": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "team_quota": {
+            "type": "integer",
+            "title": "Team Quota",
+            "default": 25
+          },
+          "validity_hours": {
+            "type": "integer",
+            "title": "Validity Hours",
+            "default": 24
+          }
+        },
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "title": "CreateInviteRequest"
+      },
+      "CreateInviteResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "join_url_path": {
+            "type": "string",
+            "title": "Join Url Path"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "join_url_path",
+          "role",
+          "session_id"
+        ],
+        "title": "CreateInviteResponse"
+      },
+      "CreateSessionRequest": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "default": "Poland Power Grid Panic 2026"
+          },
+          "scenario_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Id",
+            "default": "poland-grid-panic-2026"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "default": "en"
+          },
+          "max_ticks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Ticks",
+            "default": 40
+          }
+        },
+        "type": "object",
+        "title": "CreateSessionRequest"
+      },
+      "DeepfakeForensicReport": {
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "title": "Sample Id"
+          },
+          "adk_pipeline_name": {
+            "type": "string",
+            "title": "Adk Pipeline Name"
+          },
+          "c2pa_status": {
+            "type": "string",
+            "title": "C2Pa Status"
+          },
+          "synthid_detected": {
+            "type": "boolean",
+            "title": "Synthid Detected"
+          },
+          "is_synthetic_verdict": {
+            "type": "boolean",
+            "title": "Is Synthetic Verdict"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score"
+          },
+          "visual_and_audio_anomalies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Visual And Audio Anomalies"
+          },
+          "user_accuracy_score": {
+            "type": "number",
+            "title": "User Accuracy Score"
+          },
+          "explainer_summary": {
+            "type": "string",
+            "title": "Explainer Summary"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_id",
+          "adk_pipeline_name",
+          "c2pa_status",
+          "synthid_detected",
+          "is_synthetic_verdict",
+          "confidence_score",
+          "visual_and_audio_anomalies",
+          "user_accuracy_score",
+          "explainer_summary",
+          "citations"
+        ],
+        "title": "DeepfakeForensicReport"
+      },
+      "DeepfakeInspectionRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "demo_user"
+          },
+          "sample_id": {
+            "type": "string",
+            "title": "Sample Id",
+            "default": "deepfake-grid-minister-video"
+          },
+          "user_verdict_is_synthetic": {
+            "type": "boolean",
+            "title": "User Verdict Is Synthetic",
+            "default": true
+          },
+          "user_spotted_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "User Spotted Markers"
+          }
+        },
+        "type": "object",
+        "title": "DeepfakeInspectionRequest"
+      },
+      "DemographicCluster": {
+        "type": "string",
+        "enum": [
+          "Hyper-Partisan A",
+          "Hyper-Partisan B",
+          "Institutional Skeptics",
+          "Susceptible Neutrals",
+          "Apolitical Youth"
+        ],
+        "title": "DemographicCluster"
+      },
+      "DigitalHygienePassport": {
+        "properties": {
+          "user_or_session_id": {
+            "type": "string",
+            "title": "User Or Session Id"
+          },
+          "overall_hygiene_index": {
+            "type": "number",
+            "title": "Overall Hygiene Index"
+          },
+          "maturity_tier": {
+            "type": "string",
+            "title": "Maturity Tier"
+          },
+          "dimensions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModuleScoreEntry"
+            },
+            "type": "object",
+            "title": "Dimensions"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_or_session_id",
+          "overall_hygiene_index",
+          "maturity_tier",
+          "dimensions",
+          "recommendations"
+        ],
+        "title": "DigitalHygienePassport"
+      },
+      "EmergencyInjectRequest": {
+        "properties": {
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement"
+          },
+          "institution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Institution"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity",
+            "default": "HIGH"
+          }
+        },
+        "type": "object",
+        "title": "EmergencyInjectRequest"
+      },
+      "FeedItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "author_name": {
+            "type": "string",
+            "title": "Author Name"
+          },
+          "author_handle": {
+            "type": "string",
+            "title": "Author Handle"
+          },
+          "author_avatar": {
+            "type": "string",
+            "title": "Author Avatar"
+          },
+          "is_verified": {
+            "type": "boolean",
+            "title": "Is Verified",
+            "default": false
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "media_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Url"
+          },
+          "created_at_tick": {
+            "type": "integer",
+            "title": "Created At Tick",
+            "default": 0
+          },
+          "timestamp": {
+            "type": "number",
+            "title": "Timestamp"
+          },
+          "outrage_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Outrage Score",
+            "default": 0.5
+          },
+          "bias_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Bias Score",
+            "default": 0.0
+          },
+          "is_amplified": {
+            "type": "boolean",
+            "title": "Is Amplified",
+            "default": false
+          },
+          "is_debunked": {
+            "type": "boolean",
+            "title": "Is Debunked",
+            "default": false
+          },
+          "debunk_friction": {
+            "type": "number",
+            "title": "Debunk Friction",
+            "default": 0.0
+          },
+          "prebunk_shield_active": {
+            "type": "boolean",
+            "title": "Prebunk Shield Active",
+            "default": false
+          },
+          "fact_check_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fact Check Label"
+          },
+          "virality_velocity": {
+            "type": "number",
+            "title": "Virality Velocity",
+            "default": 1.0
+          },
+          "shares_count": {
+            "type": "integer",
+            "title": "Shares Count",
+            "default": 0
+          },
+          "likes_count": {
+            "type": "integer",
+            "title": "Likes Count",
+            "default": 0
+          },
+          "comments_count": {
+            "type": "integer",
+            "title": "Comments Count",
+            "default": 0
+          },
+          "targeted_clusters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Targeted Clusters"
+          },
+          "comments": {
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            },
+            "type": "array",
+            "title": "Comments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "session_id",
+          "author_name",
+          "author_handle",
+          "author_avatar",
+          "content"
+        ],
+        "title": "FeedItem"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HeartbeatRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "handle": {
+            "type": "string",
+            "title": "Handle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "role",
+          "handle"
+        ],
+        "title": "HeartbeatRequest"
+      },
+      "JoinByTokenRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "JoinByTokenRequest"
+      },
+      "JoinByTokenResponse": {
+        "properties": {
+          "firebase_custom_token": {
+            "type": "string",
+            "title": "Firebase Custom Token"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "assigned_role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "assigned_handle": {
+            "type": "string",
+            "title": "Assigned Handle"
+          },
+          "session_status": {
+            "$ref": "#/components/schemas/SessionStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "firebase_custom_token",
+          "session_id",
+          "assigned_role",
+          "assigned_handle",
+          "session_status"
+        ],
+        "title": "JoinByTokenResponse"
+      },
+      "MediaArtifactSample": {
+        "properties": {
+          "sample_id": {
+            "type": "string",
+            "title": "Sample Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "media_type": {
+            "type": "string",
+            "enum": [
+              "IMAGE",
+              "AUDIO_VOICE_CLONE",
+              "VIDEO_SNIPPET"
+            ],
+            "title": "Media Type"
+          },
+          "gcs_uri": {
+            "type": "string",
+            "title": "Gcs Uri"
+          },
+          "c2pa_manifest_status": {
+            "type": "string",
+            "enum": [
+              "VALID_SIGNED",
+              "STRIPPED_OR_MISSING",
+              "TAMPERED_SIGNATURE"
+            ],
+            "title": "C2Pa Manifest Status"
+          },
+          "synthid_watermark_detected": {
+            "type": "boolean",
+            "title": "Synthid Watermark Detected"
+          },
+          "ground_truth_is_synthetic": {
+            "type": "boolean",
+            "title": "Ground Truth Is Synthetic"
+          },
+          "forensic_markers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Forensic Markers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sample_id",
+          "title",
+          "media_type",
+          "gcs_uri",
+          "c2pa_manifest_status",
+          "synthid_watermark_detected",
+          "ground_truth_is_synthetic",
+          "forensic_markers"
+        ],
+        "title": "MediaArtifactSample"
+      },
+      "ModuleScoreEntry": {
+        "properties": {
+          "module_id": {
+            "type": "string",
+            "title": "Module Id"
+          },
+          "dimension_label": {
+            "type": "string",
+            "title": "Dimension Label"
+          },
+          "score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "default": 50.0
+          },
+          "completed_exercises": {
+            "type": "integer",
+            "title": "Completed Exercises",
+            "default": 0
+          },
+          "last_takeaway": {
+            "type": "string",
+            "title": "Last Takeaway",
+            "default": "Pending lab completion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module_id",
+          "dimension_label"
+        ],
+        "title": "ModuleScoreEntry"
+      },
+      "OSINTExposureReport": {
+        "properties": {
+          "adk_pipeline_name": {
+            "type": "string",
+            "title": "Adk Pipeline Name"
+          },
+          "exposure_risk_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Exposure Risk Score"
+          },
+          "hygiene_resilience_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Hygiene Resilience Score"
+          },
+          "discovered_pii_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Discovered Pii Counts"
+          },
+          "total_redactions": {
+            "type": "integer",
+            "title": "Total Redactions"
+          },
+          "simulated_attacker_pretext": {
+            "type": "string",
+            "title": "Simulated Attacker Pretext"
+          },
+          "dlp_remediated_profile": {
+            "type": "string",
+            "title": "Dlp Remediated Profile"
+          },
+          "remediation_checklist": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Remediation Checklist"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "adk_pipeline_name",
+          "exposure_risk_score",
+          "hygiene_resilience_score",
+          "discovered_pii_counts",
+          "total_redactions",
+          "simulated_attacker_pretext",
+          "dlp_remediated_profile",
+          "remediation_checklist",
+          "citations"
+        ],
+        "title": "OSINTExposureReport"
+      },
+      "OSINTFootprintSubmission": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "demo_user"
+          },
+          "public_bio_and_posts": {
+            "type": "string",
+            "title": "Public Bio And Posts",
+            "default": "Senior SCADA Grid Engineer at PSE Warsaw. Direct mobile: +48 601 234 567, corporate email: j.kowalski@pse-grid.pl. Photo EXIF: 52.2297\u00b0 N, 21.0122\u00b0 E. Reimbursement IBAN: PL61 1090 1014 0000 0712 1981 2874."
+          }
+        },
+        "type": "object",
+        "title": "OSINTFootprintSubmission"
+      },
+      "PlayerAction": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "team": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType"
+          },
+          "target_post_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Post Id"
+          },
+          "target_cluster": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemographicCluster"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "custom_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Prompt"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "resource_cost": {
+            "type": "number",
+            "title": "Resource Cost",
+            "default": 0.0
+          },
+          "tick": {
+            "type": "integer",
+            "title": "Tick",
+            "default": 0
+          },
+          "timestamp": {
+            "type": "number",
+            "title": "Timestamp"
+          },
+          "is_processed": {
+            "type": "boolean",
+            "title": "Is Processed",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "session_id",
+          "user_id",
+          "team",
+          "action_type"
+        ],
+        "title": "PlayerAction"
+      },
+      "PlayerPresence": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "handle": {
+            "type": "string",
+            "title": "Handle"
+          },
+          "last_heartbeat": {
+            "type": "number",
+            "title": "Last Heartbeat"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "role",
+          "handle"
+        ],
+        "title": "PlayerPresence"
+      },
+      "RebalanceUserRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "new_role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "new_role"
+        ],
+        "title": "RebalanceUserRequest"
+      },
+      "RecommenderSimulationResult": {
+        "properties": {
+          "ranked_feed": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateFeedPost"
+            },
+            "type": "array",
+            "title": "Ranked Feed"
+          },
+          "shannon_viewpoint_entropy": {
+            "type": "number",
+            "title": "Shannon Viewpoint Entropy"
+          },
+          "echo_chamber_radius": {
+            "type": "number",
+            "title": "Echo Chamber Radius"
+          },
+          "polarization_drift_alert": {
+            "type": "boolean",
+            "title": "Polarization Drift Alert"
+          },
+          "autonomy_resilience_score": {
+            "type": "number",
+            "title": "Autonomy Resilience Score"
+          },
+          "adk_coach_explanation": {
+            "type": "string",
+            "title": "Adk Coach Explanation"
+          },
+          "dsa_compliance_citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dsa Compliance Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ranked_feed",
+          "shannon_viewpoint_entropy",
+          "echo_chamber_radius",
+          "polarization_drift_alert",
+          "autonomy_resilience_score",
+          "adk_coach_explanation",
+          "dsa_compliance_citations"
+        ],
+        "title": "RecommenderSimulationResult"
+      },
+      "RecommenderTuningRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "demo_user"
+          },
+          "user_interest_query": {
+            "type": "string",
+            "title": "User Interest Query",
+            "default": "grid blackout outrage sabotage"
+          },
+          "w_outrage": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "W Outrage",
+            "default": 0.85
+          },
+          "w_affinity": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "W Affinity",
+            "default": 0.75
+          },
+          "w_bridging_diversity": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "W Bridging Diversity",
+            "default": 0.1
+          },
+          "top_k": {
+            "type": "integer",
+            "maximum": 6.0,
+            "minimum": 2.0,
+            "title": "Top K",
+            "default": 4
+          }
+        },
+        "type": "object",
+        "title": "RecommenderTuningRequest"
+      },
+      "ScamCoachEvaluation": {
+        "properties": {
+          "resilience_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Resilience Score",
+            "default": 85.0
+          },
+          "detected_red_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Detected Red Flags"
+          },
+          "tools_invoked": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools Invoked"
+          },
+          "coach_feedback": {
+            "type": "string",
+            "title": "Coach Feedback"
+          },
+          "grounded_citations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Grounded Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detected_red_flags",
+          "tools_invoked",
+          "coach_feedback",
+          "grounded_citations"
+        ],
+        "title": "ScamCoachEvaluation"
+      },
+      "ScamDrillSession": {
+        "properties": {
+          "drill_id": {
+            "type": "string",
+            "title": "Drill Id"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "operative_model": {
+            "type": "string",
+            "title": "Operative Model"
+          },
+          "provider_type": {
+            "type": "string",
+            "title": "Provider Type"
+          },
+          "turns": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Turns"
+          },
+          "tools_used": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tools Used"
+          },
+          "latest_evaluation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScamCoachEvaluation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "drill_id",
+          "user_id",
+          "scenario_id",
+          "operative_model",
+          "provider_type"
+        ],
+        "title": "ScamDrillSession"
+      },
+      "ScamTurnRequest": {
+        "properties": {
+          "drill_id": {
+            "type": "string",
+            "title": "Drill Id"
+          },
+          "user_message": {
+            "type": "string",
+            "title": "User Message"
+          },
+          "invoke_tools": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "inspect_headers",
+                "lookup_whois",
+                "out_of_band_callback"
+              ]
+            },
+            "type": "array",
+            "title": "Invoke Tools"
+          }
+        },
+        "type": "object",
+        "required": [
+          "drill_id",
+          "user_message"
+        ],
+        "title": "ScamTurnRequest"
+      },
+      "Session": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id",
+            "default": "poland-grid-panic-2026"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "default": "Poland Power Grid Panic 2026"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SessionStatus",
+            "default": "LOBBY"
+          },
+          "current_tick": {
+            "type": "integer",
+            "title": "Current Tick",
+            "default": 0
+          },
+          "max_ticks": {
+            "type": "integer",
+            "title": "Max Ticks",
+            "default": 40
+          },
+          "time_per_tick_seconds": {
+            "type": "integer",
+            "title": "Time Per Tick Seconds",
+            "default": 10
+          },
+          "created_at": {
+            "type": "number",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "number",
+            "title": "Updated At"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/SimulationMetrics"
+          },
+          "token_usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          },
+          "budgets": {
+            "$ref": "#/components/schemas/TeamBudgets"
+          },
+          "players": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PlayerPresence"
+            },
+            "type": "object",
+            "title": "Players"
+          },
+          "history_metrics": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "History Metrics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "Session"
+      },
+      "SessionStatus": {
+        "type": "string",
+        "enum": [
+          "LOBBY",
+          "ACTIVE",
+          "PAUSED",
+          "COMPLETED"
+        ],
+        "title": "SessionStatus"
+      },
+      "SimulationMetrics": {
+        "properties": {
+          "virality_index": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Virality Index",
+            "default": 0.0
+          },
+          "polarization_score": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Polarization Score",
+            "default": 15.0
+          },
+          "institutional_trust": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Institutional Trust",
+            "default": 75.0
+          },
+          "disinformation_reach": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Disinformation Reach",
+            "default": 0.0
+          },
+          "debunk_effectiveness": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Debunk Effectiveness",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "title": "SimulationMetrics"
+      },
+      "StartScamDrillRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "default": "demo_user"
+          },
+          "scenario_id": {
+            "type": "string",
+            "enum": [
+              "bec-ceo-wire-2026",
+              "it-mfa-reset-2026"
+            ],
+            "title": "Scenario Id",
+            "default": "bec-ceo-wire-2026"
+          },
+          "operative_model": {
+            "type": "string",
+            "enum": [
+              "gemini-2.5-flash",
+              "deepseek/deepseek-chat",
+              "deepseek/deepseek-reasoner"
+            ],
+            "title": "Operative Model",
+            "default": "gemini-2.5-flash"
+          }
+        },
+        "type": "object",
+        "title": "StartScamDrillRequest"
+      },
+      "SubmitActionRequest": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "team": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "action_type": {
+            "$ref": "#/components/schemas/ActionType"
+          },
+          "target_post_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Post Id"
+          },
+          "target_cluster": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemographicCluster"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "custom_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Prompt"
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "team",
+          "action_type"
+        ],
+        "title": "SubmitActionRequest"
+      },
+      "TeamBudgets": {
+        "properties": {
+          "red_team_capital": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Red Team Capital",
+            "default": 50.0
+          },
+          "blue_team_bandwidth": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Blue Team Bandwidth",
+            "default": 50.0
+          },
+          "red_cooldowns": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Red Cooldowns"
+          },
+          "blue_cooldowns": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Blue Cooldowns"
+          }
+        },
+        "type": "object",
+        "title": "TeamBudgets"
+      },
+      "TokenUsage": {
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "title": "Prompt Tokens",
+            "default": 0
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "title": "Completion Tokens",
+            "default": 0
+          },
+          "total_tokens": {
+            "type": "integer",
+            "title": "Total Tokens",
+            "default": 0
+          },
+          "cost_usd_estimated": {
+            "type": "number",
+            "title": "Cost Usd Estimated",
+            "default": 0.0
+          },
+          "budget_limit_tokens": {
+            "type": "integer",
+            "title": "Budget Limit Tokens",
+            "default": 300000
+          },
+          "is_throttled": {
+            "type": "boolean",
+            "title": "Is Throttled",
+            "default": false
+          },
+          "is_circuit_breaker_tripped": {
+            "type": "boolean",
+            "title": "Is Circuit Breaker Tripped",
+            "default": false
+          },
+          "requests_count": {
+            "type": "integer",
+            "title": "Requests Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "TokenUsage"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "FACILITATOR",
+          "RED_TEAM",
+          "BLUE_TEAM",
+          "OBSERVER"
+        ],
+        "title": "UserRole"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

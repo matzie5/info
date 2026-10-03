@@ -7,8 +7,6 @@ from app.models.feed import FeedItem, Comment
 from app.models.action import PlayerAction, ActionType
 from app.engine.network_graph import AudienceNetwork
 from app.engine.token_governor import TokenGovernor
-from app.ai.adk_service import adk_service
-
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +26,14 @@ class ActionsEvaluator:
         """
         Executes all submitted player actions for the tick and returns updated feed items.
         """
+        from app.ai.adk_service import adk_service
+
         updated_feed = list(feed_items)
+
+        if token_governor and token_governor.is_circuit_breaker_tripped():
+            logger.info("ActionsEvaluator: Token circuit breaker tripped; operating in offline fallback mode.")
+        elif token_governor and token_governor.is_throttled():
+            logger.warning("ActionsEvaluator: Token governor throttled (75%%-99%% tier); reducing comment frequency.")
 
         for action in pending_actions:
             logger.info("Executing action: %s by %s (%s)", action.action_type, action.user_id, action.team)
@@ -44,9 +49,10 @@ class ActionsEvaluator:
                     target.shares_count += 45
                     target.likes_count += 120
                     # Add simulated bot comments
+                    bot_count = 1 if token_governor and token_governor.is_throttled() else 3
                     bot_comments = adk_service.generate_bot_comments(
                         headline=target.headline or target.content[:50],
-                        count=3,
+                        count=bot_count,
                         language=session.language,
                         token_governor=token_governor
                     )
@@ -103,9 +109,10 @@ class ActionsEvaluator:
                 if not target and updated_feed:
                     target = updated_feed[0]
                 if target:
+                    bot_count = 2 if token_governor and token_governor.is_throttled() else 4
                     bot_comments = adk_service.generate_bot_comments(
                         headline=target.headline or target.content[:50],
-                        count=4,
+                        count=bot_count,
                         language=session.language,
                         token_governor=token_governor
                     )
@@ -177,7 +184,8 @@ class ActionsEvaluator:
             elif action.action_type == ActionType.PUBLIC_ADVISORY or action.action_type == ActionType.CRISIS_INJECT:
                 inject = adk_service.generate_crisis_inject(
                     language=session.language,
-                    token_governor=token_governor
+                    token_governor=token_governor,
+                    scenario_id=session.scenario_id,
                 )
                 advisory_post = FeedItem(
                     id=f"post_{uuid.uuid4().hex[:6]}",

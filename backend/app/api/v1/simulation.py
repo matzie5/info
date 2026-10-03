@@ -1,9 +1,10 @@
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from app.models.session import SessionStatus
 from app.services.firestore_service import FirestoreService
 from app.services.cloud_tasks_service import cloud_tasks_service
+from app.services.auth_service import verify_oidc_tick_token
 from app.engine.simulation_orchestrator import SimulationOrchestrator
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ class TickRequest(BaseModel):
     session_id: str
 
 @router.post("/{session_id}/tick")
-def process_tick(session_id: str):
+def process_tick(session_id: str, _: bool = Depends(verify_oidc_tick_token)):
     fs = FirestoreService.get_instance()
     session = fs.get_session(session_id)
     if not session:

@@ -223,3 +223,13 @@ class AudienceNetwork:
                 "total_nodes": len(nodes),
             }
         return metrics
+
+    def export_snapshot(self) -> Dict[str, dict]:
+        return {str(idx): node.model_dump() for idx, node in self.nodes.items()}
+
+    def restore_snapshot(self, snapshot: Dict[str, dict]) -> None:
+        for idx_str, data in (snapshot or {}).items():
+            idx = int(idx_str)
+            if idx in self.nodes:
+                self.nodes[idx] = AudienceNode(**data)
+

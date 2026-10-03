@@ -14,6 +14,7 @@ export class FirestoreSyncService {
   public readonly isSyncing = signal<boolean>(false);
 
   private pollIntervalId: any = null;
+  private unsubscribeSnapshot: (() => void) | null = null;
   private currentSessionId: string | null = null;
 
   initUserFromStorage() {
@@ -45,10 +46,41 @@ export class FirestoreSyncService {
     }, intervalMs);
   }
 
+  attachRealtimeSnapshotListener(
+    sessionId: string,
+    onSnapshotFactory?: (sessionId: string, cb: (data: Session) => void) => () => void
+  ): () => void {
+    this.stopSync();
+    this.currentSessionId = sessionId;
+
+    if (onSnapshotFactory) {
+      try {
+        const unsubscribe = onSnapshotFactory(sessionId, (data: Session) => {
+          this.session.set(data);
+        });
+        if (typeof unsubscribe === 'function') {
+          this.unsubscribeSnapshot = unsubscribe;
+          this.fetchData(sessionId);
+          return () => this.stopSync();
+        }
+      } catch (err) {
+        console.warn('Realtime snapshot listener failed, falling back to polling:', err);
+      }
+    }
+
+    // Fallback to 2.5s setInterval polling loop
+    this.startSync(sessionId, 2500);
+    return () => this.stopSync();
+  }
+
   stopSync() {
     if (this.pollIntervalId) {
       clearInterval(this.pollIntervalId);
       this.pollIntervalId = null;
+    }
+    if (this.unsubscribeSnapshot) {
+      this.unsubscribeSnapshot();
+      this.unsubscribeSnapshot = null;
     }
     this.currentSessionId = null;
   }

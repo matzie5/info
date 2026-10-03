@@ -1,8 +1,8 @@
 from __future__ import annotations
-import json
 import logging
-import os
 from typing import List, Optional, TYPE_CHECKING
+
+from app.config import settings
 from app.ai.schemas import AgentCommentary, SpoofedArticle, CrisisInjectPayload
 from app.ai.prompt_templates import get_prompt
 from app.ai.seed_library import SeedLibrary
@@ -15,73 +15,62 @@ logger = logging.getLogger(__name__)
 
 class ADKAgentService:
     """
-    Coordinates Agent Development Kit (ADK) and Gemini 3.5 Flash inference
-    with strict JSON response validation and offline SeedLibrary circuit breaker fallback.
+    Coordinates Google ADK (google-adk) runtime inference, DLP guardrails,
+    and multi-corpus RAG grounding via keyless Vertex AI ADC with offline SeedLibrary fallback.
     """
 
     def __init__(self):
-        self._gemini_client = None
-        self._initialized = False
-        self._init_client()
+        from app.platform.adk_runtime import adk_runtime
+        from app.platform.dlp_guardrail import dlp_guardrail
+        from app.platform.rag_engine import rag_engine
 
-    def _init_client(self):
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-        if api_key:
-            try:
-                from google import genai
-                self._gemini_client = genai.Client(api_key=api_key)
-                self._initialized = True
-                logger.info("Google GenAI client initialized successfully")
-            except Exception as e:
-                logger.warning("Could not initialize Google GenAI client: %s; using SeedLibrary fallback", e)
-        else:
-            logger.info("No GEMINI_API_KEY found; ADKAgentService will utilize offline SeedLibrary")
+        self.runtime = adk_runtime
+        self.dlp = dlp_guardrail
+        self.rag = rag_engine
 
     def generate_spoofed_article(
         self,
         language: str = "en",
         prompt: Optional[str] = None,
         cluster: Optional[str] = None,
-        token_governor: Optional[TokenGovernor] = None
+        token_governor: Optional[TokenGovernor] = None,
     ) -> SpoofedArticle:
-        # Check circuit breaker
+        # Check circuit breaker (>=100% budget)
         if token_governor and token_governor.is_circuit_breaker_tripped():
             logger.info("Token circuit breaker tripped; serving offline seed article")
             return SeedLibrary.get_article(language=language, cluster=cluster)
 
-        if not self._gemini_client:
+        # Check throttled tier (75%–99% budget)
+        if token_governor and token_governor.is_throttled():
+            logger.warning("Token budget throttled (75%%-99%% tier); serving offline seed article")
             return SeedLibrary.get_article(language=language, cluster=cluster)
 
-        try:
-            formatted_prompt = get_prompt(
-                "deepfake_article",
-                language=language,
-                cluster=cluster or "Hyper-Partisan A",
-                prompt=prompt or "Rolling blackout rumors"
-            )
-            response = self._gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=formatted_prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": SpoofedArticle,
-                }
-            )
-            if token_governor and hasattr(response, "usage_metadata") and response.usage_metadata:
-                token_governor.record_usage(
-                    prompt_tokens=response.usage_metadata.prompt_token_count or 150,
-                    completion_tokens=response.usage_metadata.candidates_token_count or 200
+        # Sanitize custom prompt with DLP guardrail
+        clean_prompt = prompt
+        if prompt:
+            inspection = self.dlp.inspect_and_sanitize(prompt)
+            if not inspection.is_allowed:
+                logger.warning(
+                    "Prompt blocked by DLP safety guardrail (%s); falling back to seed article",
+                    inspection.triggered_rule,
                 )
-            elif token_governor:
-                token_governor.record_usage(150, 200)
+                return SeedLibrary.get_article(language=language, cluster=cluster)
+            clean_prompt = inspection.sanitized_text
 
-            article_data = json.loads(response.text)
-            return SpoofedArticle(**article_data)
-        except Exception as e:
-            logger.warning("Live GenAI call failed (%s); falling back to seed library", e)
-            if token_governor:
-                token_governor.record_usage(50, 50)
-            return SeedLibrary.get_article(language=language, cluster=cluster)
+        formatted_prompt = get_prompt(
+            "deepfake_article",
+            language=language,
+            cluster=cluster or "Hyper-Partisan A",
+            prompt=clean_prompt or "Rolling blackout rumors",
+        )
+
+        return self.runtime.invoke_structured(
+            prompt=formatted_prompt,
+            schema_cls=SpoofedArticle,
+            task_complexity="FAST_REACTION",
+            token_governor=token_governor,
+            fallback_factory=lambda: SeedLibrary.get_article(language=language, cluster=cluster),
+        )
 
     def generate_influencer_comment(
         self,
@@ -90,61 +79,77 @@ class ADKAgentService:
         outrage_score: float,
         persona: str = "investigative_journalist",
         language: str = "en",
-        token_governor: Optional[TokenGovernor] = None
+        token_governor: Optional[TokenGovernor] = None,
     ) -> AgentCommentary:
+        # Check circuit breaker (>=100% budget)
         if token_governor and token_governor.is_circuit_breaker_tripped():
+            logger.info("Token circuit breaker tripped; serving offline seed commentary")
             return SeedLibrary.get_influencer_comment(language=language, persona_role=persona)
 
-        if not self._gemini_client:
+        # Check throttled tier (75%–99% budget)
+        if token_governor and token_governor.is_throttled():
+            logger.warning("Token budget throttled (75%%-99%% tier); serving offline seed commentary")
             return SeedLibrary.get_influencer_comment(language=language, persona_role=persona)
 
-        try:
-            formatted_prompt = get_prompt(
-                "influencer_comment",
-                language=language,
-                persona=persona,
-                headline=headline,
-                body=body,
-                outrage=outrage_score
-            )
-            response = self._gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=formatted_prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": AgentCommentary,
-                }
-            )
-            if token_governor and hasattr(response, "usage_metadata") and response.usage_metadata:
-                token_governor.record_usage(
-                    prompt_tokens=response.usage_metadata.prompt_token_count or 100,
-                    completion_tokens=response.usage_metadata.candidates_token_count or 120
-                )
-            elif token_governor:
-                token_governor.record_usage(100, 120)
+        clean_headline = self.dlp.inspect_and_sanitize(headline).sanitized_text
+        clean_body = self.dlp.inspect_and_sanitize(body).sanitized_text
 
-            comment_data = json.loads(response.text)
-            return AgentCommentary(**comment_data)
-        except Exception as e:
-            logger.warning("Live influencer GenAI failed (%s); using seed library", e)
-            return SeedLibrary.get_influencer_comment(language=language, persona_role=persona)
+        formatted_prompt = get_prompt(
+            "influencer_comment",
+            language=language,
+            persona=persona,
+            headline=clean_headline,
+            body=clean_body,
+            outrage=outrage_score,
+        )
+
+        return self.runtime.invoke_structured(
+            prompt=formatted_prompt,
+            schema_cls=AgentCommentary,
+            task_complexity="FAST_REACTION",
+            token_governor=token_governor,
+            fallback_factory=lambda: SeedLibrary.get_influencer_comment(
+                language=language, persona_role=persona
+            ),
+        )
 
     def generate_bot_comments(
         self,
         headline: str,
         count: int = 3,
         language: str = "en",
-        token_governor: Optional[TokenGovernor] = None
+        token_governor: Optional[TokenGovernor] = None,
     ) -> List[str]:
-        # Bot comment storms can directly use the rich seed library or live API
+        if token_governor and token_governor.is_throttled():
+            count = max(1, count - 1)
         return SeedLibrary.get_bot_comments(language=language, count=count)
 
     def generate_crisis_inject(
         self,
         language: str = "en",
-        token_governor: Optional[TokenGovernor] = None
+        token_governor: Optional[TokenGovernor] = None,
+        scenario_id: Optional[str] = None,
     ) -> CrisisInjectPayload:
-        return SeedLibrary.get_crisis_inject(language=language)
+        base_inject = SeedLibrary.get_crisis_inject(scenario_id=scenario_id, language=language)
+
+        if settings.ENABLE_RAG_GROUNDING:
+            chunks = self.rag.retrieve(
+                "HVDC grid frequency reserve",
+                module_domain="m1_disinfo",
+                top_k=1,
+            )
+            citation = f"[{chunks[0].source_id}]" if chunks else "[PSE-GRID-2026-001]"
+            statement = base_inject.official_statement
+            if citation not in statement:
+                statement = f"{statement} Verified authority citation: {citation}."
+            return CrisisInjectPayload(
+                title=base_inject.title,
+                official_statement=statement,
+                institution=base_inject.institution,
+                severity=base_inject.severity,
+                trust_impact=base_inject.trust_impact,
+            )
+        return base_inject
 
 
 adk_service = ADKAgentService()

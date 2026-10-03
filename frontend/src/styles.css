@@ -7,7 +7,30 @@
   --font-sans: 'Lato', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Color Palette */
+  /* Light Theme Color Palette */
+  --bg-night: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-glass: rgba(255, 255, 255, 0.92);
+  --border-glass: rgba(15, 23, 42, 0.12);
+  --border-glass-light: rgba(15, 23, 42, 0.18);
+
+  --brand-defense: #65A30D;
+  --brand-defense-glow: rgba(101, 163, 13, 0.20);
+  --brand-virality: #D97706;
+  --brand-virality-glow: rgba(217, 119, 6, 0.20);
+
+  --adversary-red: #DC2626;
+  --adversary-red-glow: rgba(220, 38, 38, 0.20);
+  --defense-blue: #2563EB;
+  --defense-blue-glow: rgba(37, 99, 235, 0.20);
+
+  --text-main: #0F172A;
+  --text-muted: #475569;
+  --text-dim: #64748B;
+}
+
+html.dark, :root[data-theme="dark"] {
+  /* Dark Theme Color Palette */
   --bg-night: #0B0F17;
   --bg-surface: #141B26;
   --bg-surface-glass: rgba(20, 27, 38, 0.85);
@@ -42,6 +65,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Glass Card Surfaces */
@@ -74,20 +98,29 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.05);
+}
+html.dark ::-webkit-scrollbar-track {
   background: rgba(11, 15, 23, 0.5);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.20);
   border-radius: 3px;
 }
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+}
 ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.35);
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 
 /* Buttons */
 .btn-primary {
   background: var(--brand-defense);
-  color: #0B0F17;
+  color: #FFFFFF;
   font-weight: 700;
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
@@ -97,6 +130,9 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+}
+html.dark .btn-primary {
+  color: #0B0F17;
 }
 .btn-primary:hover:not(:disabled) {
   filter: brightness(1.15);
@@ -130,7 +166,7 @@ body {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.06);
   color: var(--text-main);
   font-weight: 600;
   padding: 0.6rem 1.2rem;
@@ -139,14 +175,20 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
 }
+html.dark .btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+}
 .btn-secondary:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.12);
+}
+html.dark .btn-secondary:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.14);
 }
 
 /* Inputs */
 .input-field {
   width: 100%;
-  background: rgba(11, 15, 23, 0.7);
+  background: #FFFFFF;
   border: 1px solid var(--border-glass-light);
   border-radius: 8px;
   padding: 0.6rem 0.9rem;
@@ -155,6 +197,9 @@ body {
   font-size: 0.95rem;
   outline: none;
   transition: border-color 0.2s;
+}
+html.dark .input-field {
+  background: rgba(11, 15, 23, 0.7);
 }
 .input-field:focus {
   border-color: var(--brand-defense);
@@ -173,22 +218,38 @@ body {
   letter-spacing: 0.05em;
 }
 .badge-red {
-  background: rgba(239, 68, 68, 0.15);
-  color: #F87171;
+  background: rgba(239, 68, 68, 0.12);
+  color: #DC2626;
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
+html.dark .badge-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #F87171;
+}
 .badge-blue {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60A5FA;
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563EB;
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
+html.dark .badge-blue {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+}
 .badge-green {
-  background: rgba(132, 170, 64, 0.15);
-  color: #A3E635;
+  background: rgba(101, 163, 13, 0.12);
+  color: #65A30D;
   border: 1px solid rgba(132, 170, 64, 0.3);
 }
+html.dark .badge-green {
+  background: rgba(132, 170, 64, 0.15);
+  color: #A3E635;
+}
 .badge-amber {
+  background: rgba(217, 119, 6, 0.12);
+  color: #D97706;
+  border: 1px solid rgba(249, 168, 28, 0.3);
+}
+html.dark .badge-amber {
   background: rgba(249, 168, 28, 0.15);
   color: #FBBF24;
-  border: 1px solid rgba(249, 168, 28, 0.3);
 }

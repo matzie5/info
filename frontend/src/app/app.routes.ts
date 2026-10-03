@@ -5,14 +5,49 @@ import { ArenaComponent } from './features/lab-arena/arena.component';
 import { AdminHudComponent } from './features/admin-hud/admin-hud.component';
 import { DebriefComponent } from './features/debrief/debrief.component';
 import { ClassroomComponent } from './features/classroom/classroom.component';
+import { PlatformShellComponent } from './features/platform-shell/platform-shell.component';
 
 export const routes: Routes = [
-  { path: '', component: LobbyComponent, pathMatch: 'full' },
+  {
+    path: '',
+    component: PlatformShellComponent,
+    children: [
+      { path: '', component: LobbyComponent, pathMatch: 'full' },
+      { path: 'modules/disinfo', component: LobbyComponent },
+      { path: 'arena/:sessionId', component: ArenaComponent },
+      { path: 'admin/:sessionId', component: AdminHudComponent },
+      { path: 'classroom/:sessionId', component: ClassroomComponent },
+      { path: 'debrief/:sessionId', component: DebriefComponent },
+      {
+        path: 'modules/scam-lab',
+        loadComponent: () =>
+          import('./features/modules/m2-scam-lab/m2-scam-lab.component').then(
+            (m) => m.M2ScamLabComponent
+          ),
+      },
+      {
+        path: 'modules/deepfake-lab',
+        loadComponent: () =>
+          import('./features/modules/m3-deepfake-lab/m3-deepfake-lab.component').then(
+            (m) => m.M3DeepfakeLabComponent
+          ),
+      },
+      {
+        path: 'modules/osint-exposure',
+        loadComponent: () =>
+          import('./features/modules/m4-osint-lab/m4-osint-lab.component').then(
+            (m) => m.M4OsintLabComponent
+          ),
+      },
+      {
+        path: 'modules/echo-chamber',
+        loadComponent: () =>
+          import('./features/modules/m5-echo-lab/m5-echo-lab.component').then(
+            (m) => m.M5EchoLabComponent
+          ),
+      },
+    ],
+  },
   { path: 'join', component: JoinComponent },
-  { path: 'arena/:sessionId', component: ArenaComponent },
-  { path: 'admin/:sessionId', component: AdminHudComponent },
-  { path: 'classroom/:sessionId', component: ClassroomComponent },
-  { path: 'debrief/:sessionId', component: DebriefComponent },
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
 ];
-

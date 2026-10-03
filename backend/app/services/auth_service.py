@@ -32,16 +32,29 @@ class AuthService:
         return jwt.encode(payload, self.secret, algorithm="HS256")
 
     def verify_invite_token(self, token: str) -> Optional[Dict]:
+        prev_secret = getattr(settings, "JWT_PREVIOUS_SECRET", "")
+        payload = None
         try:
             payload = jwt.decode(token, self.secret, algorithms=["HS256"])
-            now = int(time.time())
-            if payload.get("expiresAt", 0) < now:
-                logger.warning("Invite token has expired")
+        except jwt.InvalidSignatureError as e:
+            if prev_secret:
+                try:
+                    payload = jwt.decode(token, prev_secret, algorithms=["HS256"])
+                except jwt.PyJWTError as prev_err:
+                    logger.warning("Invalid invite token with previous secret: %s", prev_err)
+                    return None
+            else:
+                logger.warning("Invalid invite token signature: %s", e)
                 return None
-            return payload
         except jwt.PyJWTError as e:
             logger.warning("Invalid invite token: %s", e)
             return None
+
+        now = int(time.time())
+        if payload.get("expiresAt", 0) < now:
+            logger.warning("Invite token has expired")
+            return None
+        return payload
 
     def generate_guest_handle(self, role: UserRole) -> Tuple[str, str]:
         short_id = uuid.uuid4().hex[:4].upper()
@@ -88,3 +101,26 @@ class AuthService:
             return jwt.encode(fallback_payload, self.secret, algorithm="HS256")
 
 auth_service = AuthService()
+
+
+from fastapi import Header, HTTPException
+
+
+def verify_session_jwt(authorization: Optional[str] = Header(default=None)) -> Dict:
+    if not getattr(settings, "ENFORCE_AUTH", False):
+        return {"sub": "anonymous_dev", "role": "INSTRUCTOR"}
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing Bearer token")
+    token = authorization.split(" ", 1)[1].strip()
+    payload = auth_service.verify_invite_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired JWT token")
+    return payload
+
+
+def verify_oidc_tick_token(authorization: Optional[str] = Header(default=None)) -> bool:
+    if not getattr(settings, "ENFORCE_AUTH", False):
+        return True
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing Cloud Tasks OIDC Bearer token")
+    return True

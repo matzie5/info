@@ -1,14 +1,15 @@
 steps:
-  # 1. Run tests before build
+  # 1. Automated testing gate before container build
   - name: 'python:3.12-slim'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
+        pip install --upgrade pip
         pip install -r requirements.txt
         pytest tests/ -v
 
-  # 2. Build Docker container image
+  # 2. Build multi-stage Docker container image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
@@ -25,7 +26,7 @@ steps:
       - '--all-tags'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/infosphere/infosphere-simulation-api'
 
-  # 4. Deploy to Cloud Run Gen2
+  # 4. Deploy to Cloud Run Gen2 with OIDC protection and Secret Manager injections
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -38,7 +39,11 @@ steps:
       - '${_REGION}'
       - '--platform'
       - 'managed'
-      - '--allow-unauthenticated'
+      - '--no-allow-unauthenticated'
+      - '--set-env-vars'
+      - 'GOOGLE_GENAI_USE_VERTEXAI=TRUE'
+      - '--set-secrets'
+      - 'DEEPSEEK_API_KEY=infosphere-deepseek-api-key:latest,JWT_SECRET=infosphere-jwt-secret:latest'
 
 substitutions:
   _REGION: 'europe-west1'

@@ -46,6 +46,14 @@ class CloudTasksService:
                     "url": target_url,
                     "headers": {"Content-Type": "application/json"},
                     "body": payload,
+                    "oidc_token": {
+                        "service_account_email": getattr(
+                            settings,
+                            "SERVICE_ACCOUNT_EMAIL",
+                            "infosphere-engine-sa@infosphere-511.iam.gserviceaccount.com",
+                        ),
+                        "audience": base_url.rstrip("/"),
+                    },
                 },
                 "schedule_time": timestamp,
             }

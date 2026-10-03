@@ -17,6 +17,7 @@ class FirestoreService:
         self._mem_sessions: Dict[str, dict] = {}
         self._mem_feed: Dict[str, Dict[str, dict]] = {}
         self._mem_actions: Dict[str, List[dict]] = {}
+        self._mem_network_snapshots: Dict[str, Dict[str, dict]] = {}
         self._db: Optional[firestore.Client] = None
 
         if not in_memory:
@@ -166,3 +167,33 @@ class FirestoreService:
             self.save_session(session)
 
         return active_count > 0
+
+    # Network Graph Snapshots
+    def save_network_snapshot(self, session_id: str, snapshot: Dict[str, dict]) -> None:
+        self._mem_network_snapshots[session_id] = snapshot
+        if self.in_memory:
+            return
+
+        try:
+            doc_ref = self._db.collection("sessions").document(session_id).collection("network").document("snapshot")
+            doc_ref.set({"nodes": snapshot, "updated_at": time.time()})
+        except Exception as e:
+            logger.error("Error saving network snapshot for session %s: %s", session_id, e)
+
+    def load_network_snapshot(self, session_id: str) -> Optional[Dict[str, dict]]:
+        if self.in_memory:
+            return self._mem_network_snapshots.get(session_id)
+
+        try:
+            doc_ref = self._db.collection("sessions").document(session_id).collection("network").document("snapshot")
+            doc = doc_ref.get()
+            if doc.exists:
+                data = doc.to_dict() or {}
+                nodes = data.get("nodes", data)
+                self._mem_network_snapshots[session_id] = nodes
+                return nodes
+            return self._mem_network_snapshots.get(session_id)
+        except Exception as e:
+            logger.error("Error loading network snapshot for session %s: %s", session_id, e)
+            return self._mem_network_snapshots.get(session_id)
+
