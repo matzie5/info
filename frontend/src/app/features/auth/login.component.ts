@@ -18,17 +18,17 @@ import { LocaleService } from '../../core/i18n/locale.service';
           🛡️
         </div>
         <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-          {{ isRegisterMode() ? 'Create Operator Account' : 'Infosphere Security Login' }}
+          {{ isRegisterMode() ? locale.t('auth.register_title') : locale.t('auth.login_title') }}
         </h1>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-          {{ isRegisterMode() ? 'Register your authenticated credentials on the platform' : 'Access your individual dashboard, collected points & cohort challenges' }}
+          {{ isRegisterMode() ? locale.t('auth.register_sub') : locale.t('auth.login_sub') }}
         </p>
       </div>
 
       <!-- Quick Switch Demo Mode Pills -->
       <div class="mb-6 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2 text-center">
-          ⚡ 1-Click Fast Evaluator Sign-In
+          ⚡ {{ locale.t('auth.fast_eval') }}
         </span>
         <div class="grid grid-cols-3 gap-2">
           <button
@@ -55,7 +55,7 @@ import { LocaleService } from '../../core/i18n/locale.service';
       <!-- Standard Form -->
       <form (ngSubmit)="onSubmit()" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Username</label>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ locale.t('auth.username') }}</label>
           <input
             type="text"
             [(ngModel)]="username"
@@ -67,7 +67,7 @@ import { LocaleService } from '../../core/i18n/locale.service';
         </div>
 
         <div *ngIf="isRegisterMode()">
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Email</label>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ locale.t('auth.email') }}</label>
           <input
             type="email"
             [(ngModel)]="email"
@@ -79,7 +79,7 @@ import { LocaleService } from '../../core/i18n/locale.service';
         </div>
 
         <div *ngIf="isRegisterMode()">
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Display Name</label>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ locale.t('auth.display_name') }}</label>
           <input
             type="text"
             [(ngModel)]="displayName"
@@ -90,7 +90,7 @@ import { LocaleService } from '../../core/i18n/locale.service';
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">{{ locale.t('auth.password') }}</label>
           <input
             type="password"
             [(ngModel)]="password"
@@ -109,22 +109,22 @@ import { LocaleService } from '../../core/i18n/locale.service';
           type="submit"
           class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 transition-all mt-2"
         >
-          {{ isRegisterMode() ? 'Complete Registration' : 'Sign In' }}
+          {{ isRegisterMode() ? locale.t('auth.register_btn') : locale.t('auth.sign_in_btn') }}
         </button>
       </form>
 
       <!-- Toggle Mode -->
       <div class="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
         <span *ngIf="!isRegisterMode()">
-          Need an account?
+          {{ locale.t('auth.need_account') }}
           <button (click)="isRegisterMode.set(true)" class="text-indigo-500 font-bold hover:underline ml-1">
-            Register here
+            {{ locale.t('auth.register_link') }}
           </button>
         </span>
         <span *ngIf="isRegisterMode()">
-          Already have an account?
+          {{ locale.t('auth.have_account') }}
           <button (click)="isRegisterMode.set(false)" class="text-indigo-500 font-bold hover:underline ml-1">
-            Sign In here
+            {{ locale.t('auth.login_link') }}
           </button>
         </span>
       </div>

@@ -112,7 +112,7 @@ export interface DeepfakeForensicReport {
           <div class="glass-panel p-5 bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Media Forensic Workbench
+                {{ locale.t('m3.forensic_workbench') }}
               </span>
               <span class="text-[10px] font-mono text-emerald-600 dark:text-[#84AA40] uppercase">
                 Active: {{ selectedSample()?.sample_id }}
@@ -157,7 +157,7 @@ export interface DeepfakeForensicReport {
             <!-- User Verdict Input Form -->
             <div class="flex flex-col gap-3 pt-2">
               <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400 font-semibold">
-                1. Your Forensic Hypothesis
+                1. {{ locale.t('m3.hypothesis_header') }}
               </label>
 
               <div class="grid grid-cols-2 gap-3">
@@ -166,8 +166,8 @@ export interface DeepfakeForensicReport {
                   (click)="userVerdict.set(true)"
                   [ngClass]="userVerdict() ? 'bg-red-50 dark:bg-red-950/40 border-red-500 text-red-700 dark:text-red-300' : 'bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'"
                   class="p-3 rounded-lg border text-xs font-mono font-bold flex flex-col items-center gap-1 transition">
-                  <span class="text-sm">⚠ SYNTHETIC / AI DEEPFAKE</span>
-                  <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">Diffusion / TTS manipulation</span>
+                  <span class="text-sm">⚠ {{ locale.t('m3.synthetic_label') }}</span>
+                  <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">{{ locale.t('m3.synthetic_desc') }}</span>
                 </button>
 
                 <button
@@ -175,8 +175,8 @@ export interface DeepfakeForensicReport {
                   (click)="userVerdict.set(false)"
                   [ngClass]="!userVerdict() ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 dark:border-[#84AA40] text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400'"
                   class="p-3 rounded-lg border text-xs font-mono font-bold flex flex-col items-center gap-1 transition">
-                  <span class="text-sm">✓ AUTHENTIC CAPTURE</span>
-                  <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">Hardware C2PA Provenance</span>
+                  <span class="text-sm">✓ {{ locale.t('m3.authentic_label') }}</span>
+                  <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">{{ locale.t('m3.authentic_desc') }}</span>
                 </button>
               </div>
             </div>
@@ -219,7 +219,7 @@ export interface DeepfakeForensicReport {
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <div class="flex items-center gap-2">
                 <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  SequentialAgent Forensic Report
+                  {{ locale.t('m3.report_title') }}
                 </span>
               </div>
               <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">
@@ -239,7 +239,7 @@ export interface DeepfakeForensicReport {
             <div *ngIf="report() && !isInspecting()" class="flex flex-col gap-4">
               <!-- Points Awarded Gamification Banner -->
               <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
-                <span>🏆 Deepfake Analysis Succeeded! +150 Points awarded to your dashboard.</span>
+                <span>{{ locale.t('m3.points_awarded_banner') }}</span>
                 <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
               </div>
 
@@ -269,10 +269,10 @@ export interface DeepfakeForensicReport {
                 [ngClass]="report()?.is_synthetic_verdict ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-500/40' : 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-[#84AA40]/40'">
                 <div>
                   <div class="text-[10px] font-mono uppercase tracking-wider" [ngClass]="report()?.is_synthetic_verdict ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-[#84AA40]'">
-                    ADK Consensus Ground-Truth Verdict
+                    {{ locale.t('m3.ground_truth_verdict') }}
                   </div>
                   <div class="text-base font-mono font-bold" [ngClass]="report()?.is_synthetic_verdict ? 'text-red-700 dark:text-red-300' : 'text-emerald-700 dark:text-emerald-300'">
-                    {{ report()?.is_synthetic_verdict ? 'SYNTHETIC MANIPULATION (DEEPFAKE)' : 'AUTHENTIC HARDWARE PROVENANCE' }}
+                    {{ report()?.is_synthetic_verdict ? locale.t('m3.synthetic_label') : locale.t('m3.authentic_label') }}
                   </div>
                 </div>
                 <div class="text-right">
@@ -284,7 +284,7 @@ export interface DeepfakeForensicReport {
               <!-- 3-Stage Pipeline Breakdown -->
               <div class="flex flex-col gap-2">
                 <span class="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 font-semibold">
-                  3-Stage ADK SequentialAgent Trace
+                  {{ locale.t('m3.pipeline_trace') }}
                 </span>
 
                 <div class="space-y-2">

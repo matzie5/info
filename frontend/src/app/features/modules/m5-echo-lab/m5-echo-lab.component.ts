@@ -66,7 +66,7 @@ export interface RecommenderSimulationResult {
           <div class="glass-panel p-5 bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 flex flex-col gap-5 shadow-sm">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Recommender Hyperparameters
+                {{ locale.t('m5.recommender_controls') }}
               </span>
               <span class="text-[10px] font-mono text-emerald-600 dark:text-[#84AA40]">Active Tuning</span>
             </div>
@@ -200,7 +200,7 @@ export interface RecommenderSimulationResult {
           <div class="glass-panel p-5 bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Information Theory Telemetry & DSA Compliance
+                {{ locale.t('m5.telemetry_title') }}
               </span>
               <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">
                 Live Recommender Audit
@@ -209,7 +209,7 @@ export interface RecommenderSimulationResult {
 
             <!-- Points Awarded Gamification Banner -->
             <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
-              <span>🏆 Algorithm Balanced! +150 Points awarded to your dashboard.</span>
+              <span>{{ locale.t('m5.points_awarded_banner') }}</span>
               <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
             </div>
 

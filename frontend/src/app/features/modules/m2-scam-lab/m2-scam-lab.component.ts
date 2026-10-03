@@ -142,7 +142,7 @@ import { RouterModule } from '@angular/router';
               <div class="flex items-center gap-2">
                 <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Live Phishing Simulation Channel
+                  {{ locale.t('m2.simulation_channel') }}
                 </span>
                 <span *ngIf="session()?.drill_id" class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                   [{{ session()?.drill_id }}]
@@ -167,7 +167,7 @@ import { RouterModule } from '@angular/router';
                 <!-- Operative Message -->
                 <div *ngIf="turn.role === 'operative'" class="max-w-[90%] flex flex-col gap-1.5">
                   <div class="flex items-center gap-2 text-[10px] font-mono text-[#D97706] dark:text-[#F9A81C]">
-                    <span class="font-bold uppercase tracking-wider">Adversarial Operative</span>
+                    <span class="font-bold uppercase tracking-wider">{{ locale.t('m2.adversarial_operative') }}</span>
                     <span class="px-1.5 py-0.2 rounded bg-amber-500/10 dark:bg-[#F9A81C]/20 border border-amber-500/30 dark:border-[#F9A81C]/40 text-amber-700 dark:text-[#F9A81C]">
                       {{ session()?.operative_model }}
                     </span>
@@ -183,7 +183,7 @@ import { RouterModule } from '@angular/router';
                 <!-- Defender Message -->
                 <div *ngIf="turn.role === 'defender'" class="max-w-[90%] flex flex-col gap-1.5 self-end items-end">
                   <div class="text-[10px] font-mono text-[#65A30D] dark:text-[#84AA40] font-bold uppercase tracking-wider">
-                    Defender Operator (You)
+                    {{ locale.t('dashboard.operator_col') }} (You)
                   </div>
                   <div class="p-3.5 rounded-lg bg-emerald-50 dark:bg-[#84AA40]/15 border border-emerald-200 dark:border-[#84AA40]/40 text-slate-900 dark:text-slate-100 text-sm font-sans leading-relaxed shadow-sm">
                     {{ turn.content }}
@@ -257,14 +257,14 @@ import { RouterModule } from '@angular/router';
                     (click)="fillPresetRefusal()"
                     [disabled]="isLoading() || !session()"
                     class="text-[11px] font-mono text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 underline">
-                    Template: Refuse & Verify
+                    {{ locale.t('m2.template_refuse') }}
                   </button>
                   <button
                     type="button"
                     (click)="fillPresetCompliance()"
                     [disabled]="isLoading() || !session()"
                     class="text-[11px] font-mono text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 underline">
-                    Template: Comply & Compromise
+                    {{ locale.t('m2.template_comply') }}
                   </button>
                 </div>
 
@@ -294,7 +294,7 @@ import { RouterModule } from '@angular/router';
 
             <!-- Points Awarded Gamification Banner -->
             <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
-              <span>🏆 Drill Passed! +150 Points awarded to your dashboard.</span>
+              <span>{{ locale.t('m2.points_awarded_banner') }}</span>
               <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
             </div>
 
@@ -316,14 +316,14 @@ import { RouterModule } from '@angular/router';
 
             <!-- Coach Feedback Text -->
             <div *ngIf="evaluation()" class="p-3.5 rounded bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col gap-2">
-              <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-semibold uppercase">Coach Assessment</div>
+              <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-semibold uppercase">{{ locale.t('m2.coach_assessment') }}</div>
               <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
                 {{ evaluation()?.coach_feedback }}
               </p>
 
               <!-- Citations -->
               <div *ngIf="evaluation()?.grounded_citations?.length" class="flex flex-wrap items-center gap-1.5 mt-1 pt-2 border-t border-slate-200 dark:border-slate-800">
-                <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Citations:</span>
+                <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">{{ locale.t('m2.grounding_citations') }}:</span>
                 <span
                   *ngFor="let cite of evaluation()?.grounded_citations"
                   class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">

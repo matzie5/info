@@ -35,24 +35,17 @@ interface ScenarioOption {
         </p>
 
         <!-- Language Picker -->
-        <div class="mt-4 flex justify-center gap-2">
+        <div class="mt-4 flex flex-wrap justify-center gap-2">
           <button
+            *ngFor="let lang of locale.availableLanguages()"
             type="button"
-            (click)="setLang('pl')"
-            [class.bg-[#84AA40]]="locale.language() === 'pl'"
-            [class.text-black]="locale.language() === 'pl'"
-            [class.text-white]="locale.language() !== 'pl'"
-            class="px-3 py-1 rounded text-xs font-bold border border-white/10 transition-colors">
-            Polski (PL)
-          </button>
-          <button
-            type="button"
-            (click)="setLang('en')"
-            [class.bg-[#84AA40]]="locale.language() === 'en'"
-            [class.text-black]="locale.language() === 'en'"
-            [class.text-white]="locale.language() !== 'en'"
-            class="px-3 py-1 rounded text-xs font-bold border border-white/10 transition-colors">
-            English (EN)
+            (click)="setLang(lang.code)"
+            [class.bg-[#84AA40]]="locale.language() === lang.code"
+            [class.text-black]="locale.language() === lang.code"
+            [class.text-white]="locale.language() !== lang.code"
+            class="px-3 py-1 rounded text-xs font-bold border border-white/10 transition-colors flex items-center gap-1.5">
+            <span>{{ lang.flag }}</span>
+            <span>{{ lang.nativeName }}</span>
           </button>
         </div>
       </div>

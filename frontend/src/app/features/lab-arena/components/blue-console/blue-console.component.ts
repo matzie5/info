@@ -40,7 +40,7 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
               [style.width.%]="budgets?.blue_team_bandwidth || 0">
             </div>
           </div>
-          <span class="text-[10px] text-slate-400 mt-1 block">+10 Bandwidth regens every tick cycle</span>
+          <span class="text-[10px] text-slate-400 mt-1 block">{{ locale.t('actions.blue.bandwidth_regen') }}</span>
         </div>
       </div>
 

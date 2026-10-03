@@ -59,9 +59,9 @@ export interface OSINTExposureReport {
           <div class="glass-panel p-5 bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Public OSINT Footprint Ingestion
+                {{ locale.t('m4.ingestion_title') }}
               </span>
-              <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">Target Input</span>
+              <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">{{ locale.t('m4.target_input') }}</span>
             </div>
 
             <!-- Footprint Preset Templates -->
@@ -95,7 +95,7 @@ export interface OSINTExposureReport {
             <div class="flex flex-col gap-2">
               <label class="text-[11px] font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400 font-semibold flex items-center justify-between">
                 <span>{{ locale.t('m4.footprint_label') }}</span>
-                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-normal">Unsanitized Input</span>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-normal">{{ locale.t('m4.unsanitized_input') }}</span>
               </label>
               <textarea
                 [(ngModel)]="bioInput"
@@ -120,7 +120,7 @@ export interface OSINTExposureReport {
           <div class="glass-panel p-5 bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 flex flex-col gap-4 shadow-sm">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
               <span class="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Recon Analysis & DLP Remediation Output
+                {{ locale.t('m4.output_title') }}
               </span>
               <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30">
                 Google Cloud DLP Engine
@@ -133,13 +133,13 @@ export interface OSINTExposureReport {
             </div>
 
             <div *ngIf="!report() && !isAnalyzing()" class="p-8 text-center text-slate-400 dark:text-slate-500 font-mono text-xs">
-              Load a preset or input your public profile details and click "Analyze Exposure" to evaluate vulnerabilities.
+              {{ locale.t('m4.empty_hint') }}
             </div>
 
             <div *ngIf="report() && !isAnalyzing()" class="flex flex-col gap-4">
               <!-- Points Awarded Gamification Banner -->
               <div *ngIf="pointsAwarded()" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs font-bold animate-fadeIn flex items-center justify-between">
-                <span>🏆 Footprint Hardened! +150 Points awarded to your dashboard.</span>
+                <span>{{ locale.t('m4.points_awarded_banner') }}</span>
                 <a routerLink="/dashboard" class="underline hover:text-amber-400">Dashboard →</a>
               </div>
 
@@ -184,7 +184,7 @@ export interface OSINTExposureReport {
                     </span>
                   </ng-container>
                   <span *ngIf="!hasPiiFindings()" class="text-xs font-mono text-emerald-600 dark:text-emerald-400">
-                    ✓ Clean footprint: No high-risk PII identifiers detected.
+                    {{ locale.t('m4.clean_footprint') }}
                   </span>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export interface OSINTExposureReport {
                   <span class="text-[11px] font-mono uppercase text-emerald-600 dark:text-[#84AA40] font-semibold">
                     {{ locale.t('m4.sanitized_profile') }}
                   </span>
-                  <span class="text-[10px] font-mono text-slate-500">Automatic Scrubbing Active</span>
+                  <span class="text-[10px] font-mono text-slate-500">{{ locale.t('m4.automatic_scrubbing') }}</span>
                 </div>
 
                 <div class="p-3.5 rounded-lg bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-xs font-mono text-emerald-800 dark:text-emerald-300 leading-relaxed overflow-x-auto whitespace-pre-wrap select-all">

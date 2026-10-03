@@ -92,12 +92,12 @@ export interface ModuleChallengeCard {
               class="px-4 py-2 text-xs font-medium rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-all flex items-center space-x-1.5"
             >
               <span>📥</span>
-              <span>Export STIX 2.1 Threat Intel</span>
+              <span>{{ locale.t('dashboard.export_stix') }}</span>
             </button>
             <button
               (click)="refreshProgress()"
               class="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-              title="Refresh Progress"
+              [title]="locale.t('dashboard.refresh')"
             >
               🔄
             </button>
@@ -110,20 +110,20 @@ export interface ModuleChallengeCard {
         <!-- Total Points -->
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Points</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ locale.t('dashboard.total_points') }}</span>
             <span class="p-2 rounded-xl bg-amber-500/10 text-amber-500 text-lg">🏆</span>
           </div>
           <div class="mt-3 flex items-baseline space-x-2">
             <span class="text-3xl font-black text-slate-900 dark:text-white">{{ progress()?.total_points || 0 }}</span>
             <span class="text-xs font-semibold text-amber-500">PTS</span>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Accumulated across completed modules</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ locale.t('dashboard.points_sub') }}</p>
         </div>
 
         <!-- Modules Completed -->
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Modules Completed</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ locale.t('dashboard.modules_completed') }}</span>
             <span class="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 text-lg">🎯</span>
           </div>
           <div class="mt-3 flex items-baseline space-x-2">
@@ -139,7 +139,7 @@ export interface ModuleChallengeCard {
         <!-- Maturity Tier -->
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hygiene Posture</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ locale.t('dashboard.hygiene_posture') }}</span>
             <span class="p-2 rounded-xl bg-cyan-500/10 text-cyan-500 text-lg">🛡️</span>
           </div>
           <div class="mt-3">
@@ -147,20 +147,20 @@ export interface ModuleChallengeCard {
               {{ passportTier() }}
             </span>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Overall Score: {{ passportScore() }}/100</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ locale.t('dashboard.overall_score') }}: {{ passportScore() }}/100</p>
         </div>
 
         <!-- Badges Earned -->
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Defense Badges</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ locale.t('dashboard.defense_badges') }}</span>
             <span class="p-2 rounded-xl bg-purple-500/10 text-purple-500 text-lg">🏅</span>
           </div>
           <div class="mt-3 flex items-baseline space-x-2">
             <span class="text-3xl font-black text-slate-900 dark:text-white">{{ (progress()?.badges || []).length }}</span>
-            <span class="text-xs text-slate-400">/ 6 Unlocked</span>
+            <span class="text-xs text-slate-400">/ 6 {{ locale.t('dashboard.badges_unlocked') }}</span>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Specialized credentials</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ locale.t('dashboard.badges_sub') }}</p>
         </div>
       </div>
 
@@ -169,10 +169,10 @@ export interface ModuleChallengeCard {
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-lg font-black tracking-tight text-slate-900 dark:text-white">
-              Cognitive Defense Curriculum
+              {{ locale.t('dashboard.curriculum_title') }}
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              Complete each operational module to earn points, unlock credentials, and strengthen your Digital Hygiene Passport.
+              {{ locale.t('dashboard.curriculum_desc') }}
             </p>
           </div>
         </div>
@@ -192,27 +192,27 @@ export interface ModuleChallengeCard {
                   class="px-2.5 py-1 text-xs font-bold rounded-full"
                   [ngClass]="isModuleCompleted(mod.id) ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'"
                 >
-                  {{ isModuleCompleted(mod.id) ? '✓ COMPLETED' : 'INCOMPLETE' }}
+                  {{ isModuleCompleted(mod.id) ? locale.t('dashboard.completed_badge') : locale.t('dashboard.incomplete_badge') }}
                 </span>
               </div>
 
               <h3 class="text-base font-bold text-slate-900 dark:text-white mt-4">
-                {{ mod.defaultTitle }}
+                {{ locale.t(mod.titleKey) }}
               </h3>
               <p class="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
-                {{ mod.defaultDesc }}
+                {{ locale.t(mod.descKey) }}
               </p>
 
               <!-- Points & Score Details -->
               <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="text-slate-500 dark:text-slate-400">Points:</span>
+                  <span class="text-slate-500 dark:text-slate-400">{{ locale.t('dashboard.points_col') }}:</span>
                   <span class="font-bold text-amber-500">
-                    {{ isModuleCompleted(mod.id) ? '+' + getPointsEarned(mod.id) + ' PTS' : '150 PTS available' }}
+                    {{ isModuleCompleted(mod.id) ? '+' + getPointsEarned(mod.id) + ' PTS' : locale.t('dashboard.points_available', { points: 150 }) }}
                   </span>
                 </div>
                 <div class="flex items-center justify-between text-xs">
-                  <span class="text-slate-500 dark:text-slate-400">Best Score:</span>
+                  <span class="text-slate-500 dark:text-slate-400">{{ locale.t('dashboard.best_score') }}:</span>
                   <span class="font-semibold text-slate-800 dark:text-slate-200">
                     {{ getBestScore(mod.id) }}%
                   </span>
@@ -230,7 +230,7 @@ export interface ModuleChallengeCard {
                 class="w-full block text-center py-2.5 text-xs font-bold rounded-xl transition-all shadow-sm"
                 [ngClass]="isModuleCompleted(mod.id) ? 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20'"
               >
-                {{ isModuleCompleted(mod.id) ? 'Re-Drill Lab ↺' : 'Launch Challenge →' }}
+                {{ isModuleCompleted(mod.id) ? locale.t('dashboard.redrill_btn') : locale.t('dashboard.launch_btn') }}
               </a>
             </div>
           </div>
@@ -242,7 +242,7 @@ export interface ModuleChallengeCard {
         <!-- Badges Showcase -->
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
           <h2 class="text-lg font-black tracking-tight text-slate-900 dark:text-white mb-4">
-            Cybersecurity Badges
+            {{ locale.t('dashboard.badges_title') }}
           </h2>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div
@@ -257,7 +257,7 @@ export interface ModuleChallengeCard {
                 class="mt-2 text-[9px] font-bold px-2 py-0.5 rounded-full"
                 [ngClass]="hasBadge(b.code) ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'"
               >
-                {{ hasBadge(b.code) ? 'UNLOCKED' : 'LOCKED' }}
+                {{ hasBadge(b.code) ? locale.t('dashboard.badges_unlocked') : 'LOCKED' }}
               </span>
             </div>
           </div>
@@ -268,7 +268,7 @@ export interface ModuleChallengeCard {
           <div class="flex items-center justify-between mb-4">
             <div>
               <h2 class="text-lg font-black tracking-tight text-slate-900 dark:text-white">
-                Cohort Leaderboard
+                {{ locale.t('dashboard.leaderboard_title') }}
               </h2>
               <p class="text-xs text-slate-500 dark:text-slate-400">{{ cohortName() }}</p>
             </div>
@@ -324,9 +324,9 @@ export class PlayerDashboardComponent implements OnInit {
   public moduleCards: ModuleChallengeCard[] = [
     {
       id: 'm1_disinfo',
-      titleKey: 'nav.m1',
+      titleKey: 'nav.m1_disinfo',
       defaultTitle: 'M1: Disinformation Defense Lab',
-      descKey: 'm1.desc',
+      descKey: 'lobby.host_card_desc',
       defaultDesc: 'Agent-Based network diffusion simulation defending power grid infrastructure against coordinated inauthentic panic.',
       icon: '🌐',
       route: '/modules/disinfo',
@@ -335,9 +335,9 @@ export class PlayerDashboardComponent implements OnInit {
     },
     {
       id: 'm2_scam_lab',
-      titleKey: 'nav.m2',
+      titleKey: 'm2.title',
       defaultTitle: 'M2: Generative Phishing & BEC Lab',
-      descKey: 'm2.desc',
+      descKey: 'm2.subtitle',
       defaultDesc: 'Interactive drill defending against AI-generated spear-phishing and out-of-band wire redirection.',
       icon: '🎣',
       route: '/modules/scam-lab',
@@ -346,9 +346,9 @@ export class PlayerDashboardComponent implements OnInit {
     },
     {
       id: 'm3_deepfake_lab',
-      titleKey: 'nav.m3',
+      titleKey: 'm3.title',
       defaultTitle: 'M3: Deepfake & Synthetic Forensics Lab',
-      descKey: 'm3.desc',
+      descKey: 'm3.subtitle',
       defaultDesc: 'Multi-agent acoustic & visual analysis verifying C2PA cryptographic provenance manifests and Google SynthID watermarks.',
       icon: '🎭',
       route: '/modules/deepfake-lab',
@@ -357,9 +357,9 @@ export class PlayerDashboardComponent implements OnInit {
     },
     {
       id: 'm4_osint_lab',
-      titleKey: 'nav.m4',
+      titleKey: 'm4.title',
       defaultTitle: 'M4: OSINT Footprint & DLP Hygiene Lab',
-      descKey: 'm4.desc',
+      descKey: 'm4.subtitle',
       defaultDesc: 'Public footprint analysis and automated DLP sanitizer shielding personal metadata from reconnaissance.',
       icon: '🔍',
       route: '/modules/osint-exposure',
@@ -368,9 +368,9 @@ export class PlayerDashboardComponent implements OnInit {
     },
     {
       id: 'm5_algo_echo',
-      titleKey: 'nav.m5',
+      titleKey: 'm5.title',
       defaultTitle: 'M5: Algorithmic Echo-Chamber Lab',
-      descKey: 'm5.desc',
+      descKey: 'm5.subtitle',
       defaultDesc: 'Recommender tuning sandbox measuring Shannon Viewpoint Entropy and mitigating ideological polarization drift.',
       icon: '📊',
       route: '/modules/echo-chamber',

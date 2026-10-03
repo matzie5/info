@@ -29,21 +29,14 @@ import { Session } from '../../core/models/session.model';
             <!-- Language Switcher -->
             <div class="flex items-center gap-1 border border-white/10 rounded px-2 py-1 bg-black/40 mr-1">
               <button
+                *ngFor="let lang of locale.availableLanguages()"
                 type="button"
-                (click)="locale.setLanguage('pl')"
-                [class.text-[#84AA40]]="locale.language() === 'pl'"
-                [class.font-bold]="locale.language() === 'pl'"
-                class="text-xs px-1 text-slate-400 hover:text-white transition-colors">
-                PL
-              </button>
-              <span class="text-xs text-white/20">|</span>
-              <button
-                type="button"
-                (click)="locale.setLanguage('en')"
-                [class.text-[#84AA40]]="locale.language() === 'en'"
-                [class.font-bold]="locale.language() === 'en'"
-                class="text-xs px-1 text-slate-400 hover:text-white transition-colors">
-                EN
+                (click)="locale.setLanguage(lang.code)"
+                [class.text-[#84AA40]]="locale.language() === lang.code"
+                [class.font-bold]="locale.language() === lang.code"
+                class="text-xs px-1 text-slate-400 hover:text-white transition-colors"
+                [attr.title]="lang.nativeName">
+                {{ lang.code.toUpperCase() }}
               </button>
             </div>
 

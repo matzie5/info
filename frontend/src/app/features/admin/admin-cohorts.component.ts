@@ -50,14 +50,14 @@ export interface CohortAnalytics {
             <div>
               <div class="flex items-center space-x-3">
                 <h1 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                  Cohort & Play Configuration Console
+                  {{ locale.t('admin_cohorts.title') }}
                 </h1>
                 <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                  ADMIN FACILITATOR
+                  {{ locale.t('admin_cohorts.badge') }}
                 </span>
               </div>
               <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Configure module difficulty, scoring thresholds, and allowed AI providers for student cohorts.
+                {{ locale.t('admin_cohorts.subtitle') }}
               </p>
             </div>
           </div>
@@ -70,7 +70,7 @@ export interface CohortAnalytics {
               class="px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option *ngFor="let c of cohorts()" [value]="c.id">
-                {{ c.name }} ({{ c.assigned_user_ids.length }} players)
+                {{ c.name }} ({{ c.assigned_user_ids.length }} {{ locale.t('dashboard.operator_col').toLowerCase() }})
               </option>
             </select>
             <button
@@ -78,7 +78,7 @@ export interface CohortAnalytics {
               class="px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all flex items-center space-x-1.5"
             >
               <span>+</span>
-              <span>New Cohort</span>
+              <span>{{ locale.t('admin_cohorts.new_cohort') }}</span>
             </button>
           </div>
         </div>
@@ -87,15 +87,15 @@ export interface CohortAnalytics {
       <!-- Cohort Summary Stats -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Enrolled Players</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ locale.t('admin_cohorts.enrolled_players') }}</span>
           <div class="mt-2 flex items-baseline space-x-2">
             <span class="text-3xl font-black text-slate-900 dark:text-white">{{ currentCohort()?.assigned_user_ids?.length || 0 }}</span>
-            <span class="text-xs text-slate-400">Operators</span>
+            <span class="text-xs text-slate-400">{{ locale.t('dashboard.operator_col') }}</span>
           </div>
         </div>
 
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Cohort Avg Points</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ locale.t('admin_cohorts.avg_points') }}</span>
           <div class="mt-2 flex items-baseline space-x-2">
             <span class="text-3xl font-black text-amber-500">{{ analytics()?.average_points || 0 }}</span>
             <span class="text-xs font-bold text-amber-500">PTS</span>
@@ -103,15 +103,15 @@ export interface CohortAnalytics {
         </div>
 
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Configured Modules</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ locale.t('admin_cohorts.modules_active') }}</span>
           <div class="mt-2 flex items-baseline space-x-2">
             <span class="text-3xl font-black text-slate-900 dark:text-white">{{ getConfiguredModulesCount() }} / 5</span>
-            <span class="text-xs text-emerald-500 font-semibold">Active</span>
+            <span class="text-xs text-emerald-500 font-semibold">{{ locale.t('admin_cohorts.active_badge') }}</span>
           </div>
         </div>
 
         <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">M1 Grid Scenario</span>
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ locale.t('admin_cohorts.scenario_id') }}</span>
           <div class="mt-2">
             <span class="text-xs font-bold px-2 py-1 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">
               {{ currentCohort()?.module_configs?.['m1_disinfo']?.parameters?.['scenario_id'] || 'poland-grid-panic-2026' }}
@@ -125,10 +125,10 @@ export interface CohortAnalytics {
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <h2 class="text-lg font-black tracking-tight text-slate-900 dark:text-white">
-              Module Play Hyperparameters & Rewards
+              {{ locale.t('admin_cohorts.title') }}
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              Customize passing score thresholds, points rewards, and allowed LLM providers for this cohort.
+              {{ locale.t('admin_cohorts.subtitle') }}
             </p>
           </div>
           <button
@@ -136,7 +136,7 @@ export interface CohortAnalytics {
             class="px-5 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20 transition-all flex items-center space-x-1.5"
           >
             <span>💾</span>
-            <span>Save Configuration</span>
+            <span>{{ locale.t('admin_cohorts.save_btn') }}</span>
           </button>
         </div>
 
@@ -146,7 +146,7 @@ export interface CohortAnalytics {
             <div class="flex items-center justify-between mb-3">
               <span class="font-bold text-sm text-slate-900 dark:text-white flex items-center space-x-2">
                 <span>🌐</span>
-                <span>M1: Disinformation ABM</span>
+                <span>{{ locale.t('nav.m1_disinfo') }}</span>
               </span>
               <input
                 type="checkbox"
@@ -156,7 +156,7 @@ export interface CohortAnalytics {
             </div>
             <div class="space-y-3 text-xs">
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Pass Score Threshold (%)</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.passing_score') }} (%)</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m1_disinfo'].pass_score"
@@ -164,7 +164,7 @@ export interface CohortAnalytics {
                 />
               </div>
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Points Reward</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.reward_points') }}</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m1_disinfo'].points_reward"
@@ -172,7 +172,7 @@ export interface CohortAnalytics {
                 />
               </div>
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Target Scenario</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.scenario_id') }}</label>
                 <input
                   type="text"
                   [(ngModel)]="configs['m1_disinfo'].parameters['scenario_id']"
@@ -187,7 +187,7 @@ export interface CohortAnalytics {
             <div class="flex items-center justify-between mb-3">
               <span class="font-bold text-sm text-slate-900 dark:text-white flex items-center space-x-2">
                 <span>🎣</span>
-                <span>M2: Generative Scam Lab</span>
+                <span>{{ locale.t('nav.m2_scam') }}</span>
               </span>
               <input
                 type="checkbox"
@@ -197,7 +197,7 @@ export interface CohortAnalytics {
             </div>
             <div class="space-y-3 text-xs">
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Pass Score Threshold (%)</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.passing_score') }} (%)</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m2_scam_lab'].pass_score"
@@ -205,7 +205,7 @@ export interface CohortAnalytics {
                 />
               </div>
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Points Reward</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.reward_points') }}</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m2_scam_lab'].points_reward"
@@ -213,7 +213,7 @@ export interface CohortAnalytics {
                 />
               </div>
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Adversary Model</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.operative_model') }}</label>
                 <select
                   [(ngModel)]="configs['m2_scam_lab'].parameters['default_model']"
                   class="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
@@ -241,7 +241,7 @@ export interface CohortAnalytics {
             </div>
             <div class="space-y-3 text-xs">
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Pass Score Threshold (%)</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.passing_score') }} (%)</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m3_deepfake_lab'].pass_score"
@@ -249,7 +249,7 @@ export interface CohortAnalytics {
                 />
               </div>
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Points Reward</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.reward_points') }}</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m3_deepfake_lab'].points_reward"
@@ -274,7 +274,7 @@ export interface CohortAnalytics {
             <div class="flex items-center justify-between mb-3">
               <span class="font-bold text-sm text-slate-900 dark:text-white flex items-center space-x-2">
                 <span>🔍</span>
-                <span>M4: OSINT Footprint</span>
+                <span>{{ locale.t('nav.m4_osint') }}</span>
               </span>
               <input
                 type="checkbox"
@@ -284,7 +284,7 @@ export interface CohortAnalytics {
             </div>
             <div class="space-y-3 text-xs">
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Pass Score Threshold (%)</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.passing_score') }} (%)</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m4_osint_lab'].pass_score"
@@ -292,7 +292,7 @@ export interface CohortAnalytics {
                 />
               </div>
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Points Reward</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.reward_points') }}</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m4_osint_lab'].points_reward"
@@ -317,7 +317,7 @@ export interface CohortAnalytics {
             <div class="flex items-center justify-between mb-3">
               <span class="font-bold text-sm text-slate-900 dark:text-white flex items-center space-x-2">
                 <span>📊</span>
-                <span>M5: Echo Sandbox</span>
+                <span>{{ locale.t('nav.m5_echo') }}</span>
               </span>
               <input
                 type="checkbox"
@@ -327,7 +327,7 @@ export interface CohortAnalytics {
             </div>
             <div class="space-y-3 text-xs">
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Pass Score Threshold (%)</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.passing_score') }} (%)</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m5_algo_echo'].pass_score"
@@ -335,7 +335,7 @@ export interface CohortAnalytics {
                 />
               </div>
               <div>
-                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">Points Reward</label>
+                <label class="block text-slate-500 dark:text-slate-400 font-medium mb-1">{{ locale.t('admin_cohorts.reward_points') }}</label>
                 <input
                   type="number"
                   [(ngModel)]="configs['m5_algo_echo'].points_reward"
@@ -363,7 +363,7 @@ export interface CohortAnalytics {
       <!-- Cohort Completion Rates & Telemetry -->
       <div class="bg-white/90 dark:bg-[#141B26]/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
         <h2 class="text-lg font-black tracking-tight text-slate-900 dark:text-white mb-4">
-          Cohort Completion Rates & Score Averages
+          {{ locale.t('admin_cohorts.analytics_title') }}
         </h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-5 gap-4">

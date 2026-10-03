@@ -22,7 +22,7 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
 
       <!-- Feed List -->
       <div *ngIf="items.length === 0" class="glass-panel p-8 text-center text-slate-400 text-sm">
-        No viral posts detected yet in the network.
+        {{ locale.t('pulse.empty') }}
       </div>
 
       <div
@@ -42,10 +42,10 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
                 <span class="font-bold text-sm text-white">{{ item.author_name }}</span>
                 <span *ngIf="item.is_verified" class="text-blue-400 text-xs" title="Verified">●</span>
                 <span *ngIf="item.is_amplified" class="badge badge-red text-[10px] py-0 px-1.5 animate-pulse">
-                  🤖 Bot Amplified
+                  🤖 {{ locale.t('pulse.bot_amplified') }}
                 </span>
                 <span *ngIf="item.is_debunked" class="badge badge-amber text-[10px] py-0 px-1.5">
-                  ⚠️ Debunked
+                  ⚠️ {{ locale.t('pulse.debunked') }}
                 </span>
               </div>
               <span class="text-xs text-slate-400 font-mono">{{ item.author_handle }}</span>
@@ -78,8 +78,8 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
           <div class="flex items-center gap-2">
             <span class="text-base animate-bounce">🤖</span>
             <div class="text-xs text-red-200">
-              <span class="font-bold uppercase tracking-wider text-[10px] text-red-400 block">Bot Swarm Infiltration Active</span>
-              Coordinated adversary bots are inflating algorithmic velocity and posting synthetic comments.
+              <span class="font-bold uppercase tracking-wider text-[10px] text-red-400 block">{{ locale.t('pulse.bot_swarm_active') }}</span>
+              {{ locale.t('pulse.bot_swarm_desc') }}
             </div>
           </div>
           <span class="badge badge-red font-mono text-[10px] uppercase animate-pulse">2.5x Velocity</span>
@@ -89,8 +89,8 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
         <div *ngIf="item.prebunk_shield_active" class="mb-3 p-2.5 rounded-lg bg-[#84AA40]/10 border border-[#84AA40]/40 flex items-center gap-2">
           <span class="text-base">🛡️</span>
           <div class="text-xs text-[#A3E635]">
-            <span class="font-bold block uppercase tracking-wider text-[10px]">Prebunking Inoculation Active</span>
-            Audiences exposed to media literacy alerts show 70% lower transmission velocity.
+            <span class="font-bold block uppercase tracking-wider text-[10px]">{{ locale.t('pulse.prebunk_active') }}</span>
+            {{ locale.t('pulse.prebunk_desc') }}
           </div>
         </div>
 
@@ -98,7 +98,7 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
         <div *ngIf="item.is_debunked" class="mb-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/40 flex items-start gap-2">
           <span class="text-base">⚠️</span>
           <div class="text-xs text-amber-300">
-            <span class="font-bold block uppercase tracking-wider text-[10px]">Official Fact Check Notice</span>
+            <span class="font-bold block uppercase tracking-wider text-[10px]">{{ locale.t('pulse.fact_check_title') }}</span>
             {{ item.fact_check_label || 'This claim has been flagged by verified independent experts as fabricated.' }}
           </div>
         </div>
@@ -133,7 +133,7 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
 
           <div class="flex items-center gap-2 text-[11px] font-mono">
             <span title="Outrage index" [class.text-red-400]="item.outrage_score > 0.7">
-              Outrage: {{ (item.outrage_score * 100).toFixed(0) }}%
+              {{ locale.t('pulse.outrage_label') }}: {{ (item.outrage_score * 100).toFixed(0) }}%
             </span>
           </div>
         </div>
