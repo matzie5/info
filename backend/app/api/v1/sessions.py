@@ -1,25 +1,47 @@
 import uuid
+import time
 import asyncio
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from app.models.session import Session, SessionStatus, UserRole
+from pydantic import BaseModel, Field
+from app.models.session import (
+    Session,
+    SessionStatus,
+    UserRole,
+    StudioScenario,
+    StudioParticipant,
+    TrainerBroadcast
+)
 from app.services.firestore_service import FirestoreService
 from app.services.cloud_tasks_service import cloud_tasks_service
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 class CreateSessionRequest(BaseModel):
+    id: Optional[str] = None
     title: Optional[str] = "Poland Power Grid Panic 2026"
     scenario_id: Optional[str] = "poland-grid-panic-2026"
     language: Optional[str] = "en"
     audience_mode: Optional[str] = "professional"
     location_name: Optional[str] = None
     max_ticks: Optional[int] = 40
+    trainer_token: Optional[str] = None
+    scenarios: Optional[List[StudioScenario]] = None
+    roster: Optional[Dict[str, StudioParticipant]] = None
+
+@router.get("", response_model=List[Session])
+def list_sessions(audience_mode: Optional[str] = None, location_name: Optional[str] = None):
+    fs = FirestoreService.get_instance()
+    all_sessions = fs.list_sessions()
+    if audience_mode:
+        all_sessions = [s for s in all_sessions if s.audience_mode == audience_mode]
+    if location_name:
+        all_sessions = [s for s in all_sessions if s.location_name and location_name.lower() in s.location_name.lower()]
+    return all_sessions
 
 @router.post("", response_model=Session)
 def create_session(req: CreateSessionRequest):
-    session_id = f"session-{uuid.uuid4().hex[:8]}"
+    session_id = req.id if req.id else f"session-{uuid.uuid4().hex[:8]}"
     session = Session(
         id=session_id,
         title=req.title or "Poland Power Grid Panic 2026",
@@ -28,7 +50,10 @@ def create_session(req: CreateSessionRequest):
         audience_mode=req.audience_mode or "professional",
         location_name=req.location_name,
         max_ticks=req.max_ticks or 40,
-        status=SessionStatus.LOBBY
+        status=SessionStatus.LOBBY,
+        trainer_token=req.trainer_token or f"trn-{uuid.uuid4().hex[:6]}",
+        scenarios=req.scenarios or [],
+        roster=req.roster or {}
     )
     fs = FirestoreService.get_instance()
     return fs.save_session(session)
@@ -124,6 +149,85 @@ async def _local_simulation_loop(session_id: str, interval: int = 10):
         logger.error("Error in local tick loop for %s: %s", session_id, e, exc_info=True)
     finally:
         _active_tick_tasks.pop(session_id, None)
+
+class BroadcastHintRequest(BaseModel):
+    text: Optional[str] = None
+    message: Optional[str] = None
+    urgency: Optional[str] = None
+    severity: Optional[str] = None
+
+    @property
+    def broadcast_text(self) -> str:
+        return self.text or self.message or ""
+
+    @property
+    def broadcast_urgency(self) -> str:
+        return self.urgency or self.severity or "HINT"
+
+@router.post("/{session_id}/broadcast-hint", response_model=Session)
+def broadcast_hint(session_id: str, req: BroadcastHintRequest):
+    fs = FirestoreService.get_instance()
+    session = fs.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    broadcast = TrainerBroadcast(
+        id=f"hint-{uuid.uuid4().hex[:6]}",
+        text=req.broadcast_text,
+        urgency=req.broadcast_urgency
+    )
+    session.broadcast_hints.append(broadcast)
+    return fs.save_session(session)
+
+class AddParticipantRequest(BaseModel):
+    username: str
+    display_name: Optional[str] = None
+    password: Optional[str] = ""
+    ui_language_override: Optional[str] = None
+
+@router.post("/{session_id}/participants", response_model=Session)
+def add_participant(session_id: str, req: AddParticipantRequest):
+    fs = FirestoreService.get_instance()
+    session = fs.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    participant = StudioParticipant(
+        username=req.username,
+        display_name=req.display_name or req.username,
+        password=req.password or "",
+        ui_language_override=req.ui_language_override
+    )
+    session.roster[req.username] = participant
+    return fs.save_session(session)
+
+class SubmitVerdictRequest(BaseModel):
+    username: str
+    scenario_id: str
+    flagged_elements: List[str] = Field(default_factory=list)
+    verdict: str  # "SCAM" | "AUTHENTIC"
+    rationale: Optional[str] = None
+
+@router.post("/{session_id}/submit-verdict", response_model=Session)
+def submit_verdict(session_id: str, req: SubmitVerdictRequest):
+    fs = FirestoreService.get_instance()
+    session = fs.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    sub = {
+        "id": f"sub-{uuid.uuid4().hex[:6]}",
+        "username": req.username,
+        "scenario_id": req.scenario_id,
+        "flagged_elements": req.flagged_elements,
+        "verdict": req.verdict,
+        "rationale": req.rationale,
+        "timestamp": time.time()
+    }
+    session.submissions.append(sub)
+    if req.username in session.roster:
+        p = session.roster[req.username]
+        if req.scenario_id not in p.completed_scenarios:
+            p.completed_scenarios.append(req.scenario_id)
+            p.score += 100
+    return fs.save_session(session)
 
 def _ensure_tick_running(session_id: str, interval: int = 10):
     from app.config import settings

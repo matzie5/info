@@ -4,7 +4,7 @@ import { HttpClient, HttpInterceptorFn } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { AudienceMode, AudienceService } from '../audience/audience.service';
 
-export type UserRole = 'ADMIN' | 'PLAYER';
+export type UserRole = 'ADMIN' | 'PLAYER' | 'SUPERVISOR' | 'TRAINER' | 'PARTICIPANT';
 
 export interface User {
   id: string;
@@ -48,7 +48,9 @@ export class AuthService {
   public readonly currentUser = computed(() => this.userSignal());
   public readonly isLoggedIn = computed(() => !!this.userSignal());
   public readonly isAdmin = computed(() => this.userSignal()?.role === 'ADMIN');
-  public readonly isPlayer = computed(() => this.userSignal()?.role === 'PLAYER');
+  public readonly isSupervisor = computed(() => this.userSignal()?.role === 'SUPERVISOR');
+  public readonly isTrainer = computed(() => this.userSignal()?.role === 'TRAINER');
+  public readonly isPlayer = computed(() => this.userSignal()?.role === 'PLAYER' || this.userSignal()?.role === 'PARTICIPANT');
   public readonly cohortId = computed(() => this.userSignal()?.cohort_id || 'cohort_cyber_defense_2026');
 
   constructor() {
@@ -150,8 +152,34 @@ export class AuthService {
       );
   }
 
-  public quickSwitchUser(username: 'admin' | 'player1' | 'player2' | 'kid1' | 'senior1'): void {
-    if (username === 'admin') {
+  public quickSwitchUser(username: 'admin' | 'supervisor' | 'trainer' | 'player1' | 'player2' | 'kid1' | 'senior1'): void {
+    if (username === 'supervisor') {
+      this.login('supervisor', 'supervisor123').subscribe({
+        error: () => {
+          const user: User = {
+            id: 'user_supervisor',
+            username: 'supervisor',
+            email: 'supervisor@infosphere.security',
+            display_name: 'Supervisor Studio Lead',
+            role: 'SUPERVISOR' as any,
+          };
+          this.setUserAndToken(user, 'demo_supervisor_token');
+        },
+      });
+    } else if (username === 'trainer') {
+      this.login('trainer', 'trainer123').subscribe({
+        error: () => {
+          const user: User = {
+            id: 'user_trainer',
+            username: 'trainer',
+            email: 'trainer.wroclaw@infosphere.security',
+            display_name: 'Trener Wrocław',
+            role: 'TRAINER' as any,
+          };
+          this.setUserAndToken(user, 'demo_trainer_token');
+        },
+      });
+    } else if (username === 'admin') {
       this.login('admin', 'admin123').subscribe({
         error: () => this.useDefaultAdmin(),
       });

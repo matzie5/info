@@ -6,6 +6,7 @@ import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AudienceService } from '../../../core/audience/audience.service';
+import { AudioPlaybackService } from '../../../core/audio/audio-playback.service';
 import { RouterModule } from '@angular/router';
 
 export interface MediaArtifactSample {
@@ -150,15 +151,36 @@ export interface DeepfakeForensicReport {
                 <div class="text-[10px] font-mono text-slate-500">H.264 / 1080p25 Forensic Stream</div>
               </div>
 
-              <div *ngIf="selectedSample()?.media_type === 'AUDIO_VOICE_CLONE'" class="flex flex-col items-center gap-2 w-full">
-                <!-- Spectrogram Waveform representation -->
-                <div class="flex items-center gap-1 h-12 w-3/4 justify-center">
-                  <div *ngFor="let h of [40, 70, 90, 60, 30, 80, 100, 45, 95, 75, 50, 85, 30, 60, 90, 40]"
-                       class="w-1.5 bg-amber-500 dark:bg-[#F9A81C]/70 rounded-full"
-                       [style.height.%]="h"></div>
+              <div *ngIf="selectedSample()?.media_type === 'AUDIO_VOICE_CLONE' || selectedSample()?.media_type === 'VIDEO_SNIPPET'" class="flex flex-col items-center gap-3 w-full">
+                <!-- Interactive Audio Controller & Waveform -->
+                <div class="flex items-center gap-4 w-full max-w-md bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <button
+                    type="button"
+                    (click)="toggleSampleAudio()"
+                    class="w-12 h-12 rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center text-xl shadow-md transition transform active:scale-95">
+                    <span *ngIf="!audioService.isPlaying() || audioService.currentUrl() !== resolveLocalAudio(selectedSample())">▶</span>
+                    <span *ngIf="audioService.isPlaying() && audioService.currentUrl() === resolveLocalAudio(selectedSample())">⏸</span>
+                  </button>
+
+                  <div class="flex-1 flex flex-col gap-1.5">
+                    <!-- Dynamic Spectrogram / Waveform -->
+                    <div class="flex items-center gap-1 h-10 w-full justify-center">
+                      <div *ngFor="let h of [40, 70, 90, 60, 30, 80, 100, 45, 95, 75, 50, 85, 30, 60, 90, 40]; let idx = index"
+                           class="flex-1 rounded-full transition-all duration-150"
+                           [style.height.%]="audioService.isPlaying() ? h : (h * 0.4)"
+                           [ngClass]="audioService.isPlaying() ? 'bg-amber-500 dark:bg-[#F9A81C]' : 'bg-slate-300 dark:bg-slate-700'"></div>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                      <span>{{ formatAudioTime(audioService.currentTime()) }} / {{ formatAudioTime(audioService.duration()) }}</span>
+                      <span>{{ audioService.isPlaying() ? '● Odtwarzanie próbki' : 'Kliknij ▶ aby odsłuchać nagranie' }}</span>
+                    </div>
+                  </div>
                 </div>
+
                 <div class="text-xs font-mono text-slate-800 dark:text-slate-300">{{ selectedSample()?.title }}</div>
-                <div class="text-[10px] font-mono text-amber-600 dark:text-amber-400/80">Audio Waveform (Zero-Shot TTS Analysis)</div>
+                <div class="text-[10px] font-mono text-amber-600 dark:text-amber-400/80">
+                  Lokalny plik audio: {{ resolveLocalAudio(selectedSample()) }}
+                </div>
               </div>
 
               <div *ngIf="selectedSample()?.media_type === 'IMAGE'" class="flex flex-col items-center gap-2">
@@ -380,6 +402,40 @@ export class M3DeepfakeLabComponent implements OnInit {
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
   public audience = inject(AudienceService);
+  public audioService = inject(AudioPlaybackService);
+
+  resolveLocalAudio(sample: MediaArtifactSample | null): string {
+    if (!sample) return '/assets/audio/wroclaw_grandchild_distress.mp3';
+    const id = sample.sample_id.toLowerCase();
+    if (id.includes('grandson') || id.includes('cfo')) {
+      return '/assets/audio/wroclaw_grandchild_distress.mp3';
+    }
+    if (id.includes('mayor') || id.includes('minister')) {
+      return '/assets/audio/wroclaw_mayor_emergency_clone.mp3';
+    }
+    if (id.includes('principal')) {
+      return '/assets/audio/wroclaw_school_closure_announcement.mp3';
+    }
+    if (id.includes('youtuber')) {
+      return '/assets/audio/wroclaw_youtuber_robux_giveaway.mp3';
+    }
+    if (sample.media_type === 'AUDIO_VOICE_CLONE') {
+      return '/assets/audio/wroclaw_grandchild_distress.mp3';
+    }
+    return '/assets/audio/authentic_police_warning.mp3';
+  }
+
+  toggleSampleAudio(): void {
+    const s = this.selectedSample();
+    const url = this.resolveLocalAudio(s);
+    this.audioService.toggle(url);
+  }
+
+  formatAudioTime(sec: number): string {
+    const mins = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${mins}:${s < 10 ? '0' : ''}${s}`;
+  }
 
   samples = signal<MediaArtifactSample[]>([]);
   selectedSample = signal<MediaArtifactSample | null>(null);

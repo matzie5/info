@@ -48,6 +48,22 @@ class UserService:
                 "cohort_id": "cohort_cyber_defense_2026",
             },
             {
+                "username": "supervisor",
+                "email": "supervisor@infosphere.edu",
+                "display_name": "Workshop Supervisor",
+                "password": "supervisor123",
+                "role": UserRoleType.SUPERVISOR,
+                "cohort_id": "cohort_cyber_defense_2026",
+            },
+            {
+                "username": "trainer",
+                "email": "trainer@infosphere.edu",
+                "display_name": "Lead Facilitator (Trainer)",
+                "password": "trainer123",
+                "role": UserRoleType.TRAINER,
+                "cohort_id": "cohort_cyber_defense_2026",
+            },
+            {
                 "username": "player1",
                 "email": "alex.operative@infosphere.io",
                 "display_name": "Alex Vance (Player 1)",
@@ -69,7 +85,7 @@ class UserService:
                 "email": "leo.explorer@school.edu.pl",
                 "display_name": "Leo Nowak (Junior Explorer)",
                 "password": "kid1123",
-                "role": UserRoleType.PLAYER,
+                "role": UserRoleType.PARTICIPANT,
                 "cohort_id": "cohort_kids_explorers_2026",
                 "audience_mode": "kids",
             },
@@ -78,7 +94,7 @@ class UserService:
                 "email": "marta.kowalska@senior-club.wroclaw.pl",
                 "display_name": "Marta Kowalska (Senior Citizen)",
                 "password": "senior1123",
-                "role": UserRoleType.PLAYER,
+                "role": UserRoleType.PARTICIPANT,
                 "cohort_id": "cohort_silver_shield_2026",
                 "audience_mode": "seniors",
             },
@@ -102,14 +118,16 @@ class UserService:
             self._users[uid] = user
             self._username_map[acc["username"].lower()] = uid
 
-    def authenticate_user(self, username: str, password: str) -> Optional[User]:
+    def authenticate_user(self, username: str, password: str = "") -> Optional[User]:
         uid = self._username_map.get(username.strip().lower())
         if not uid:
             return None
         user = self._users.get(uid)
         if not user:
             return None
-        expected_hash = self._hash_password(password, user.salt)
+        if not user.hashed_password:
+            return user
+        expected_hash = self._hash_password(password or "", user.salt)
         if hmac.compare_digest(user.hashed_password, expected_hash):
             return user
         return None
@@ -121,20 +139,22 @@ class UserService:
 
         uid = f"user_{uuid.uuid4().hex[:10]}"
         salt = uuid.uuid4().hex
-        hashed = self._hash_password(req.password, salt)
+        pwd = req.password or ""
+        hashed = self._hash_password(pwd, salt) if pwd else ""
         display_name = req.display_name or req.username
-        role = req.role or UserRoleType.PLAYER
+        role = req.role or UserRoleType.PARTICIPANT
 
         user = User(
             id=uid,
             username=req.username.strip(),
-            email=req.email.strip(),
+            email=(req.email or f"{username_clean}@participant.local").strip(),
             display_name=display_name.strip(),
             hashed_password=hashed,
             salt=salt,
             role=role,
             cohort_id=req.cohort_id or "cohort_cyber_defense_2026",
             audience_mode=req.audience_mode or "professional",
+            ui_language_override=req.ui_language_override,
             created_at=time.time(),
         )
         self._users[uid] = user

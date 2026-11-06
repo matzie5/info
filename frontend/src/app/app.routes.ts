@@ -9,6 +9,37 @@ import { PlatformShellComponent } from './features/platform-shell/platform-shell
 
 export const routes: Routes = [
   {
+    path: 'supervisor',
+    loadComponent: () =>
+      import('./features/supervisor/supervisor-console.component').then(
+        (m) => m.SupervisorConsoleComponent
+      ),
+  },
+  {
+    path: 'trainer/:sessionId',
+    loadComponent: () =>
+      import('./features/trainer/trainer-cockpit.component').then(
+        (m) => m.TrainerCockpitComponent
+      ),
+  },
+  {
+    path: 'trainer',
+    redirectTo: 'trainer/WROC-SENIOR-2026',
+    pathMatch: 'full',
+  },
+  {
+    path: 'play/:sessionId',
+    loadComponent: () =>
+      import('./features/play/participant-play.component').then(
+        (m) => m.ParticipantPlayComponent
+      ),
+  },
+  {
+    path: 'play',
+    redirectTo: 'play/WROC-SENIOR-2026',
+    pathMatch: 'full',
+  },
+  {
     path: '',
     component: PlatformShellComponent,
     children: [

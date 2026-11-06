@@ -46,6 +46,30 @@ import { AudienceMode, AudienceService } from '../../core/audience/audience.serv
             <span>{{ locale.t('nav.cohort_console') || 'Cohort Console' }}</span>
           </a>
 
+          <!-- Supervisor Studio Tab -->
+          <a routerLink="/supervisor" routerLinkActive="bg-indigo-600 text-white border-indigo-600"
+             class="px-3 py-1.5 rounded border border-indigo-300 dark:border-indigo-700 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition text-indigo-700 dark:text-indigo-300 font-bold flex items-center gap-1.5"
+             title="Studio Nadzorcy: Konfigurator scenariuszy, kwerendy lokalizacji, uczestnicy">
+            <span>👑</span>
+            <span>Studio Nadzorcy</span>
+          </a>
+
+          <!-- Trainer Cockpit Tab -->
+          <a routerLink="/trainer/WROC-SENIOR-2026" routerLinkActive="bg-amber-600 text-white border-amber-600"
+             class="px-3 py-1.5 rounded border border-amber-300 dark:border-amber-700 hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1.5"
+             title="Kokpit Trenera: Prowadzenie zajęć, podpowiedzi na żywo, projektor">
+            <span>🎓</span>
+            <span>Trener</span>
+          </a>
+
+          <!-- Participant Portal Tab -->
+          <a routerLink="/play/WROC-SENIOR-2026"
+             class="px-3 py-1.5 rounded border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1.5"
+             title="Portal Gracza / Uczestnika: Czysty interfejs zablokowany na audytorium, bez przełączników roli">
+            <span>🎮</span>
+            <span>Graj (Wrocław)</span>
+          </a>
+
           <a routerLink="/modules/disinfo" routerLinkActive="bg-cyan-600 text-white border-cyan-600"
              class="px-3 py-1.5 rounded border border-slate-300 dark:border-slate-700 hover:border-cyan-500 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition text-slate-700 dark:text-slate-200">
             {{ locale.t('nav.m1_disinfo') }}

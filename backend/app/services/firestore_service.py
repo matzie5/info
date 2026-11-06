@@ -68,6 +68,21 @@ class FirestoreService:
             logger.error("Error saving session %s: %s", session.id, e)
             return session
 
+    def list_sessions(self) -> List[Session]:
+        if self.in_memory or not self._db:
+            return [Session(**d) for d in self._mem_sessions.values()]
+        try:
+            docs = self._db.collection("sessions").stream()
+            results = [Session(**doc.to_dict()) for doc in docs]
+            seen_ids = {s.id for s in results}
+            for sid, data in self._mem_sessions.items():
+                if sid not in seen_ids:
+                    results.append(Session(**data))
+            return results
+        except Exception as e:
+            logger.error("Error listing sessions: %s", e)
+            return [Session(**d) for d in self._mem_sessions.values()]
+
     # Feed Items
     def get_feed_items(self, session_id: str) -> List[FeedItem]:
         if self.in_memory:

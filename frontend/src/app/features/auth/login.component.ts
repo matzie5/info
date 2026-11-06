@@ -56,6 +56,22 @@ import { LocaleService } from '../../core/i18n/locale.service';
         <div class="grid grid-cols-2 gap-2 mt-2">
           <button
             type="button"
+            (click)="quickLogin('supervisor')"
+            class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition-all text-center"
+          >
+            👑 Supervisor Studio
+          </button>
+          <button
+            type="button"
+            (click)="quickLogin('trainer')"
+            class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/30 transition-all text-center"
+          >
+            🎓 Trener Wrocław
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button
+            type="button"
             (click)="quickLogin('kid1')"
             class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all text-center"
           >
@@ -162,10 +178,14 @@ export class LoginComponent {
   public password = '';
   public errorMessage = signal<string | null>(null);
 
-  public quickLogin(role: 'admin' | 'player1' | 'player2' | 'kid1' | 'senior1'): void {
+  public quickLogin(role: 'admin' | 'supervisor' | 'trainer' | 'player1' | 'player2' | 'kid1' | 'senior1'): void {
     this.auth.quickSwitchUser(role);
     if (role === 'admin') {
       this.router.navigate(['/admin/cohorts']);
+    } else if (role === 'supervisor') {
+      this.router.navigate(['/supervisor']);
+    } else if (role === 'trainer') {
+      this.router.navigate(['/trainer/WROC-SENIOR-2026']);
     } else {
       this.router.navigate(['/dashboard']);
     }
@@ -192,6 +212,10 @@ export class LoginComponent {
         next: (res) => {
           if (res.user.role === 'ADMIN') {
             this.router.navigate(['/admin/cohorts']);
+          } else if (res.user.role === 'SUPERVISOR') {
+            this.router.navigate(['/supervisor']);
+          } else if (res.user.role === 'TRAINER') {
+            this.router.navigate(['/trainer/WROC-SENIOR-2026']);
           } else {
             this.router.navigate(['/dashboard']);
           }

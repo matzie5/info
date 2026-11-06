@@ -13,6 +13,9 @@ from app.api.v1.admin import router as admin_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.cohorts import router as cohorts_router
 from app.api.v1.progress import router as progress_router
+from app.api.v1.studio import router as studio_router, WROCLAW_SENIORS_SCENARIOS, WROCLAW_KIDS_SCENARIOS
+from app.models.session import Session, SessionStatus, StudioParticipant
+from app.services.firestore_service import FirestoreService
 
 from app.platform.plugin_registry import platform_registry
 from app.platform.passport_service import passport_service, DigitalHygienePassport
@@ -33,12 +36,76 @@ logging.basicConfig(
 logger = logging.getLogger("infosphere")
 
 
+def seed_wroclaw_sessions():
+    fs = FirestoreService.get_instance()
+    if not fs.get_session("WROC-SENIOR-2026"):
+        sen_session = Session(
+            id="WROC-SENIOR-2026",
+            scenario_id="wroclaw-senior-defense-2026",
+            title="Wrocław Senior Cyber-Obrona 2026",
+            language="pl",
+            audience_mode="seniors",
+            location_name="Wrocław",
+            status=SessionStatus.ACTIVE,
+            trainer_token="trn-wroc-senior",
+            scenarios=WROCLAW_SENIORS_SCENARIOS,
+            roster={
+                "senior_marta": StudioParticipant(
+                    username="senior_marta",
+                    display_name="Marta Kowalska (Wrocław Krzyki)",
+                    ui_language_override="pl",
+                    score=0,
+                    connected=True
+                ),
+                "senior_tadeusz": StudioParticipant(
+                    username="senior_tadeusz",
+                    display_name="Tadeusz Wiśniewski (Wrocław Ołbin)",
+                    ui_language_override="pl",
+                    score=0,
+                    connected=True
+                )
+            }
+        )
+        fs.save_session(sen_session)
+
+    if not fs.get_session("WROC-KIDS-2026"):
+        kids_session = Session(
+            id="WROC-KIDS-2026",
+            scenario_id="wroclaw-kids-explorers-2026",
+            title="Wrocław Młodzi Detektywi Sieci 2026",
+            language="pl",
+            audience_mode="kids",
+            location_name="Wrocław",
+            status=SessionStatus.ACTIVE,
+            trainer_token="trn-wroc-kids",
+            scenarios=WROCLAW_KIDS_SCENARIOS,
+            roster={
+                "kid_kacper": StudioParticipant(
+                    username="kid_kacper",
+                    display_name="Kacper (Klasa 7A SP3)",
+                    ui_language_override="pl",
+                    score=0,
+                    connected=True
+                ),
+                "kid_zuzia": StudioParticipant(
+                    username="kid_zuzia",
+                    display_name="Zuzia (Gamer Girl)",
+                    ui_language_override="pl",
+                    score=0,
+                    connected=True
+                )
+            }
+        )
+        fs.save_session(kids_session)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(
         "Starting Infosphere Digital Hygiene Platform v3.0.0 (%d modules registered)...",
         len(platform_registry.list_modules()),
     )
+    seed_wroclaw_sessions()
     yield
     logger.info("Shutting down Infosphere Digital Hygiene Platform...")
 
@@ -126,6 +193,7 @@ app.include_router(admin_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(cohorts_router, prefix="/api/v1")
 app.include_router(progress_router, prefix="/api/v1")
+app.include_router(studio_router, prefix="/api/v1")
 
 # 3. Mount All 5 Modular Platform Routers under /api/v1/modules/{m1-disinfo..m5-echo}
 platform_registry.mount_all_routers(app, base_prefix="/api/v1/modules")

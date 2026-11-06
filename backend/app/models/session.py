@@ -1,7 +1,7 @@
 import time
 from enum import Enum
-from typing import Dict, List, Optional
-from pydantic import BaseModel, Field
+from typing import Dict, List, Optional, Any
+from pydantic import BaseModel, Field, model_validator
 
 class SessionStatus(str, Enum):
     LOBBY = "LOBBY"
@@ -45,6 +45,51 @@ class PlayerPresence(BaseModel):
     last_heartbeat: float = Field(default_factory=lambda: time.time())
     is_active: bool = True
 
+class StudioScenario(BaseModel):
+    id: str
+    platform_mock: str = "WHATSAPP"  # "WHATSAPP" | "TIKTOK" | "FACEBOOK" | "YOUTUBE" | "BROWSER"
+    threat_category: str = "DEEPFAKE_AUDIO"  # "DEEPFAKE_AUDIO" | "DEEPFAKE_VIDEO" | "PHISHING" | "DISINFORMATION" | "ASTROTURFING"
+    author: str
+    author_handle: Optional[str] = None
+    author_avatar: Optional[str] = None
+    verified: bool = False
+    title: str
+    content: str
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None  # "AUDIO" | "VIDEO" | "IMAGE" | "URL"
+    red_flags: List[str] = Field(default_factory=list)
+    safe_action_advice: str = ""
+    is_authentic: bool = False
+
+class StudioParticipant(BaseModel):
+    username: str
+    display_name: Optional[str] = None
+    password: Optional[str] = ""
+    ui_language_override: Optional[str] = None
+    completed_scenarios: List[str] = Field(default_factory=list)
+    score: int = 0
+    connected: bool = False
+
+class TrainerBroadcast(BaseModel):
+    id: str
+    timestamp: float = Field(default_factory=lambda: time.time())
+    text: str = ""
+    message: Optional[str] = None
+    urgency: str = "INFO"  # "INFO" | "HINT" | "ALERT"
+    severity: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_aliases(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            text = data.get("text") or data.get("message") or ""
+            data["text"] = text
+            data["message"] = text
+            severity = data.get("severity") or data.get("urgency") or "hint"
+            data["severity"] = str(severity).lower()
+            data["urgency"] = str(severity).upper()
+        return data
+
 class Session(BaseModel):
     id: str
     scenario_id: str = "poland-grid-panic-2026"
@@ -63,3 +108,8 @@ class Session(BaseModel):
     budgets: TeamBudgets = Field(default_factory=TeamBudgets)
     players: Dict[str, PlayerPresence] = Field(default_factory=dict)
     history_metrics: List[Dict] = Field(default_factory=list)
+    scenarios: List[StudioScenario] = Field(default_factory=list)
+    roster: Dict[str, StudioParticipant] = Field(default_factory=dict)
+    trainer_token: str = ""
+    broadcast_hints: List[TrainerBroadcast] = Field(default_factory=list)
+    submissions: List[Dict] = Field(default_factory=list)
