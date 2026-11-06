@@ -433,6 +433,162 @@ import { UserRole, SessionStatus } from '../../core/models/session.model';
                   {{ locale.t('admin.verified_label') }}
                 </label>
               </div>
+
+              <!-- GOOGLE CLOUD GENERATIVE MEDIA STUDIO -->
+              <div class="rounded-xl border border-indigo-500/40 bg-indigo-950/20 p-4 space-y-3 mt-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">✨</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-300">
+                      Studio Mediów Google Cloud
+                    </span>
+                  </div>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    Vertex AI Imagen 3 & Cloud Text-to-Speech
+                  </span>
+                </div>
+
+                <!-- Media Type Selection -->
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="mediaGenType = 'AUDIO'"
+                    [ngClass]="mediaGenType === 'AUDIO' ? 'bg-indigo-600 text-white' : 'bg-black/30 text-slate-400'"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-500/30 transition flex items-center gap-1.5">
+                    <span>🎙️ Synteza Mowy (Cloud TTS)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="mediaGenType = 'IMAGE'"
+                    [ngClass]="mediaGenType === 'IMAGE' ? 'bg-indigo-600 text-white' : 'bg-black/30 text-slate-400'"
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-indigo-500/30 transition flex items-center gap-1.5">
+                    <span>🖼️ Generowanie Obrazu (Imagen 3)</span>
+                  </button>
+                </div>
+
+                <!-- Voice options if AUDIO -->
+                <div *ngIf="mediaGenType === 'AUDIO'" class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Persona Głosu
+                    </label>
+                    <select
+                      [(ngModel)]="mediaVoicePersona"
+                      class="input-field bg-slate-900 border-white/20 text-xs text-white w-full">
+                      <option value="grandchild_distress">Wnuczek w tarapatach (Distress Voice)</option>
+                      <option value="authority_mayor">Prezydent Miasta / Urzędnik (Authority)</option>
+                      <option value="youtuber_gamer">Gamer / YouTuber (Energetic)</option>
+                      <option value="neutral_anchor">Prezenter Wiadomości (Neutral News)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Język Syntezy (TTS)
+                    </label>
+                    <select
+                      [(ngModel)]="mediaLanguage"
+                      class="input-field bg-slate-900 border-white/20 text-xs text-white w-full">
+                      <option value="pl">Polski (Wavenet / Neural2)</option>
+                      <option value="en">English (Journey / Studio)</option>
+                      <option value="de">Deutsch (Wavenet)</option>
+                      <option value="uk">Українська (Wavenet)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Aspect ratio if IMAGE -->
+                <div *ngIf="mediaGenType === 'IMAGE'" class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Format Obrazu (Aspect Ratio)
+                    </label>
+                    <select
+                      [(ngModel)]="mediaAspectRatio"
+                      class="input-field bg-slate-900 border-white/20 text-xs text-white w-full">
+                      <option value="1:1">Kwadrat 1:1 (Feed / Avatar)</option>
+                      <option value="16:9">Poziomy 16:9 (News / Artykuł)</option>
+                      <option value="9:16">Pionowy 9:16 (TikTok / Stories)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                      Model Silnika
+                    </label>
+                    <input
+                      type="text"
+                      disabled
+                      value="imagen-3.0-generate-002"
+                      class="input-field bg-slate-900/50 border-white/10 text-xs text-slate-400 w-full" />
+                  </div>
+                </div>
+
+                <!-- Custom Script / Prompt override (optional) -->
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                    {{ mediaGenType === 'AUDIO' ? 'Tekst wypowiedzi głosu (opcjonalnie - domyślnie treść posta)' : 'Prompt wizualny (opcjonalnie - domyślnie treść posta)' }}
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="mediaPromptOverride"
+                    [placeholder]="mediaGenType === 'AUDIO' ? 'np. Babciu, pomóż mi natychmiast, miałem wypadek pod Wrocławiem...' : 'np. Graphic showing warning advisory banner with city logo'"
+                    class="input-field text-xs" />
+                </div>
+
+                <!-- Action Button & Status -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                  <button
+                    type="button"
+                    (click)="generateGoogleMedia()"
+                    [disabled]="isGeneratingMedia || (!customPost.content.trim() && !mediaPromptOverride.trim() && !customPost.headline.trim())"
+                    class="btn-primary text-xs py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-2 shadow-md">
+                    <span *ngIf="isGeneratingMedia" class="animate-spin">🔄</span>
+                    <span *ngIf="!isGeneratingMedia">⚡</span>
+                    <span>{{ isGeneratingMedia ? 'Generowanie przez usługi Google Cloud...' : (mediaGenType === 'AUDIO' ? 'Generuj Mowę (Google Cloud TTS)' : 'Generuj Grafikę (Vertex AI Imagen 3)') }}</span>
+                  </button>
+
+                  <div *ngIf="lastGeneratedMediaMeta" class="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5">
+                    <span>✓ {{ lastGeneratedMediaMeta.provider }}</span>
+                  </div>
+                </div>
+
+                <div *ngIf="mediaGenError" class="p-2.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs">
+                  {{ mediaGenError }}
+                </div>
+
+                <!-- Generated Media Preview Card -->
+                <div *ngIf="customPost.media_url" class="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2 mt-2">
+                  <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <span class="font-bold text-slate-300">Podgląd Multimediów Posta:</span>
+                    <span class="font-mono text-indigo-400 truncate max-w-xs">{{ customPost.media_url }}</span>
+                  </div>
+
+                  <!-- Audio Preview Player -->
+                  <div *ngIf="mediaGenType === 'AUDIO' || customPost.media_url.endsWith('.wav') || customPost.media_url.endsWith('.mp3')" class="w-full">
+                    <audio [src]="customPost.media_url" controls class="w-full h-10 mt-1"></audio>
+                  </div>
+
+                  <!-- Image Preview -->
+                  <div *ngIf="mediaGenType === 'IMAGE' || customPost.media_url.endsWith('.png') || customPost.media_url.endsWith('.jpg') || customPost.media_url.endsWith('.svg')" class="flex justify-center">
+                    <img [src]="customPost.media_url" alt="Generated Media" class="max-h-48 rounded-lg object-contain border border-white/10" />
+                  </div>
+
+                  <div *ngIf="lastGeneratedMediaMeta?.gcs_uri" class="text-[10px] font-mono text-slate-500">
+                    GCS: {{ lastGeneratedMediaMeta.gcs_uri }}
+                  </div>
+                </div>
+
+                <!-- Direct Media URL input for manual adjustment -->
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+                    URL Multimediów (Media URL)
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="customPost.media_url"
+                    placeholder="https://... lub /assets/audio/... lub /assets/images/..."
+                    class="input-field text-xs font-mono" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -530,6 +686,16 @@ export class AdminHudComponent implements OnInit, OnDestroy {
     is_verified: false,
     target_cluster: ''
   };
+
+  // Google Cloud Generative Media Studio state
+  public isGeneratingMedia = false;
+  public mediaGenType: 'AUDIO' | 'IMAGE' = 'AUDIO';
+  public mediaVoicePersona = 'grandchild_distress';
+  public mediaLanguage = 'pl';
+  public mediaAspectRatio = '1:1';
+  public mediaPromptOverride = '';
+  public lastGeneratedMediaMeta: any = null;
+  public mediaGenError = '';
 
   private adminPollTimer: any = null;
 
@@ -636,6 +802,37 @@ export class AdminHudComponent implements OnInit, OnDestroy {
       this.sync.fetchData(this.sessionId);
     } catch (e: any) {
       alert('Error injecting post: ' + (e.message || e));
+    }
+  }
+
+  async generateGoogleMedia() {
+    this.isGeneratingMedia = true;
+    this.mediaGenError = '';
+    const textOrPrompt = this.mediaPromptOverride.trim() || this.customPost.content.trim() || this.customPost.headline.trim();
+    if (!textOrPrompt) {
+      this.mediaGenError = 'Wprowadź treść posta lub dedykowany prompt do wygenerowania multimediów.';
+      this.isGeneratingMedia = false;
+      return;
+    }
+
+    try {
+      const res = await this.api.generateMedia({
+        media_type: this.mediaGenType,
+        prompt_or_text: textOrPrompt,
+        language: this.mediaLanguage,
+        voice_persona: this.mediaVoicePersona,
+        aspect_ratio: this.mediaAspectRatio,
+        scenario_title: this.customPost.headline || 'Admin Custom Inject',
+        session_id: this.sessionId
+      });
+
+      this.customPost.media_url = res.media_url;
+      this.lastGeneratedMediaMeta = res;
+    } catch (e: any) {
+      console.error('Failed to generate media via Google Cloud:', e);
+      this.mediaGenError = e.message || 'Błąd generowania multimediów przez Google Cloud';
+    } finally {
+      this.isGeneratingMedia = false;
     }
   }
 

@@ -103,3 +103,48 @@ def test_participant_submit_verdict():
         assert sess["submissions"][-1]["verdict"] == "SCAM"
         assert "wroc-sen-whatsapp-grandchild" in sess["roster"]["senior_marta"]["completed_scenarios"]
         assert sess["roster"]["senior_marta"]["score"] > 0
+
+def test_admin_and_studio_google_media_generation():
+    with TestClient(app) as client:
+        # 1. Admin generate audio speech (Google Cloud Text-to-Speech)
+        res_audio = client.post("/api/v1/admin/media/generate", json={
+            "media_type": "AUDIO",
+            "prompt_or_text": "Babciu, pilnie potrzebuję kaucji na komisariacie we Wrocławiu!",
+            "language": "pl",
+            "voice_persona": "grandchild_distress",
+            "session_id": "WROC-SENIOR-2026"
+        })
+        assert res_audio.status_code == 200
+        audio_data = res_audio.json()
+        assert audio_data["media_type"] == "AUDIO"
+        assert audio_data["provider"] == "google-cloud-texttospeech"
+        assert audio_data["media_url"].startswith("/assets/audio/")
+        assert audio_data["file_size_bytes"] > 0
+        assert audio_data["status"] in ["LIVE_CLOUD_GENERATED", "OFFLINE_SIMULATED"]
+
+        # 2. Admin generate image (Google Vertex AI Imagen 3)
+        res_img = client.post("/api/v1/admin/media/generate", json={
+            "media_type": "IMAGE",
+            "prompt_or_text": "Awaria wodociągowa na placu Grunwaldzkim we Wrocławiu, żółta taśma ostrzegawcza",
+            "aspect_ratio": "16:9",
+            "scenario_title": "Awaria MPWiK Wrocław"
+        })
+        assert res_img.status_code == 200
+        img_data = res_img.json()
+        assert img_data["media_type"] == "IMAGE"
+        assert img_data["provider"] == "google-vertex-imagen"
+        assert img_data["media_url"].startswith("/assets/images/")
+        assert img_data["file_size_bytes"] > 0
+        assert img_data["status"] in ["LIVE_CLOUD_GENERATED", "OFFLINE_SIMULATED"]
+
+        # 3. Studio generate media endpoint
+        res_studio = client.post("/api/v1/studio/generate-media", json={
+            "media_type": "AUDIO",
+            "prompt_or_text": "Pilny komunikat o zamknięciu szkół we Wrocławiu!",
+            "language": "pl",
+            "voice_persona": "authority_mayor"
+        })
+        assert res_studio.status_code == 200
+        studio_data = res_studio.json()
+        assert studio_data["media_type"] == "AUDIO"
+        assert studio_data["provider"] == "google-cloud-texttospeech"

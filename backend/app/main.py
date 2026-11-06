@@ -198,6 +198,13 @@ app.include_router(studio_router, prefix="/api/v1")
 # 3. Mount All 5 Modular Platform Routers under /api/v1/modules/{m1-disinfo..m5-echo}
 platform_registry.mount_all_routers(app, base_prefix="/api/v1/modules")
 
+# 4. Mount Static Assets for Direct Media Serving
+import os
+from fastapi.staticfiles import StaticFiles
+assets_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/public/assets"))
+if os.path.exists(assets_path):
+    app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
+
 
 if __name__ == "__main__":
     import uvicorn

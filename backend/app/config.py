@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     ASSETS_BUCKET: str = Field(
         default="infosphere-511-infosphere-assets", alias="ASSETS_BUCKET"
     )
+    GOOGLE_API_KEY: str = Field(default="", alias="GOOGLE_API_KEY")
+    GEMINI_API_KEY: str = Field(default="", alias="GEMINI_API_KEY")
+    IMAGEN_MODEL: str = Field(default="imagen-3.0-generate-002", alias="IMAGEN_MODEL")
+    TTS_DEFAULT_VOICE_PL: str = Field(default="pl-PL-Wavenet-B", alias="TTS_DEFAULT_VOICE_PL")
+    TTS_DEFAULT_VOICE_EN: str = Field(default="en-US-Journey-F", alias="TTS_DEFAULT_VOICE_EN")
     CLOUD_TASKS_QUEUE: str = Field(
         default="projects/infosphere-511/locations/europe-west1/queues/simulation-ticks-queue",
         alias="CLOUD_TASKS_QUEUE",

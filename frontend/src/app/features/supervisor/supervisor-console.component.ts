@@ -327,16 +327,132 @@ export interface SessionData {
 
           <!-- STEP 2: Scenarios Selection & Research Grounding -->
           <div *ngIf="wizardStep() === 2" class="flex flex-col gap-6">
-            <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 text-xs flex items-center justify-between">
+            <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 text-xs flex flex-wrap items-center justify-between gap-2">
               <div>
                 <strong>Lokalne badanie dla: {{ newSession.location_name }} ({{ newSession.audience_mode }}):</strong>
-                Wygenerowano {{ proposedScenarios().length }} autentycznych scenariuszy osadzonych w realiach miasta.
+                Zaproponowano {{ proposedScenarios().length }} autentycznych scenariuszy osadzonych w realiach miasta z obsługą Google Media.
               </div>
-              <span class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-bold font-mono text-[11px]">
-                Gotowe do użycia
-              </span>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  (click)="showCustomScenarioForm.set(!showCustomScenarioForm())"
+                  class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-xs transition">
+                  {{ showCustomScenarioForm() ? '✕ Ukryj formularz' : '✨ Utwórz Własny Scenariusz' }}
+                </button>
+              </div>
             </div>
 
+            <!-- Custom Scenario Creation Form (Studio) -->
+            <div *ngIf="showCustomScenarioForm()" class="p-5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 space-y-4 animate-fade-in">
+              <div class="flex items-center justify-between border-b border-indigo-200/60 dark:border-indigo-800/60 pb-3">
+                <h3 class="font-bold text-sm text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
+                  <span>🎨</span>
+                  <span>Studio Scenariusza: Dodaj Własne Zagrożenie / Treść</span>
+                </h3>
+                <span class="text-[11px] font-mono text-indigo-500">Zintegrowane z Google Cloud TTS & Imagen 3</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">Platforma (Mock)</label>
+                  <select [(ngModel)]="customScenario.platform_mock" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">
+                    <option value="sms">📱 SMS Alert</option>
+                    <option value="whatsapp">💬 WhatsApp / Messenger</option>
+                    <option value="tiktok">🎵 TikTok Mock</option>
+                    <option value="instagram">📸 Instagram Post</option>
+                    <option value="youtube">📺 YouTube Mock</option>
+                    <option value="facebook">👥 Facebook Feed</option>
+                    <option value="news">🌐 Portal Informacyjny / Browser</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">Kategoria Zagrożenia</label>
+                  <select [(ngModel)]="customScenario.threat_category" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold">
+                    <option value="audio_spoof">🎙️ Audio Deepfake / Klonowanie Głosu</option>
+                    <option value="video_deepfake">🎬 Wideo Deepfake / Manipulacja</option>
+                    <option value="phishing">🎣 Phishing / Wyłudzenie Danych</option>
+                    <option value="fake_news">📰 Fake News / Dezinformacja Lokalna</option>
+                    <option value="impersonation">🎭 Podszywanie się pod Instytucję</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">Tytuł Scenariusza</label>
+                  <input type="text" [(ngModel)]="customScenario.title" placeholder="np. Pilny telefon od wnuczka z komisariatu" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">Autor / Źródło Wiadomości</label>
+                  <input type="text" [(ngModel)]="customScenario.author" placeholder="np. Nieznany Numer (+48 ...)" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">Ostrzeżenia (Czerwone Flagi - po przecinku)</label>
+                  <input type="text" [(ngModel)]="customScenarioRedFlagsInput" placeholder="Presja czasu, żądanie kodu BLIK, nienaturalny głos" class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">Treść Scenariusza (Tekst Posta / Transkrypcja Dźwięku)</label>
+                <textarea [(ngModel)]="customScenario.content" rows="3" placeholder="Wpisz treść wiadomości lub dialogu..." class="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"></textarea>
+              </div>
+
+              <!-- Media Generation for Custom Scenario -->
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="generateMediaForCustomScenario('AUDIO')"
+                    [disabled]="isGeneratingCustomMedia() || !customScenario.content.trim()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5 transition">
+                    <span *ngIf="isGeneratingCustomMedia() && customMediaGenType === 'AUDIO'" class="animate-spin">🔄</span>
+                    <span *ngIf="!(isGeneratingCustomMedia() && customMediaGenType === 'AUDIO')">🎙️</span>
+                    <span>Generuj Głos (Google Cloud TTS)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="generateMediaForCustomScenario('IMAGE')"
+                    [disabled]="isGeneratingCustomMedia() || !customScenario.content.trim()"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition">
+                    <span *ngIf="isGeneratingCustomMedia() && customMediaGenType === 'IMAGE'" class="animate-spin">🔄</span>
+                    <span *ngIf="!(isGeneratingCustomMedia() && customMediaGenType === 'IMAGE')">🖼️</span>
+                    <span>Generuj Obraz (Google Imagen 3)</span>
+                  </button>
+                </div>
+
+                <div *ngIf="customScenario.media_url" class="text-xs font-mono text-emerald-500 truncate max-w-sm">
+                  Media: {{ customScenario.media_url }}
+                </div>
+              </div>
+
+              <!-- Media Preview for Custom Scenario -->
+              <div *ngIf="customScenario.media_url" class="p-3 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <div *ngIf="customScenario.media_type === 'audio' || customScenario.media_url.endsWith('.wav') || customScenario.media_url.endsWith('.mp3')">
+                  <audio [src]="customScenario.media_url" controls class="w-full h-9"></audio>
+                </div>
+                <div *ngIf="customScenario.media_type === 'image' || customScenario.media_url.endsWith('.png') || customScenario.media_url.endsWith('.jpg') || customScenario.media_url.endsWith('.svg')" class="flex justify-center">
+                  <img [src]="customScenario.media_url" alt="Custom Scenario Media" class="max-h-36 rounded-lg object-contain" />
+                </div>
+              </div>
+
+              <div class="flex justify-end gap-2">
+                <button
+                  type="button"
+                  (click)="showCustomScenarioForm.set(false)"
+                  class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold">
+                  Anuluj
+                </button>
+                <button
+                  type="button"
+                  (click)="addCustomScenarioToStudio()"
+                  [disabled]="!customScenario.title.trim() || !customScenario.content.trim()"
+                  class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition">
+                  ✓ Dodaj Scenariusz do Listy
+                </button>
+              </div>
+            </div>
+
+            <!-- Scenarios Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div
                 *ngFor="let sc of proposedScenarios()"
@@ -362,6 +478,42 @@ export interface SessionData {
                     <span *ngFor="let rf of sc.red_flags" class="text-[10px] px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20">
                       🚩 {{ rf }}
                     </span>
+                  </div>
+
+                  <!-- Google Media Player / Preview if attached -->
+                  <div *ngIf="sc.media_url" class="mt-3 p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1 font-mono">
+                      <span class="text-indigo-500 font-semibold">✨ Google Media ({{ sc.media_type || 'asset' }}):</span>
+                      <span class="truncate max-w-[160px]">{{ sc.media_url }}</span>
+                    </div>
+                    <div *ngIf="sc.media_type === 'audio' || sc.media_url.endsWith('.wav') || sc.media_url.endsWith('.mp3')">
+                      <audio [src]="sc.media_url" controls class="w-full h-8 mt-1"></audio>
+                    </div>
+                    <div *ngIf="sc.media_type === 'image' || sc.media_url.endsWith('.png') || sc.media_url.endsWith('.jpg') || sc.media_url.endsWith('.svg')" class="flex justify-center mt-1">
+                      <img [src]="sc.media_url" alt="Visual asset" class="max-h-24 rounded object-contain" />
+                    </div>
+                  </div>
+
+                  <!-- Google Cloud Media Generation Buttons on each card -->
+                  <div class="mt-3 flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      (click)="generateMediaForScenario(sc, 'AUDIO')"
+                      [disabled]="generatingScenarioMedia()[sc.id]"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 flex items-center gap-1 transition">
+                      <span *ngIf="generatingScenarioMedia()[sc.id] === 'AUDIO'" class="animate-spin">🔄</span>
+                      <span *ngIf="generatingScenarioMedia()[sc.id] !== 'AUDIO'">🎙️</span>
+                      <span>{{ generatingScenarioMedia()[sc.id] === 'AUDIO' ? 'Generowanie TTS...' : 'Google TTS (Głos)' }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      (click)="generateMediaForScenario(sc, 'IMAGE')"
+                      [disabled]="generatingScenarioMedia()[sc.id]"
+                      class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 flex items-center gap-1 transition">
+                      <span *ngIf="generatingScenarioMedia()[sc.id] === 'IMAGE'" class="animate-spin">🔄</span>
+                      <span *ngIf="generatingScenarioMedia()[sc.id] !== 'IMAGE'">🖼️</span>
+                      <span>{{ generatingScenarioMedia()[sc.id] === 'IMAGE' ? 'Generowanie...' : 'Google Imagen 3' }}</span>
+                    </button>
                   </div>
                 </div>
 
@@ -558,6 +710,29 @@ export class SupervisorConsoleComponent implements OnInit {
   proposedScenarios = signal<StudioScenario[]>([]);
   selectedScenarios: StudioScenario[] = [];
 
+  // Studio Custom Scenario & Google Media Generation State
+  showCustomScenarioForm = signal<boolean>(false);
+  generatingScenarioMedia = signal<Record<string, string>>({});
+  isGeneratingCustomMedia = signal<boolean>(false);
+  customMediaGenType: 'AUDIO' | 'IMAGE' = 'AUDIO';
+  customScenarioRedFlagsInput = '';
+  customScenario: StudioScenario = {
+    id: '',
+    platform_mock: 'whatsapp',
+    threat_category: 'audio_spoof',
+    author: 'Nieznany Numer (+48 ...)',
+    author_handle: '@unknown',
+    author_avatar: '💬',
+    verified: false,
+    title: '',
+    content: '',
+    media_url: '',
+    media_type: 'audio',
+    red_flags: ['Presja czasu', 'Nietypowe żądanie pieniędzy'],
+    safe_action_advice: 'Zadzwoń do osoby bezpośrednio na jej znany, stały numer telefonu.',
+    is_authentic: false
+  };
+
   newParticipant: { username: string; display_name: string; password?: string; ui_language_override?: string | null } = {
     username: '',
     display_name: '',
@@ -624,6 +799,111 @@ export class SupervisorConsoleComponent implements OnInit {
     } else {
       this.selectedScenarios.push(sc);
     }
+  }
+
+  generateMediaForScenario(sc: StudioScenario, mediaType: 'AUDIO' | 'IMAGE'): void {
+    const current = { ...this.generatingScenarioMedia() };
+    current[sc.id] = mediaType;
+    this.generatingScenarioMedia.set(current);
+
+    const voicePersona = this.newSession.audience_mode === 'seniors'
+      ? (sc.threat_category === 'audio_spoof' ? 'grandchild_distress' : 'authority_mayor')
+      : (this.newSession.audience_mode === 'kids' ? 'youtuber_gamer' : 'authority_mayor');
+
+    this.http.post<any>('/api/v1/studio/generate-media', {
+      media_type: mediaType,
+      prompt_or_text: sc.content || sc.title,
+      language: this.newSession.language,
+      voice_persona: voicePersona,
+      scenario_title: sc.title
+    }).subscribe({
+      next: (res) => {
+        sc.media_url = res.media_url;
+        sc.media_type = res.media_type.toLowerCase();
+        // Update selected scenario copy if it exists
+        const match = this.selectedScenarios.find((s) => s.id === sc.id);
+        if (match) {
+          match.media_url = res.media_url;
+          match.media_type = res.media_type.toLowerCase();
+        }
+        const updated = { ...this.generatingScenarioMedia() };
+        delete updated[sc.id];
+        this.generatingScenarioMedia.set(updated);
+      },
+      error: (err) => {
+        console.error('Failed to generate media for scenario:', err);
+        const updated = { ...this.generatingScenarioMedia() };
+        delete updated[sc.id];
+        this.generatingScenarioMedia.set(updated);
+        alert('Błąd generowania multimediów przez Google Cloud: ' + (err.error?.detail || err.message));
+      }
+    });
+  }
+
+  generateMediaForCustomScenario(mediaType: 'AUDIO' | 'IMAGE'): void {
+    this.isGeneratingCustomMedia.set(true);
+    this.customMediaGenType = mediaType;
+
+    const voicePersona = this.newSession.audience_mode === 'seniors'
+      ? 'grandchild_distress'
+      : (this.newSession.audience_mode === 'kids' ? 'youtuber_gamer' : 'authority_mayor');
+
+    this.http.post<any>('/api/v1/studio/generate-media', {
+      media_type: mediaType,
+      prompt_or_text: this.customScenario.content || this.customScenario.title,
+      language: this.newSession.language,
+      voice_persona: voicePersona,
+      scenario_title: this.customScenario.title
+    }).subscribe({
+      next: (res) => {
+        this.customScenario.media_url = res.media_url;
+        this.customScenario.media_type = res.media_type.toLowerCase();
+        this.isGeneratingCustomMedia.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to generate media for custom scenario:', err);
+        this.isGeneratingCustomMedia.set(false);
+        alert('Błąd generowania multimediów: ' + (err.error?.detail || err.message));
+      }
+    });
+  }
+
+  addCustomScenarioToStudio(): void {
+    if (!this.customScenario.title.trim() || !this.customScenario.content.trim()) return;
+
+    const redFlags = this.customScenarioRedFlagsInput
+      ? this.customScenarioRedFlagsInput.split(',').map((s) => s.trim()).filter(Boolean)
+      : ['Weryfikacja tożsamości', 'Podejrzany kontakt'];
+
+    const newSc: StudioScenario = {
+      ...this.customScenario,
+      id: `custom-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      red_flags: redFlags
+    };
+
+    const currentProposed = [...this.proposedScenarios()];
+    currentProposed.unshift(newSc);
+    this.proposedScenarios.set(currentProposed);
+    this.selectedScenarios.unshift(newSc);
+
+    this.showCustomScenarioForm.set(false);
+    this.customScenario = {
+      id: '',
+      platform_mock: 'whatsapp',
+      threat_category: 'audio_spoof',
+      author: 'Nieznany Numer (+48 ...)',
+      author_handle: '@unknown',
+      author_avatar: '💬',
+      verified: false,
+      title: '',
+      content: '',
+      media_url: '',
+      media_type: 'audio',
+      red_flags: ['Presja czasu', 'Nietypowe żądanie pieniędzy'],
+      safe_action_advice: 'Zadzwoń do osoby bezpośrednio na jej znany, stały numer telefonu.',
+      is_authentic: false
+    };
+    this.customScenarioRedFlagsInput = '';
   }
 
   addParticipantToRoster(): void {

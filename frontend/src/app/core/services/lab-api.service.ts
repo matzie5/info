@@ -241,5 +241,39 @@ export class LabApiService {
     if (!res.ok) throw new Error(`Get telemetry failed: ${res.statusText}`);
     return res.json();
   }
+
+  async generateMedia(payload: {
+    media_type: 'AUDIO' | 'IMAGE';
+    prompt_or_text: string;
+    language?: string;
+    voice_persona?: string;
+    aspect_ratio?: string;
+    scenario_title?: string;
+    session_id?: string;
+  }): Promise<{
+    media_url: string;
+    media_type: string;
+    provider: string;
+    model: string;
+    status: string;
+    language?: string;
+    voice_persona?: string;
+    duration_sec?: number;
+    aspect_ratio?: string;
+    file_size_bytes: number;
+    gcs_uri?: string;
+    details?: string;
+  }> {
+    const res = await this.fetchApi('/admin/media/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || `Generate media failed: ${res.statusText}`);
+    }
+    return res.json();
+  }
 }
 

@@ -7,6 +7,7 @@ from app.models.session import Session, SessionStatus, UserRole
 from app.models.action import ActionType, PlayerAction
 from app.services.firestore_service import FirestoreService
 from app.engine.simulation_orchestrator import SimulationOrchestrator
+from app.services.google_media_service import GoogleMediaService
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -38,6 +39,53 @@ class AdminCreatePostRequest(BaseModel):
     bias_score: Optional[float] = 0.0
     virality_velocity: Optional[float] = 1.0
     target_cluster: Optional[str] = None
+
+
+class GenerateMediaRequest(BaseModel):
+    media_type: str = "AUDIO"  # "AUDIO" | "IMAGE"
+    prompt_or_text: str
+    language: Optional[str] = "pl"
+    voice_persona: Optional[str] = "grandchild_distress"
+    aspect_ratio: Optional[str] = "1:1"
+    scenario_title: Optional[str] = None
+    session_id: Optional[str] = None
+
+
+class GenerateMediaResponse(BaseModel):
+    media_url: str
+    media_type: str
+    provider: str
+    model: str
+    status: str
+    language: Optional[str] = None
+    voice_persona: Optional[str] = None
+    duration_sec: Optional[float] = None
+    aspect_ratio: Optional[str] = None
+    file_size_bytes: int
+    gcs_uri: Optional[str] = None
+    details: Optional[str] = None
+
+
+@router.post("/media/generate", response_model=GenerateMediaResponse)
+def generate_admin_media(req: GenerateMediaRequest):
+    """
+    Connects to real Google Cloud services (Cloud Text-to-Speech & Vertex AI Imagen 3)
+    to generate authentic audio voiceovers or images for scenario injects and training posts.
+    """
+    service = GoogleMediaService.get_instance()
+    if req.media_type.upper() == "IMAGE":
+        return service.generate_image(
+            prompt=req.prompt_or_text,
+            aspect_ratio=req.aspect_ratio or "1:1",
+            scenario_title=req.scenario_title,
+            session_id=req.session_id,
+        )
+    return service.generate_audio_speech(
+        text=req.prompt_or_text,
+        language=req.language or "pl",
+        voice_persona=req.voice_persona or "grandchild_distress",
+        session_id=req.session_id,
+    )
 
 
 @router.get("/scenarios")

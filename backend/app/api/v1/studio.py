@@ -278,3 +278,34 @@ def propose_scenarios(req: ProposeScenariosRequest):
         language=req.language,
         scenarios=scenarios
     )
+
+class StudioGenerateMediaRequest(BaseModel):
+    media_type: str = "AUDIO"  # "AUDIO" | "IMAGE"
+    prompt_or_text: str
+    language: Optional[str] = "pl"
+    voice_persona: Optional[str] = "grandchild_distress"
+    aspect_ratio: Optional[str] = "1:1"
+    scenario_title: Optional[str] = None
+    session_id: Optional[str] = None
+
+@router.post("/generate-media")
+def studio_generate_media(req: StudioGenerateMediaRequest):
+    """
+    Connects to real Google Cloud services (Text-to-Speech & Vertex AI Imagen 3)
+    to generate authentic audio voiceovers or images for training scenarios in the Supervisor Studio.
+    """
+    from app.services.google_media_service import GoogleMediaService
+    service = GoogleMediaService.get_instance()
+    if req.media_type.upper() == "IMAGE":
+        return service.generate_image(
+            prompt=req.prompt_or_text,
+            aspect_ratio=req.aspect_ratio or "1:1",
+            scenario_title=req.scenario_title,
+            session_id=req.session_id,
+        )
+    return service.generate_audio_speech(
+        text=req.prompt_or_text,
+        language=req.language or "pl",
+        voice_persona=req.voice_persona or "grandchild_distress",
+        session_id=req.session_id,
+    )
