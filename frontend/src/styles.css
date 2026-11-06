@@ -253,3 +253,27 @@ html.dark .badge-amber {
   background: rgba(249, 168, 28, 0.15);
   color: #FBBF24;
 }
+
+/* Multi-Audience Adaptive Modes */
+.audience-seniors {
+  font-size: 108%;
+  line-height: 1.65;
+}
+.audience-seniors .btn-primary,
+.audience-seniors .btn-secondary,
+.audience-seniors .btn-adversary {
+  padding: 0.78rem 1.4rem;
+  font-size: 1.02rem;
+  border-radius: 10px;
+}
+.audience-seniors .input-field {
+  font-size: 1.04rem;
+  padding: 0.75rem 1rem;
+}
+
+.audience-kids .glass-panel {
+  border-radius: 16px;
+}
+.audience-kids .btn-primary {
+  border-radius: 9999px;
+}

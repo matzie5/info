@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth/auth.service';
 import { LocaleService } from '../../core/i18n/locale.service';
 import { ThemeService } from '../../core/theme/theme.service';
+import { AudienceService } from '../../core/audience/audience.service';
 
 export interface ModuleRecord {
   module_id: string;
@@ -74,12 +75,17 @@ export interface ModuleChallengeCard {
               <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 {{ auth.currentUser()?.email }}
               </p>
-              <div class="flex items-center space-x-2 mt-2">
+              <div class="flex flex-wrap items-center gap-2 mt-2">
                 <span class="text-xs px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20">
                   🛡️ {{ cohortName() }}
                 </span>
-                <span class="text-xs text-slate-400 dark:text-slate-500">
-                  ID: {{ auth.cohortId() }}
+                <span class="text-xs px-2.5 py-1 rounded-md font-bold border"
+                      [ngClass]="audience.isKids() ? 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30' : audience.isSeniors() ? 'bg-teal-500/15 text-teal-600 dark:text-teal-300 border-teal-500/30' : 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border-indigo-500/30'">
+                  {{ audience.isKids() ? locale.t('audience.kids_title') : audience.isSeniors() ? locale.t('audience.seniors_title') : locale.t('audience.pro_title') }}
+                </span>
+                <span *ngIf="audience.activeLocationName()"
+                      class="text-xs px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/30">
+                  📍 {{ audience.activeLocationName() }}
                 </span>
               </div>
             </div>
@@ -87,6 +93,15 @@ export interface ModuleChallengeCard {
 
           <!-- Quick Actions & STIX Export -->
           <div class="flex flex-wrap items-center gap-3">
+            <a *ngIf="audience.preparedSessionId()"
+               [routerLink]="['/arena', audience.preparedSessionId()]"
+               [queryParams]="{ role: 'BLUE_TEAM', handle: auth.currentUser()?.display_name || 'Defender' }"
+               class="px-4 py-2.5 text-xs font-black rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2">
+              <span>{{ locale.t('audience.join_prepared_btn') }}</span>
+              <span *ngIf="audience.activeLocationName()" class="px-1.5 py-0.5 rounded bg-white/20 text-[10px]">
+                📍 {{ audience.activeLocationName() }}
+              </span>
+            </a>
             <button
               (click)="exportStix21()"
               class="px-4 py-2 text-xs font-medium rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition-all flex items-center space-x-1.5"
@@ -101,6 +116,19 @@ export interface ModuleChallengeCard {
             >
               🔄
             </button>
+          </div>
+        </div>
+
+        <!-- Golden Rule / Cyber Detective Tip Banner for Kids & Seniors -->
+        <div *ngIf="audience.isKids() || audience.isSeniors()"
+             class="mt-4 p-4 rounded-xl border text-sm font-semibold flex items-start gap-3"
+             [ngClass]="audience.isKids() ? 'bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-200' : 'bg-teal-500/10 border-teal-500/30 text-teal-800 dark:text-teal-200'">
+          <span class="text-xl">{{ audience.isKids() ? '🕵️' : '🛡️' }}</span>
+          <div class="flex-1">
+            <div>{{ audience.isKids() ? locale.t('audience.kids_golden_rule') : locale.t('audience.seniors_golden_rule') }}</div>
+            <div *ngIf="audience.tailoredEnvironment() as env" class="text-xs mt-1 opacity-90 font-normal">
+              📍 {{ env.city_name }} • {{ env.local_water_or_utility }} • {{ env.local_mayor_or_leader }} • {{ env.local_official_portal }}
+            </div>
           </div>
         </div>
       </div>
@@ -313,6 +341,7 @@ export class PlayerDashboardComponent implements OnInit {
   public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
+  public audience = inject(AudienceService);
   private http = inject(HttpClient);
 
   public progress = signal<UserProgressData | null>(null);
@@ -434,6 +463,15 @@ export class PlayerDashboardComponent implements OnInit {
 
   public loadCohortLeaderboard(): void {
     const cId = this.auth.cohortId();
+    this.http.get<any>(`/api/v1/cohorts/${cId}`).subscribe({
+      next: (cohort) => {
+        if (cohort?.name) {
+          this.cohortName.set(cohort.name);
+        }
+        this.audience.applyCohortEnvironment(cohort);
+      },
+      error: () => {},
+    });
     this.http.get<LeaderboardEntry[]>(`/api/v1/cohorts/${cId}/leaderboard`).subscribe({
       next: (entries) => {
         this.leaderboard.set(entries);

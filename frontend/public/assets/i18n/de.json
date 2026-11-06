@@ -415,6 +415,8 @@
     "register_btn": "Operator-Konto anlegen",
     "switch_to_register": "Noch kein Konto? Als Operator registrieren",
     "switch_to_login": "Bereits registriert? Hier anmelden",
-    "logging_in": "Wird authentifiziert..."
+    "logging_in": "Wird authentifiziert...",
+    "kid1_btn": "🧒 Schüler (Leo)",
+    "senior1_btn": "👵 Seniorin (Marta)"
   }
 }

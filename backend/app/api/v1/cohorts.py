@@ -7,6 +7,7 @@ from app.models.cohort import (
     AssignUserCohortRequest,
     Cohort,
     CreateCohortRequest,
+    LocationTailoringRequest,
     UpdateCohortConfigRequest,
 )
 from app.models.user import User, UserRoleType
@@ -91,6 +92,19 @@ def get_cohort_analytics(
     if not cohort:
         raise HTTPException(status_code=404, detail=f"Cohort '{cohort_id}' not found")
     return progress_service.get_cohort_analytics(cohort_id)
+
+
+@router.post("/{cohort_id}/tailor-environment", response_model=Cohort)
+def tailor_cohort_environment(
+    cohort_id: str,
+    req: LocationTailoringRequest,
+    admin_user: User = Depends(require_admin_user),
+):
+    """Admin/Trainer endpoint to prepare a cohort session upfront and AI-tailor M1-M5 to a specific city and audience."""
+    try:
+        return cohort_service.tailor_cohort_environment(cohort_id, req)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.get("/{cohort_id}/leaderboard")

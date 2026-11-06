@@ -19,6 +19,7 @@ class User(BaseModel):
     salt: str
     role: UserRoleType = UserRoleType.PLAYER
     cohort_id: Optional[str] = "cohort_cyber_defense_2026"
+    audience_mode: str = "professional"  # "professional" | "kids" | "seniors"
     created_at: float = Field(default_factory=lambda: time.time())
 
 
@@ -29,6 +30,7 @@ class UserPublic(BaseModel):
     display_name: str
     role: UserRoleType
     cohort_id: Optional[str] = None
+    audience_mode: str = "professional"
     created_at: float
 
 
@@ -44,6 +46,7 @@ class UserRegisterRequest(BaseModel):
     display_name: Optional[str] = None
     role: Optional[UserRoleType] = UserRoleType.PLAYER
     cohort_id: Optional[str] = "cohort_cyber_defense_2026"
+    audience_mode: Optional[str] = "professional"
 
 
 class AuthTokenResponse(BaseModel):

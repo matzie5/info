@@ -5,6 +5,7 @@ import { FirestoreSyncService } from '../../core/services/firestore-sync.service
 import { HeartbeatService } from '../../core/services/heartbeat.service';
 import { LabApiService } from '../../core/services/lab-api.service';
 import { LocaleService, LanguageCode } from '../../core/i18n/locale.service';
+import { AudienceService } from '../../core/audience/audience.service';
 import { UserRole, SessionStatus } from '../../core/models/session.model';
 import { PulseFeedComponent } from './components/pulse-feed/pulse-feed.component';
 import { RedConsoleComponent } from './components/red-console/red-console.component';
@@ -46,6 +47,19 @@ import { TutorialModalComponent } from './components/tutorial-modal/tutorial-mod
                 [class.badge-amber]="session()?.status === SessionStatus.PAUSED"
                 [class.badge-red]="session()?.status === SessionStatus.COMPLETED">
                 {{ session()?.status || 'CONNECTING' }}
+              </span>
+
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold border"
+                [ngClass]="{
+                  'bg-indigo-500/20 text-indigo-300 border-indigo-500/40': audience.isProfessional(),
+                  'bg-sky-500/20 text-sky-300 border-sky-500/40': audience.isKids(),
+                  'bg-amber-500/20 text-amber-300 border-amber-500/40': audience.isSeniors()
+                }">
+                {{ locale.t('audience.' + audience.mode()) }}
+              </span>
+
+              <span *ngIf="audience.activeLocationName()" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                📍 {{ audience.activeLocationName() }}
               </span>
             </div>
           </div>
@@ -229,6 +243,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
   private heartbeat = inject(HeartbeatService);
   private api = inject(LabApiService);
   public locale = inject(LocaleService);
+  public audience = inject(AudienceService);
 
   public session = this.sync.session;
   public feed = this.sync.feed;

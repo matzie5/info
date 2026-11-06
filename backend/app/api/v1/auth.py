@@ -103,6 +103,7 @@ def list_demo_users():
     users = user_service.list_users()
     demo_list = []
     for u in users:
+        hint_pw = "admin123" if u.username == "admin" else ("player123" if u.username.startswith("player") else f"{u.username}123")
         demo_list.append({
             "id": u.id,
             "username": u.username,
@@ -110,6 +111,7 @@ def list_demo_users():
             "email": u.email,
             "role": u.role.value,
             "cohort_id": u.cohort_id,
-            "hint_password": f"{u.username}123" if u.username != "admin" else "admin123",
+            "audience_mode": u.audience_mode,
+            "hint_password": hint_pw,
         })
     return {"demo_accounts": demo_list}

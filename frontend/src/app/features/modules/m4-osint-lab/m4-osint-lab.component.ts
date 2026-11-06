@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AudienceService } from '../../../core/audience/audience.service';
 import { RouterModule } from '@angular/router';
 
 export interface OSINTExposureReport {
@@ -28,9 +29,20 @@ export interface OSINTExposureReport {
       <!-- Header Banner -->
       <header class="border-b border-slate-200 dark:border-slate-800 pb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
             <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#84AA40]/20 text-[#84AA40] border border-[#84AA40]/40">
               MODULE 4
+            </span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold border"
+              [ngClass]="{
+                'bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border-indigo-500/30': audience.isProfessional(),
+                'bg-sky-500/15 text-sky-600 dark:text-sky-300 border-sky-500/30': audience.isKids(),
+                'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30': audience.isSeniors()
+              }">
+              {{ locale.t('audience.' + audience.mode()) }}
+            </span>
+            <span *ngIf="audience.activeLocationName()" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+              📍 {{ audience.activeLocationName() }}
             </span>
             <span class="text-xs font-mono text-slate-500 dark:text-slate-400">Google Cloud Sensitive Data Protection (DLP) + HarvesterAgent Recon</span>
           </div>
@@ -51,6 +63,11 @@ export interface OSINTExposureReport {
           </div>
         </div>
       </header>
+
+      <!-- Audience Golden Rule / Detective Tip Callout -->
+      <div *ngIf="!audience.isProfessional()" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-medium flex items-center gap-2">
+        <span>{{ audience.isKids() ? locale.t('audience.kids_rule_m4') : locale.t('audience.golden_rule_m4') }}</span>
+      </div>
 
       <!-- Main Workbench (2 Columns) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -87,6 +104,24 @@ export interface OSINTExposureReport {
                   (click)="loadPreset('hardened')"
                   class="px-2.5 py-1 rounded text-xs font-mono bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-[#84AA40] text-slate-700 dark:text-slate-300 transition">
                   {{ locale.t('m4.preset_hardened') }}
+                </button>
+                <button
+                  type="button"
+                  (click)="loadPreset('kids_gamer')"
+                  class="px-2.5 py-1 rounded text-xs font-mono bg-sky-500/10 border border-sky-500/30 hover:border-sky-400 text-sky-700 dark:text-sky-300 transition">
+                  🧒 Junior Gamer Bio
+                </button>
+                <button
+                  type="button"
+                  (click)="loadPreset('seniors_post')"
+                  class="px-2.5 py-1 rounded text-xs font-mono bg-amber-500/10 border border-amber-500/30 hover:border-amber-400 text-amber-800 dark:text-amber-300 transition">
+                  👵 Senior Public Post
+                </button>
+                <button
+                  type="button"
+                  (click)="loadPreset('wroclaw_senior')"
+                  class="px-2.5 py-1 rounded text-xs font-mono bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-400 text-emerald-800 dark:text-emerald-300 transition">
+                  📍 Wrocław Senior Profile
                 </button>
               </div>
             </div>
@@ -250,6 +285,7 @@ export class M4OsintLabComponent implements OnInit {
   public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
+  public audience = inject(AudienceService);
 
   bioInput = `Senior SCADA Grid Engineer at PSE Warsaw. Direct mobile: +48 601 234 567, corporate email: j.kowalski@pse-grid.pl. Photo EXIF: 52.2297° N, 21.0122° E. Reimbursement IBAN: PL61 1090 1014 0000 0712 1981 2874.`;
   isAnalyzing = signal<boolean>(false);
@@ -257,12 +293,43 @@ export class M4OsintLabComponent implements OnInit {
   hygieneScore = signal<number>(65.0);
   pointsAwarded = signal<boolean>(false);
 
+  constructor() {
+    effect(() => {
+      const mode = this.audience.mode();
+      const loc = (this.audience.activeLocationName() || '').toLowerCase();
+      if (mode === 'kids') {
+        this.loadPreset('kids_gamer');
+      } else if (mode === 'seniors') {
+        this.loadPreset(loc.includes('wroc') ? 'wroclaw_senior' : 'seniors_post');
+      } else {
+        this.loadPreset('scada');
+      }
+      this.runAnalysis();
+    }, { allowSignalWrites: true });
+  }
+
   ngOnInit(): void {
     this.runAnalysis();
   }
 
-  loadPreset(type: 'scada' | 'it' | 'hardened'): void {
+  loadPreset(type: 'scada' | 'it' | 'hardened' | 'kids_gamer' | 'seniors_post' | 'wroclaw_senior'): void {
     const lang = this.locale.language();
+    if (type === 'kids_gamer') {
+      this.bioInput = lang === 'pl'
+        ? 'Cześć! Jestem Leo, mam 11 lat, klasa 5B Szkoła Podstawowa nr 12! Mój telefon: +48 512 345 678, email: leo.gamer2015@gmail.com. Zdjęcie ze szkoły EXIF: 51.1079° N, 17.0385° E. Dodajcie mnie w Roblox!'
+        : 'Hi! I am Leo, 11yo in Grade 5B at Primary School No. 12! My phone: +48 512 345 678, email: leo.gamer2015@gmail.com. Selfie outside school EXIF: 51.1079° N, 17.0385° E. Add me on Roblox!';
+      return;
+    } else if (type === 'seniors_post') {
+      this.bioInput = lang === 'pl'
+        ? 'Pani Janina Kowalska, emerytowana nauczycielka. Telefon domowy/komórkowy: +48 602 888 999, email: janina.kowalska1950@wp.pl. Numer konta do zwrotu nadpłaty za leki IBAN: PL61 1090 1014 0000 0712 1981 2874.'
+        : 'Mrs. Janina Kowalska, retired teacher. Phone: +48 602 888 999, email: janina.kowalska1950@wp.pl. Account for pharmacy refund IBAN: PL61 1090 1014 0000 0712 1981 2874.';
+      return;
+    } else if (type === 'wroclaw_senior') {
+      this.bioInput = lang === 'pl'
+        ? 'Mieszkanka Wrocławia (Krzyki), uczestniczka Wrocławskiego Centrum Seniora. Telefon: +48 604 321 987, email: marta.wroclaw1952@interia.pl. Zdjęcie z Rynku EXIF: 51.1095° N, 17.0326° E. Konto do zwrotu MPWiK IBAN: PL61 1090 1014 0000 0712 1981 2874.'
+        : 'Wrocław resident (Krzyki district), active member of Wrocławskie Centrum Seniora. Phone: +48 604 321 987, email: marta.wroclaw1952@interia.pl. Rynek photo EXIF: 51.1095° N, 17.0326° E. MPWiK refund IBAN: PL61 1090 1014 0000 0712 1981 2874.';
+      return;
+    }
     if (type === 'scada') {
       if (lang === 'pl') {
         this.bioInput = 'Główny Inżynier Systemów SCADA w PSE Warszawa. Telefon bezpośredni: +48 601 234 567, email służbowy: j.kowalski@pse-grid.pl. EXIF ze zdjęć: 52.2297° N, 21.0122° E. Numer IBAN do delegacji: PL61 1090 1014 0000 0712 1981 2874.';
@@ -305,7 +372,8 @@ export class M4OsintLabComponent implements OnInit {
     const body = {
       user_id: this.auth.currentUser()?.id || 'demo_user',
       public_bio_and_posts: this.bioInput,
-      language: lang
+      language: lang,
+      audience_mode: this.audience.mode()
     };
 
     this.http.post<OSINTExposureReport>('/api/v1/modules/m4-osint/analyze', body).subscribe({

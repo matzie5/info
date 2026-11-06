@@ -415,6 +415,38 @@
     "register_btn": "Utwórz Konto Operatora",
     "switch_to_register": "Nie masz konta? Zarejestruj się jako Operator",
     "switch_to_login": "Masz już konto? Zaloguj się danymi dostępowymi",
-    "logging_in": "Uwierzytelnianie..."
+    "logging_in": "Uwierzytelnianie...",
+    "kid1_btn": "🧒 Uczeń (Leo)",
+    "senior1_btn": "👵 Senior (Marta)"
+  },
+  "audience": {
+    "switcher_label": "Tryb Odbiorcy",
+    "pro_short": "🛡️ Ekspert",
+    "kids_short": "🧒 Dzieci",
+    "seniors_short": "👵 Seniorzy",
+    "pro_title": "Ścieżka Profesjonalna / SOC i Instytucje",
+    "kids_title": "Młody Cyber-Detektyw (Szkoły 8–14 lat)",
+    "seniors_title": "Srebrna Tarcza — Bezpieczny Senior",
+    "kids_golden_rule": "🕵️ Zasada Detektywa: Nigdy nie podawaj hasła, kodów BLIK ani adresu domu w grach i na czatach — zawsze zapytaj rodzica lub nauczyciela!",
+    "seniors_golden_rule": "🛡️ Złota Zasada: Rozłącz się i zadzwoń sam do wnuczka lub oficjalnego urzędu! Nigdy nie przekazuj gotówki kurierowi ani nie klikaj w linki SMS o dopłacie.",
+    "prepared_session_banner": "Trener przygotował na żywo lokalną sesję ćwiczeniową dla miasta",
+    "join_prepared_btn": "🚀 Dołącz do Przygotowanej Sesji Trenera"
+  },
+  "trainer_studio": {
+    "title": "Studio Przygotowania Sesji Trenera i Lokalizacji AI (Miasto / Region)",
+    "subtitle": "Przygotuj sesję przed zajęciami i użyj agenta AI Google ADK, aby dopasować moduły M1–M5 do wybranego miasta (np. Wrocław), Prezydenta Miasta oraz wodociągów (np. MPWiK Wrocław).",
+    "badge": "AGENT AI LOKALIZACJI PROGRAMU",
+    "target_audience": "Grupa Docelowa (Tryb Odbiorcy)",
+    "target_city": "Miasto / Gmina",
+    "quick_cities": "Szybki Wybór Miasta",
+    "local_leader": "Prezydent Miasta / Burmistrz (dla M1 i M3 Deepfake)",
+    "local_utility": "Miejskie Wodociągi / Zakład Komunalny (dla M1 i M2)",
+    "local_portal": "Oficjalny Portal Miejski",
+    "local_institution": "Lokalny Klub Seniora / Szkoła / Urząd",
+    "generate_btn": "✨ Wygeneruj Lokalny Program M1–M5 i Utwórz Gotową Sesję",
+    "generating_btn": "Generowanie scenariuszy miejskich AI i tworzenie sesji...",
+    "ready_banner": "Gotowa Sesja Utworzona — Uczestnicy Mogą Dołączyć 1 Kliknięciem",
+    "open_session_btn": "🚀 Otwórz Przygotowaną Sesję Szkoleniową",
+    "preview_title": "Podgląd Dopasowanych Modułów M1–M5"
   }
 }

@@ -1,5 +1,5 @@
 # backend/app/modules/m3_deepfake_lab/plugin.py
-from typing import Dict, List, Literal
+from typing import Dict, List, Literal, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
@@ -25,6 +25,9 @@ class MediaArtifactSample(BaseModel):
     synthid_watermark_detected: bool
     ground_truth_is_synthetic: bool
     forensic_markers: List[str]
+    audience_mode: str = "professional"  # "professional" | "kids" | "seniors"
+    location_tag: Optional[str] = None
+    plain_markers: List[str] = Field(default_factory=list)
 
 
 MEDIA_LAB_CATALOG: Dict[str, MediaArtifactSample] = {
@@ -36,10 +39,16 @@ MEDIA_LAB_CATALOG: Dict[str, MediaArtifactSample] = {
         c2pa_manifest_status="STRIPPED_OR_MISSING",
         synthid_watermark_detected=True,
         ground_truth_is_synthetic=True,
+        audience_mode="professional",
         forensic_markers=[
             "Asymmetric corneal specular reflection between left/right pupils",
             "Viseme-to-phoneme lip-sync lag (140ms) on plosive consonants",
             "Missing C2PA camera hardware signature; SynthID frequency watermark present",
+        ],
+        plain_markers=[
+            "Eyes reflect light differently in left and right pupil",
+            "Mouth movements lag slightly behind the spoken words",
+            "No official camera certificate; AI watermark detected",
         ],
     ),
     "cfo-voice-clone-voicemail": MediaArtifactSample(
@@ -50,10 +59,15 @@ MEDIA_LAB_CATALOG: Dict[str, MediaArtifactSample] = {
         c2pa_manifest_status="STRIPPED_OR_MISSING",
         synthid_watermark_detected=False,
         ground_truth_is_synthetic=True,
+        audience_mode="professional",
         forensic_markers=[
             "Uniform spectral cutoff above 8kHz characteristic of zero-shot TTS vocoders",
             "Absence of natural inhalation breath pauses across 28-second utterance",
             "Metallic phase artifacts on fricative transitions",
+        ],
+        plain_markers=[
+            "Robotic metallic sound on 's' and 'sh' words",
+            "The speaker talks for 28 seconds without ever taking a breath",
         ],
     ),
     "verified-pse-substation-photo": MediaArtifactSample(
@@ -64,9 +78,128 @@ MEDIA_LAB_CATALOG: Dict[str, MediaArtifactSample] = {
         c2pa_manifest_status="VALID_SIGNED",
         synthid_watermark_detected=False,
         ground_truth_is_synthetic=False,
+        audience_mode="professional",
         forensic_markers=[
             "Cryptographically valid C2PA v2.1 hardware capture signature (Sony Alpha ILCE-7M4)",
             "Consistent shadow vanishing points and natural sensor ISO noise grain",
+        ],
+        plain_markers=[
+            "Verified camera signature from an official Sony press camera",
+            "Natural shadows and real outdoor lighting",
+        ],
+    ),
+    "kids-youtuber-giveaway-video": MediaArtifactSample(
+        sample_id="kids-youtuber-giveaway-video",
+        title="🧒 TikTok Clip: 'Famous Gaming YouTuber Giving Away 50,000 Robux!'",
+        media_type="VIDEO_SNIPPET",
+        gcs_uri=f"gs://{settings.ASSETS_BUCKET}/m3-samples/kids_youtuber_giveaway.mp4",
+        c2pa_manifest_status="STRIPPED_OR_MISSING",
+        synthid_watermark_detected=True,
+        ground_truth_is_synthetic=True,
+        audience_mode="kids",
+        forensic_markers=[
+            "Lip-sync mismatch between original gaming stream and AI-dubbed giveaway audio",
+            "Warped fingers when waving near the microphone (6 fingers visible in frame 42)",
+            "Google SynthID AI watermark detected; missing original creator badge",
+        ],
+        plain_markers=[
+            "Lips don't match the words! The voice was pasted over an old video",
+            "Weird blurry hand with 6 fingers when waving at the camera",
+            "AI watermark spotted — real YouTubers never ask for your password!",
+        ],
+    ),
+    "kids-voice-prank-principal": MediaArtifactSample(
+        sample_id="kids-voice-prank-principal",
+        title="🧒 Group Chat Voice Note: 'School Principal Cancelling All Exams!'",
+        media_type="AUDIO_VOICE_CLONE",
+        gcs_uri=f"gs://{settings.ASSETS_BUCKET}/m3-samples/kids_principal_voice.wav",
+        c2pa_manifest_status="STRIPPED_OR_MISSING",
+        synthid_watermark_detected=False,
+        ground_truth_is_synthetic=True,
+        audience_mode="kids",
+        forensic_markers=[
+            "Flat robotic pitch contour cloned from a 10-second school assembly recording",
+            "Zero breathing pauses and sudden metallic glitch at the end of sentences",
+        ],
+        plain_markers=[
+            "Voice sounds flat like a robot reading a script without breathing",
+            "Metallic buzz at the end of words — a prank voice-clone app!",
+        ],
+    ),
+    "kids-verified-school-dog-photo": MediaArtifactSample(
+        sample_id="kids-verified-school-dog-photo",
+        title="🧒 School Website Photo: 'Therapy Dog Visiting Class 4B'",
+        media_type="IMAGE",
+        gcs_uri=f"gs://{settings.ASSETS_BUCKET}/m3-samples/kids_school_dog.jpg",
+        c2pa_manifest_status="VALID_SIGNED",
+        synthid_watermark_detected=False,
+        ground_truth_is_synthetic=False,
+        audience_mode="kids",
+        forensic_markers=[
+            "Signed C2PA camera certificate from the school photographer's camera",
+            "Natural fur texture, accurate classroom poster text, and real shadows",
+        ],
+        plain_markers=[
+            "Posted on the official school website with a real camera badge",
+            "Letters on the classroom wall and the dog's paws look 100% real!",
+        ],
+    ),
+    "seniors-wroclaw-mayor-deepfake": MediaArtifactSample(
+        sample_id="seniors-wroclaw-mayor-deepfake",
+        title="👵 [Wrocław] Fake Video: 'Mayor of Wrocław Ordering 300 PLN Cash Water-Meter Fee'",
+        media_type="VIDEO_SNIPPET",
+        gcs_uri=f"gs://{settings.ASSETS_BUCKET}/m3-samples/wroclaw_mayor_deepfake.mp4",
+        c2pa_manifest_status="TAMPERED_SIGNATURE",
+        synthid_watermark_detected=True,
+        ground_truth_is_synthetic=True,
+        audience_mode="seniors",
+        location_tag="Wrocław",
+        forensic_markers=[
+            "AI lip-sync replacement over archival Wrocław City Hall press conference",
+            "Unnatural blinking freeze and blurry coat-of-arms edges on the podium",
+            "Tampered C2PA signature and SynthID synthetic watermark detected",
+        ],
+        plain_markers=[
+            "The Mayor's mouth moves out of sync with the spoken Polish words",
+            "The person in the video barely blinks and the city emblem looks blurry",
+            "Official wroclaw.pl portal confirms the Mayor never recorded this message!",
+        ],
+    ),
+    "seniors-grandson-voice-clone": MediaArtifactSample(
+        sample_id="seniors-grandson-voice-clone",
+        title="👵 Phone Recording: 'Crying Grandson Asking for 15,000 PLN Accident Bail'",
+        media_type="AUDIO_VOICE_CLONE",
+        gcs_uri=f"gs://{settings.ASSETS_BUCKET}/m3-samples/senior_grandson_clone.wav",
+        c2pa_manifest_status="STRIPPED_OR_MISSING",
+        synthid_watermark_detected=False,
+        ground_truth_is_synthetic=True,
+        audience_mode="seniors",
+        forensic_markers=[
+            "AI voice clone generated from a short social-media video clip",
+            "No natural breathing pauses and unnatural metallic echo on emotional words",
+        ],
+        plain_markers=[
+            "Voice sounds strangely flat and metallic despite claiming to cry",
+            "Caller refuses to answer simple family questions — hang up and call your grandson directly!",
+        ],
+    ),
+    "seniors-verified-townhall-photo": MediaArtifactSample(
+        sample_id="seniors-verified-townhall-photo",
+        title="👵 Official Photo: 'Wrocław Senior Days on the Market Square (Rynek)'",
+        media_type="IMAGE",
+        gcs_uri=f"gs://{settings.ASSETS_BUCKET}/m3-samples/wroclaw_rynek_seniors.jpg",
+        c2pa_manifest_status="VALID_SIGNED",
+        synthid_watermark_detected=False,
+        ground_truth_is_synthetic=False,
+        audience_mode="seniors",
+        location_tag="Wrocław",
+        forensic_markers=[
+            "Authentic C2PA signature from the official Wrocław City Hall photographer",
+            "Accurate architectural details of Wrocław Town Hall (Ratusz) and natural lighting",
+        ],
+        plain_markers=[
+            "Verified photo from the official wroclaw.pl city bulletin",
+            "Clocks, signs, and faces on the Wrocław Market Square look completely natural",
         ],
     ),
 }
@@ -175,12 +308,19 @@ class Module3DeepfakeLabPlugin(DigitalHygieneModulePlugin):
             citations=citations,
         )
 
+    def register_custom_sample(self, sample: MediaArtifactSample) -> None:
+        MEDIA_LAB_CATALOG[sample.sample_id] = sample
+
     def get_router(self) -> APIRouter:
         router = APIRouter()
 
         @router.get("/samples", response_model=List[MediaArtifactSample])
-        def list_media_samples():
-            return list(MEDIA_LAB_CATALOG.values())
+        def list_media_samples(audience_mode: Optional[str] = "professional"):
+            all_samples = list(MEDIA_LAB_CATALOG.values())
+            if audience_mode == "all":
+                return all_samples
+            filtered = [s for s in all_samples if s.audience_mode == audience_mode]
+            return filtered if filtered else all_samples
 
         @router.post("/inspect", response_model=DeepfakeForensicReport)
         def run_inspection(req: DeepfakeInspectionRequest):

@@ -32,22 +32,41 @@ import { LocaleService } from '../../core/i18n/locale.service';
         </span>
         <div class="grid grid-cols-3 gap-2">
           <button
+            type="button"
             (click)="quickLogin('player1')"
             class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 transition-all text-center"
           >
             👤 Player 1
           </button>
           <button
+            type="button"
             (click)="quickLogin('player2')"
             class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 transition-all text-center"
           >
             👤 Player 2
           </button>
           <button
+            type="button"
             (click)="quickLogin('admin')"
             class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 transition-all text-center"
           >
             🛡️ Admin
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-2">
+          <button
+            type="button"
+            (click)="quickLogin('kid1')"
+            class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 transition-all text-center"
+          >
+            🧒 Kid (Leo)
+          </button>
+          <button
+            type="button"
+            (click)="quickLogin('senior1')"
+            class="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400 border border-teal-500/20 transition-all text-center"
+          >
+            👵 Senior (Marta • Wrocław)
           </button>
         </div>
       </div>
@@ -143,7 +162,7 @@ export class LoginComponent {
   public password = '';
   public errorMessage = signal<string | null>(null);
 
-  public quickLogin(role: 'admin' | 'player1' | 'player2'): void {
+  public quickLogin(role: 'admin' | 'player1' | 'player2' | 'kid1' | 'senior1'): void {
     this.auth.quickSwitchUser(role);
     if (role === 'admin') {
       this.router.navigate(['/admin/cohorts']);

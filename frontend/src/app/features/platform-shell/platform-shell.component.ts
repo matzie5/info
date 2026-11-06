@@ -5,22 +5,29 @@ import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../core/i18n/locale.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { AudienceMode, AudienceService } from '../../core/audience/audience.service';
 
 @Component({
   selector: 'app-platform-shell',
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col transition-colors duration-200">
+    <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col transition-colors duration-200"
+         [ngClass]="{ 'audience-kids': audience.isKids(), 'audience-seniors': audience.isSeniors() }">
       <header class="border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 backdrop-blur px-6 py-3 flex flex-wrap items-center justify-between gap-4">
         <!-- Platform Branding -->
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5 flex-wrap">
           <span class="px-2.5 py-1 rounded bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/30 dark:border-cyan-400/40 text-cyan-600 dark:text-cyan-300 font-mono text-xs font-bold">
             {{ locale.t('app.version_tag') }}
           </span>
           <h1 class="text-sm font-semibold tracking-wide uppercase text-slate-800 dark:text-slate-200">
             {{ locale.t('app.subtitle') }}
           </h1>
+          <span *ngIf="audience.activeLocationName()"
+                class="px-2.5 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-700 dark:text-teal-300 text-xs font-bold flex items-center gap-1">
+            <span>📍</span>
+            <span>{{ audience.activeLocationName() }}</span>
+          </span>
         </div>
 
         <!-- Navigation Tabs: Dynamic based on Player vs Admin -->
@@ -61,8 +68,28 @@ import { AuthService } from '../../core/auth/auth.service';
           </a>
         </nav>
 
-        <!-- Right Controls: User Profile, Passport, Language Switcher, Theme Switcher -->
-        <div class="flex items-center gap-3">
+        <!-- Right Controls: Audience Switcher, User Profile, Passport, Language Switcher, Theme Switcher -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Multi-Audience Track Switcher (Pro / Kids / Seniors) -->
+          <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/90 p-1 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-mono"
+               [title]="locale.t('audience.switcher_label')">
+            <button (click)="setAudienceMode('professional')"
+                    [ngClass]="audience.isProfessional() ? 'bg-indigo-600 text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+                    class="px-2 py-1 rounded transition text-[11px]">
+              {{ locale.t('audience.pro_short') }}
+            </button>
+            <button (click)="setAudienceMode('kids')"
+                    [ngClass]="audience.isKids() ? 'bg-amber-500 text-slate-950 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+                    class="px-2 py-1 rounded transition text-[11px]">
+              {{ locale.t('audience.kids_short') }}
+            </button>
+            <button (click)="setAudienceMode('seniors')"
+                    [ngClass]="audience.isSeniors() ? 'bg-teal-600 text-white font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'"
+                    class="px-2 py-1 rounded transition text-[11px]">
+              {{ locale.t('audience.seniors_short') }}
+            </button>
+          </div>
+
           <!-- User Profile & Role Pill -->
           <div class="relative flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 px-2.5 py-1 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-mono">
             <span class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black text-white"
@@ -154,6 +181,7 @@ export class PlatformShellComponent implements OnInit {
   public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
+  public audience = inject(AudienceService);
 
   overallScore = signal<number>(52.0);
   maturityTier = signal<string>('AWARE_OPERATOR');
@@ -162,6 +190,10 @@ export class PlatformShellComponent implements OnInit {
   ngOnInit(): void {
     this.refreshPassport();
     this.refreshUserProgress();
+  }
+
+  setAudienceMode(mode: AudienceMode): void {
+    this.audience.setMode(mode);
   }
 
   refreshUserProgress(): void {
@@ -193,7 +225,7 @@ export class PlatformShellComponent implements OnInit {
     });
   }
 
-  switchUser(target: 'admin' | 'player1' | 'player2'): void {
+  switchUser(target: 'admin' | 'player1' | 'player2' | 'kid1' | 'senior1'): void {
     this.auth.quickSwitchUser(target);
     this.refreshPassport();
     this.refreshUserProgress();

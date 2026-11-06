@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeamBudgets, ActionType, DemographicCluster, FeedItem } from '../../../../core/models/session.model';
 import { LocaleService } from '../../../../core/i18n/locale.service';
+import { AudienceService } from '../../../../core/audience/audience.service';
 
 @Component({
   selector: 'app-blue-console',
@@ -20,6 +21,11 @@ import { LocaleService } from '../../../../core/i18n/locale.service';
             </h2>
           </div>
           <span class="badge badge-green font-mono">DEFENSE</span>
+        </div>
+
+        <!-- Audience Golden Rule / Detective Tip Callout -->
+        <div *ngIf="!audience.isProfessional()" class="mb-3 p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/40 text-xs text-amber-200">
+          {{ audience.isKids() ? locale.t('audience.kids_rule_m1') : locale.t('audience.golden_rule_m1') }}
         </div>
 
         <!-- Status Toast Banner -->
@@ -161,6 +167,7 @@ export class BlueConsoleComponent {
   public debunkPostId = '';
   public frictionPostId = '';
   public statusNotice = '';
+  public audience = inject(AudienceService);
 
   constructor(public locale: LocaleService) {}
 

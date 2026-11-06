@@ -35,7 +35,14 @@ export class LabApiService {
     }
   }
 
-  async createSession(title: string, scenarioId: string = 'poland-grid-panic-2026', language: string = 'pl', maxTicks: number = 40): Promise<Session> {
+  async createSession(
+    title: string,
+    scenarioId: string = 'poland-grid-panic-2026',
+    language: string = 'pl',
+    maxTicks: number = 40,
+    audienceMode: string = 'professional',
+    locationName?: string | null
+  ): Promise<Session> {
     const res = await this.fetchApi('/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -43,7 +50,9 @@ export class LabApiService {
         title,
         scenario_id: scenarioId,
         language,
-        max_ticks: maxTicks
+        max_ticks: maxTicks,
+        audience_mode: audienceMode,
+        location_name: locationName || undefined
       })
     });
     if (!res.ok) {

@@ -1,10 +1,11 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { LabApiService } from '../../core/services/lab-api.service';
 import { FirestoreSyncService } from '../../core/services/firestore-sync.service';
 import { LocaleService, LanguageCode } from '../../core/i18n/locale.service';
+import { AudienceService } from '../../core/audience/audience.service';
 import { UserRole } from '../../core/models/session.model';
 
 interface ScenarioOption {
@@ -14,12 +15,13 @@ interface ScenarioOption {
   description_pl: string;
   description_en: string;
   default_ticks: number;
+  audience_mode?: string;
 }
 
 @Component({
   selector: 'app-lobby',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="min-h-screen flex flex-col items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#172554]/20 via-[#0B0F17] to-[#0B0F17]">
       <!-- Brand Header -->
@@ -33,6 +35,21 @@ interface ScenarioOption {
         <p class="text-slate-400 text-sm md:text-base">
           {{ locale.t('app.subtitle') }}
         </p>
+
+        <!-- Audience & Location Context Badges -->
+        <div class="mt-3 flex flex-wrap justify-center gap-2">
+          <span class="px-2.5 py-0.5 text-xs font-bold rounded-full border"
+            [ngClass]="{
+              'bg-indigo-500/20 text-indigo-300 border-indigo-500/40': audience.isProfessional(),
+              'bg-sky-500/20 text-sky-300 border-sky-500/40': audience.isKids(),
+              'bg-amber-500/20 text-amber-300 border-amber-500/40': audience.isSeniors()
+            }">
+            {{ locale.t('audience.' + audience.mode()) }}
+          </span>
+          <span *ngIf="audience.activeLocationName()" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+            📍 {{ audience.activeLocationName() }}
+          </span>
+        </div>
 
         <!-- Language Picker -->
         <div class="mt-4 flex flex-wrap justify-center gap-2">
@@ -48,6 +65,23 @@ interface ScenarioOption {
             <span>{{ lang.nativeName }}</span>
           </button>
         </div>
+      </div>
+
+      <!-- 1-Click Prepared Classroom Session Banner -->
+      <div *ngIf="audience.preparedSessionId()" class="w-full max-w-4xl mb-6 p-4 rounded-2xl bg-blue-950/60 border border-blue-500/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-blue-300">
+            {{ locale.t('audience.prepared_session_ready') }} ({{ audience.activeLocationName() || 'Wrocław' }})
+          </div>
+          <p class="text-xs text-slate-300 mt-0.5">
+            Session ID: <span class="font-mono font-bold text-white">{{ audience.preparedSessionId() }}</span>
+          </p>
+        </div>
+        <a
+          [routerLink]="['/arena', audience.preparedSessionId()]"
+          class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition-all whitespace-nowrap">
+          {{ locale.t('audience.join_prepared_btn') }} →
+        </a>
       </div>
 
       <!-- Main Action Cards -->
@@ -215,6 +249,7 @@ interface ScenarioOption {
 })
 export class LobbyComponent implements OnInit {
   public locale = inject(LocaleService);
+  public audience = inject(AudienceService);
   private api = inject(LabApiService);
   private sync = inject(FirestoreSyncService);
   private router = inject(Router);
@@ -226,7 +261,8 @@ export class LobbyComponent implements OnInit {
       title_en: 'Poland Critical Power Grid Crisis 2026',
       description_pl: 'Skoordynowana operacja dezinformacyjna z fałszywymi alertami o blackoutach i wyłączeniach prądu.',
       description_en: 'Hostile disinformation campaign targeting national grid PSE with fabricated blackout alerts.',
-      default_ticks: 40
+      default_ticks: 40,
+      audience_mode: 'professional'
     },
     {
       id: 'financial-panic-2026',
@@ -234,7 +270,8 @@ export class LobbyComponent implements OnInit {
       title_en: 'Banking Liquidity Panic & Cash Run 2026',
       description_pl: 'Wirusowe plotki o blokadzie kart płatniczych, limitach bankomatów i niewypłacalności banków.',
       description_en: 'Viral rumors of digital banking liquidity freezes, ATM limits, and bank insolvencies.',
-      default_ticks: 40
+      default_ticks: 40,
+      audience_mode: 'professional'
     },
     {
       id: 'water-contamination-2026',
@@ -242,7 +279,8 @@ export class LobbyComponent implements OnInit {
       title_en: 'Municipal Water Supply Crisis 2026',
       description_pl: 'Skoordynowane plotki o skażeniu chemicznym ujęć wody pitnej wywołujące paniczne wykupywanie zapasów.',
       description_en: 'Targeted rumors alleging toxic chemical contamination in metropolitan water reservoirs.',
-      default_ticks: 40
+      default_ticks: 40,
+      audience_mode: 'professional'
     },
     {
       id: 'border-security-2026',
@@ -250,7 +288,35 @@ export class LobbyComponent implements OnInit {
       title_en: 'Eastern Border Hybrid Incident 2026',
       description_pl: 'Fałszywe doniesienia o niezidentyfikowanych dronach, zakłóceniach GPS i ewakuacji mieszkańców.',
       description_en: 'Coordinated rumors of hostile drone intrusions, GPS jamming, and village evacuations.',
-      default_ticks: 40
+      default_ticks: 40,
+      audience_mode: 'professional'
+    },
+    {
+      id: 'kids-school-snowday-rumor-2026',
+      title_pl: '🧒 Wielka Plotka o Odwołanych Lekcjach i Turnieju Gier 2026',
+      title_en: '🧒 The Great School Cancellation & Gaming Cup Rumor 2026',
+      description_pl: 'Wirusowe fałszywe wiadomości na czatach klasowych o zamknięciu szkół i odwołaniu turnieju.',
+      description_en: 'Viral fake screenshots on school chats claiming classes and the regional gaming tournament are cancelled.',
+      default_ticks: 30,
+      audience_mode: 'kids'
+    },
+    {
+      id: 'seniors-pension-health-rumor-2026',
+      title_pl: '👵 Fałszywy Alert o Wstrzymaniu Emerytur ZUS i Zamknięciu Przychodni 2026',
+      title_en: '👵 Fake Pension Freeze & Local Clinic Closure Alert 2026',
+      description_pl: 'Łańcuszkowe wiadomości SMS i posty straszące wstrzymaniem wypłat emerytur oraz brakiem leków.',
+      description_en: 'Chain SMS messages and posts falsely claiming pension payouts are frozen unless seniors re-register.',
+      default_ticks: 30,
+      audience_mode: 'seniors'
+    },
+    {
+      id: 'tailored-wroclaw-mpwik-2026',
+      title_pl: '📍 Wrocław: Fałszywy Alert Wodociągowy MPWiK i Karty Seniora 2026',
+      title_en: '📍 Wrocław: Municipal Water (MPWiK) & Senior Card Rumor 2026',
+      description_pl: 'Lokalna kampania dezinformacyjna we Wrocławiu podszywająca się pod komunikaty MPWiK Wrocław i Ratusza.',
+      description_en: 'Localized Wrocław disinformation campaign impersonating MPWiK Wrocław water alerts and City Hall notices.',
+      default_ticks: 30,
+      audience_mode: 'seniors'
     }
   ];
 
@@ -265,15 +331,35 @@ export class LobbyComponent implements OnInit {
   public loading = signal<boolean>(false);
 
   async ngOnInit() {
+    this.selectDefaultScenarioForAudience();
+    if (this.audience.preparedSessionId()) {
+      this.joinSessionId = this.audience.preparedSessionId() || '';
+    }
     this.updateTitleForScenario();
     try {
       const serverScenarios = await this.api.getScenarios();
       if (serverScenarios && serverScenarios.length > 0) {
         this.scenarios = serverScenarios;
+        this.selectDefaultScenarioForAudience();
         this.updateTitleForScenario();
       }
     } catch (e) {
       // Fallback scenarios already set
+    }
+  }
+
+  private selectDefaultScenarioForAudience() {
+    const mode = this.audience.mode();
+    const loc = (this.audience.activeLocationName() || '').toLowerCase();
+    const tailoredId = this.audience.tailoredEnvironment()?.m1_scenario_id;
+    if (tailoredId && this.scenarios.some(s => s.id === tailoredId)) {
+      this.selectedScenarioId = tailoredId;
+    } else if (mode === 'kids' && this.scenarios.some(s => s.id === 'kids-school-snowday-rumor-2026')) {
+      this.selectedScenarioId = 'kids-school-snowday-rumor-2026';
+    } else if (mode === 'seniors' && loc.includes('wroc') && this.scenarios.some(s => s.id === 'tailored-wroclaw-mpwik-2026')) {
+      this.selectedScenarioId = 'tailored-wroclaw-mpwik-2026';
+    } else if (mode === 'seniors' && this.scenarios.some(s => s.id === 'seniors-pension-health-rumor-2026')) {
+      this.selectedScenarioId = 'seniors-pension-health-rumor-2026';
     }
   }
 
@@ -311,7 +397,9 @@ export class LobbyComponent implements OnInit {
         this.newTitle,
         this.selectedScenarioId,
         this.locale.language(),
-        this.maxTicks
+        this.maxTicks,
+        this.audience.mode(),
+        this.audience.activeLocationName() || undefined
       );
       this.sync.setCurrentUser({
         userId: 'admin_facilitator_' + Math.random().toString(36).substring(2, 6),

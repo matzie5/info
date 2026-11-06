@@ -50,6 +50,8 @@ class Session(BaseModel):
     scenario_id: str = "poland-grid-panic-2026"
     title: str = "Poland Power Grid Panic 2026"
     language: str = "en"
+    audience_mode: str = "professional"  # "professional" | "kids" | "seniors"
+    location_name: Optional[str] = None
     status: SessionStatus = SessionStatus.LOBBY
     current_tick: int = 0
     max_ticks: int = 40

@@ -1,7 +1,7 @@
 # backend/app/modules/m5_algo_echo/plugin.py
 import math
 from collections import Counter
-from typing import List
+from typing import Dict, List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 import numpy as np
@@ -71,10 +71,149 @@ ECHO_CANDIDATE_POOL: List[CandidateFeedPost] = [
     ),
 ]
 
+KIDS_CANDIDATE_POOL: List[CandidateFeedPost] = [
+    CandidateFeedPost(
+        post_id="k-alarm-1",
+        headline="😱 OMG! Do This Crazy Rooftop Prank Challenge Before Teachers Ban It!",
+        cluster_stance="ALARMIST",
+        outrage_intensity=0.96,
+        bridging_novelty=0.10,
+    ),
+    CandidateFeedPost(
+        post_id="k-alarm-2",
+        headline="🔥 DRAMA ALERT: Why Everyone at School Hates This New Game Update!",
+        cluster_stance="ALARMIST",
+        outrage_intensity=0.91,
+        bridging_novelty=0.15,
+    ),
+    CandidateFeedPost(
+        post_id="k-polar-1",
+        headline="😤 Class 4A vs Class 4B: Why the Other Team Always Cheats in Sports!",
+        cluster_stance="POLARIZING",
+        outrage_intensity=0.88,
+        bridging_novelty=0.20,
+    ),
+    CandidateFeedPost(
+        post_id="k-bridge-1",
+        headline="🤝 How Kids from Different Schools Built a Shared Minecraft Eco-City Together",
+        cluster_stance="BRIDGING_CIVIC",
+        outrage_intensity=0.18,
+        bridging_novelty=0.92,
+    ),
+    CandidateFeedPost(
+        post_id="k-tech-1",
+        headline="🔬 Cool Science Lab: How Video Game Physics & Space Rockets Actually Work",
+        cluster_stance="EMPIRICAL_TECHNICAL",
+        outrage_intensity=0.08,
+        bridging_novelty=0.95,
+    ),
+    CandidateFeedPost(
+        post_id="k-bridge-2",
+        headline="🎨 Creative Coding & Robotics Club: Try 3 Fun Offline & Online Projects",
+        cluster_stance="BRIDGING_CIVIC",
+        outrage_intensity=0.14,
+        bridging_novelty=0.89,
+    ),
+]
+
+SENIORS_CANDIDATE_POOL: List[CandidateFeedPost] = [
+    CandidateFeedPost(
+        post_id="s-alarm-1",
+        headline="🚨 SHOCK: Secret Plan to Close All Neighborhood Clinics & Freeze Pensions!",
+        cluster_stance="ALARMIST",
+        outrage_intensity=0.96,
+        bridging_novelty=0.10,
+    ),
+    CandidateFeedPost(
+        post_id="s-alarm-2",
+        headline="⚠️ MIRACLE CURE HIDDEN BY DOCTORS: Buy This 400 PLN Herbal Drop Today!",
+        cluster_stance="ALARMIST",
+        outrage_intensity=0.91,
+        bridging_novelty=0.15,
+    ),
+    CandidateFeedPost(
+        post_id="s-polar-1",
+        headline="😠 Why Young People & City Officials Ignore Seniors in Our District!",
+        cluster_stance="POLARIZING",
+        outrage_intensity=0.88,
+        bridging_novelty=0.20,
+    ),
+    CandidateFeedPost(
+        post_id="s-bridge-1",
+        headline="🌳 Intergenerational City Garden: Seniors & Students Plant 200 Trees Together",
+        cluster_stance="BRIDGING_CIVIC",
+        outrage_intensity=0.18,
+        bridging_novelty=0.92,
+    ),
+    CandidateFeedPost(
+        post_id="s-tech-1",
+        headline="🩺 Verified NFZ & Municipal Health Bulletin: Free Preventive Checkup Schedule",
+        cluster_stance="EMPIRICAL_TECHNICAL",
+        outrage_intensity=0.08,
+        bridging_novelty=0.95,
+    ),
+    CandidateFeedPost(
+        post_id="s-bridge-2",
+        headline="☕ Neighborhood Senior Club Guide: Free Concerts, Library Talks & Safe Digital Tips",
+        cluster_stance="BRIDGING_CIVIC",
+        outrage_intensity=0.14,
+        bridging_novelty=0.89,
+    ),
+]
+
+CUSTOM_CITY_POOLS: Dict[str, List[CandidateFeedPost]] = {
+    "wrocław": [
+        CandidateFeedPost(
+            post_id="wroc-alarm-1",
+            headline="🚨 PILNE WROCŁAW: Ukrywają skażenie wody MPWiK na Krzykach i Psim Polu!",
+            cluster_stance="ALARMIST",
+            outrage_intensity=0.96,
+            bridging_novelty=0.10,
+        ),
+        CandidateFeedPost(
+            post_id="wroc-alarm-2",
+            headline="⚠️ SZOK WE WROCŁAWIU: Tajna opłata 300 zł za wodomierze dla każdego emeryta!",
+            cluster_stance="ALARMIST",
+            outrage_intensity=0.91,
+            bridging_novelty=0.15,
+        ),
+        CandidateFeedPost(
+            post_id="wroc-polar-1",
+            headline="😠 Dlaczego Ratusz we Wrocławiu inwestuje tylko w centrum, a zapomina o naszych osiedlach!",
+            cluster_stance="POLARIZING",
+            outrage_intensity=0.88,
+            bridging_novelty=0.20,
+        ),
+        CandidateFeedPost(
+            post_id="wroc-bridge-1",
+            headline="🤝 Wrocławskie Centrum Seniora: Wspólne warsztaty cyfrowe młodzieży i seniorów na Rynku",
+            cluster_stance="BRIDGING_CIVIC",
+            outrage_intensity=0.18,
+            bridging_novelty=0.92,
+        ),
+        CandidateFeedPost(
+            post_id="wroc-tech-1",
+            headline="💧 Raport Laboratoryjny MPWiK Wrocław: Codzienne badania jakości wody w ujęciach na Odrze i Oławie",
+            cluster_stance="EMPIRICAL_TECHNICAL",
+            outrage_intensity=0.08,
+            bridging_novelty=0.95,
+        ),
+        CandidateFeedPost(
+            post_id="wroc-bridge-2",
+            headline="🌿 Rady Osiedli Wrocławia: Bezpłatne spacery zdrowotne w Parku Szczytnickim i przewodnik wroclaw.pl",
+            cluster_stance="BRIDGING_CIVIC",
+            outrage_intensity=0.14,
+            bridging_novelty=0.89,
+        ),
+    ]
+}
+
 
 class RecommenderTuningRequest(BaseModel):
     user_id: str = "demo_user"
     language: str = "en"
+    audience_mode: str = "professional"  # "professional" | "kids" | "seniors"
+    city_name: Optional[str] = None
     user_interest_query: str = "grid blackout outrage sabotage"
     w_outrage: float = Field(default=0.85, ge=0.0, le=1.0)
     w_affinity: float = Field(default=0.75, ge=0.0, le=1.0)
@@ -148,11 +287,24 @@ class Module5AlgoEchoPlugin(DigitalHygieneModulePlugin):
             rag_corpus_domain="m5_echo",
         )
 
+    def register_custom_echo_feed(self, city_name: str, posts: List[CandidateFeedPost]) -> None:
+        if city_name:
+            CUSTOM_CITY_POOLS[city_name.strip().lower()] = posts
+
     def simulate_feed(self, req: RecommenderTuningRequest) -> RecommenderSimulationResult:
         user_vec = rag_engine.compute_embedding(req.user_interest_query)
         scored_posts: List[CandidateFeedPost] = []
 
-        for post in ECHO_CANDIDATE_POOL:
+        if req.city_name and req.city_name.strip().lower() in CUSTOM_CITY_POOLS:
+            active_pool = CUSTOM_CITY_POOLS[req.city_name.strip().lower()]
+        elif req.audience_mode == "kids":
+            active_pool = KIDS_CANDIDATE_POOL
+        elif req.audience_mode == "seniors":
+            active_pool = SENIORS_CANDIDATE_POOL
+        else:
+            active_pool = ECHO_CANDIDATE_POOL
+
+        for post in active_pool:
             post_vec = rag_engine.compute_embedding(post.headline)
             affinity_sim = max(0.0, float(np.dot(user_vec, post_vec)))
             rank_score = (
@@ -192,12 +344,23 @@ class Module5AlgoEchoPlugin(DigitalHygieneModulePlugin):
             instruction="Explain how recommender weights affected Shannon viewpoint entropy and EU DSA Art. 27/38 rights.",
             task_complexity="FAST_REACTION",
         )
-        explanation = (
-            f"[{getattr(coach_agent, 'name', 'depolarization_coach_agent')}] Grounded in [{citations[0]}]: "
-            f"With w_outrage={req.w_outrage:.2f} and w_bridging={req.w_bridging_diversity:.2f}, "
-            f"feed Shannon entropy is {entropy:.2f} bits (Echo-Chamber Radius={echo_radius:.2f}). "
-            f"{'HIGH POLARIZATION DRIFT: Increase bridging diversity weight to restore viewpoint balance.' if drift_alert else 'HEALTHY INFORMATION DIET: Bridging & empirical posts are counter-balancing outrage bait.'}"
-        )
+        if req.audience_mode == "kids":
+            explanation = (
+                f"🫧 Bubble Breaker Coach [{citations[0]}]: "
+                f"{'Uh-oh! High Drama & Anger slider trapped your feed in an outrage bubble! Turn up Curious & Kind Topics to pop the bubble!' if drift_alert else 'Awesome! You popped the filter bubble — your feed shows science, creativity, and teamwork instead of angry drama!'}"
+            )
+        elif req.audience_mode == "seniors":
+            explanation = (
+                f"🛡️ Calm Information Advisor [{citations[0]}]: "
+                f"{'Warning: High scare-headline settings fill your screen with panic and fake miracle cures. Increase Community & Verified News to restore calm balance.' if drift_alert else 'Healthy & Calm Feed: Verified municipal updates and community events are prioritized over sensational panic bait.'}"
+            )
+        else:
+            explanation = (
+                f"[{getattr(coach_agent, 'name', 'depolarization_coach_agent')}] Grounded in [{citations[0]}]: "
+                f"With w_outrage={req.w_outrage:.2f} and w_bridging={req.w_bridging_diversity:.2f}, "
+                f"feed Shannon entropy is {entropy:.2f} bits (Echo-Chamber Radius={echo_radius:.2f}). "
+                f"{'HIGH POLARIZATION DRIFT: Increase bridging diversity weight to restore viewpoint balance.' if drift_alert else 'HEALTHY INFORMATION DIET: Bridging & empirical posts are counter-balancing outrage bait.'}"
+            )
 
         passport_service.record_module_score(
             req.user_id, "m5_algo_echo", autonomy_score, explanation

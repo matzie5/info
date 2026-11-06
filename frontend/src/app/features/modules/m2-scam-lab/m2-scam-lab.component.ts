@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AudienceService } from '../../../core/audience/audience.service';
 
 export interface ScamTurn {
   role: 'operative' | 'defender';
@@ -63,9 +64,20 @@ import { RouterModule } from '@angular/router';
       <!-- Header Banner -->
       <header class="border-b border-slate-200 dark:border-slate-800 pb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
             <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#84AA40]/20 text-[#84AA40] border border-[#84AA40]/40">
               MODULE 2
+            </span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold border"
+              [ngClass]="{
+                'bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border-indigo-500/30': audience.isProfessional(),
+                'bg-sky-500/15 text-sky-600 dark:text-sky-300 border-sky-500/30': audience.isKids(),
+                'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30': audience.isSeniors()
+              }">
+              {{ locale.t('audience.' + audience.mode()) }}
+            </span>
+            <span *ngIf="audience.activeLocationName()" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+              📍 {{ audience.activeLocationName() }}
             </span>
             <span class="text-xs font-mono text-slate-500 dark:text-slate-400">Google ADK + Multi-Provider (Vertex AI / DeepSeek)</span>
           </div>
@@ -87,6 +99,11 @@ import { RouterModule } from '@angular/router';
         </div>
       </header>
 
+      <!-- Audience Golden Rule / Detective Tip Callout -->
+      <div *ngIf="!audience.isProfessional()" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-medium flex items-center gap-2">
+        <span>{{ audience.isKids() ? locale.t('audience.kids_rule_m2') : locale.t('audience.golden_rule_m2') }}</span>
+      </div>
+
       <!-- Configuration & Controls Bar -->
       <section class="glass-panel p-4 flex flex-wrap items-center justify-between gap-4 bg-white/90 dark:bg-[#141B26]/80 border border-slate-200 dark:border-slate-800 shadow-sm">
         <div class="flex flex-wrap items-center gap-4 flex-1">
@@ -97,8 +114,9 @@ import { RouterModule } from '@angular/router';
               [ngModel]="selectedScenario()"
               (ngModelChange)="selectedScenario.set($event)"
               class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded px-3 py-1.5 focus:border-[#84AA40] outline-none font-mono">
-              <option value="bec-ceo-wire-2026">{{ locale.t('m2.scenario_bec') }}</option>
-              <option value="it-mfa-reset-2026">{{ locale.t('m2.scenario_aitm') }}</option>
+              <option *ngFor="let sc of scenarios()" [value]="sc.scenario_id">
+                {{ sc.title }}
+              </option>
             </select>
           </div>
 
@@ -420,8 +438,19 @@ export class M2ScamLabComponent implements OnInit {
   public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
+  public audience = inject(AudienceService);
 
-  selectedScenario = signal<'bec-ceo-wire-2026' | 'it-mfa-reset-2026'>('bec-ceo-wire-2026');
+  scenarios = signal<Array<{ scenario_id: string; title: string; audience_mode: string }>>([
+    { scenario_id: 'bec-ceo-wire-2026', title: 'Executive BEC Wire Fraud (CEO Impersonation)', audience_mode: 'professional' },
+    { scenario_id: 'it-mfa-reset-2026', title: 'IT Security Helpdesk MFA Session Reset (AiTM)', audience_mode: 'professional' },
+    { scenario_id: 'kids-robux-skin-scam-2026', title: '🧒 Free Robux & Legendary Skin Generator Trap', audience_mode: 'kids' },
+    { scenario_id: 'kids-fake-friend-chat-2026', title: '🧒 Impersonated School Friend Account asking for SMS Code', audience_mode: 'kids' },
+    { scenario_id: 'seniors-grandchild-emergency-2026', title: '👵 "Grandchild in Traffic Accident" Urgent Bail Scam', audience_mode: 'seniors' },
+    { scenario_id: 'seniors-parcel-bank-sms-2026', title: '👵 Fake Courier Surcharge & Bank Security Representative Call', audience_mode: 'seniors' },
+    { scenario_id: 'tailored-wroclaw-water-scam-2026', title: '📍 Wrocław: Fake MPWiK Water Inspector & Refund Portal Scam', audience_mode: 'seniors' }
+  ]);
+
+  selectedScenario = signal<string>('bec-ceo-wire-2026');
   selectedModel = signal<'gemini-2.5-flash' | 'deepseek/deepseek-chat' | 'deepseek/deepseek-reasoner'>('gemini-2.5-flash');
 
   session = signal<ScamDrillSession | null>(null);
@@ -439,8 +468,42 @@ export class M2ScamLabComponent implements OnInit {
     out_of_band_callback: false
   };
 
+  constructor() {
+    effect(() => {
+      const mode = this.audience.mode();
+      this.loadScenariosForAudience(mode);
+    }, { allowSignalWrites: true });
+  }
+
   ngOnInit(): void {
-    this.startNewDrill();
+    this.loadScenariosForAudience(this.audience.mode());
+  }
+
+  loadScenariosForAudience(mode: string): void {
+    this.http.get<Array<{ scenario_id: string; title: string; audience_mode: string }>>(
+      `/api/v1/modules/m2-scam/scenarios?audience_mode=${mode}`
+    ).subscribe({
+      next: (list) => {
+        if (list && list.length > 0) {
+          this.scenarios.set(list);
+          const loc = (this.audience.activeLocationName() || '').toLowerCase();
+          const wroclawMatch = list.find(s => loc.includes('wroc') && s.scenario_id.includes('wroclaw'));
+          this.selectedScenario.set((wroclawMatch || list[0]).scenario_id);
+          this.startNewDrill();
+        }
+      },
+      error: () => {
+        if (mode === 'kids') {
+          this.selectedScenario.set('kids-robux-skin-scam-2026');
+        } else if (mode === 'seniors') {
+          const loc = (this.audience.activeLocationName() || '').toLowerCase();
+          this.selectedScenario.set(loc.includes('wroc') ? 'tailored-wroclaw-water-scam-2026' : 'seniors-grandchild-emergency-2026');
+        } else {
+          this.selectedScenario.set('bec-ceo-wire-2026');
+        }
+        this.startNewDrill();
+      }
+    });
   }
 
   toggleTool(tool: 'inspect_headers' | 'lookup_whois' | 'out_of_band_callback') {
@@ -462,7 +525,8 @@ export class M2ScamLabComponent implements OnInit {
       user_id: this.auth.currentUser()?.id || 'demo_user',
       scenario_id: this.selectedScenario(),
       operative_model: this.selectedModel(),
-      language: this.locale.language()
+      language: this.locale.language(),
+      audience_mode: this.audience.mode()
     };
 
     this.http.post<ScamDrillSession>('/api/v1/modules/m2-scam/drills', body).subscribe({
@@ -788,7 +852,13 @@ export class M2ScamLabComponent implements OnInit {
   }
 
   fillPresetRefusal(): void {
-    this.userMessageText = this.locale.t('m2.preset_refusal_text');
+    if (this.audience.isKids()) {
+      this.userMessageText = "I refuse to share my password or SMS code! Real games never ask for passwords outside the game. I am verifying with a parent and blocking this account.";
+    } else if (this.audience.isSeniors()) {
+      this.userMessageText = "I refuse to transfer money or click this link. I am hanging up and calling back on the official verified phone number from my bill / family contact list to verify.";
+    } else {
+      this.userMessageText = this.locale.t('m2.preset_refusal_text');
+    }
     this.activeTools.inspect_headers = true;
     this.activeTools.lookup_whois = true;
     this.activeTools.out_of_band_callback = true;

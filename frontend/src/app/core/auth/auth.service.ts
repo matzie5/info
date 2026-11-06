@@ -2,6 +2,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpInterceptorFn } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { AudienceMode, AudienceService } from '../audience/audience.service';
 
 export type UserRole = 'ADMIN' | 'PLAYER';
 
@@ -12,6 +13,7 @@ export interface User {
   display_name: string;
   role: UserRole;
   cohort_id?: string;
+  audience_mode?: AudienceMode;
   created_at?: number;
 }
 
@@ -28,6 +30,7 @@ export interface DemoAccount {
   email: string;
   role: UserRole;
   cohort_id: string;
+  audience_mode?: AudienceMode;
   hint_password: string;
 }
 
@@ -36,6 +39,7 @@ export interface DemoAccount {
 })
 export class AuthService {
   private http = inject(HttpClient);
+  private audience = inject(AudienceService);
 
   private currentToken = signal<string | null>(null);
   private userSignal = signal<User | null>(null);
@@ -79,6 +83,7 @@ export class AuthService {
       display_name: 'Alex Vance (Player 1)',
       role: 'PLAYER',
       cohort_id: 'cohort_cyber_defense_2026',
+      audience_mode: 'professional',
     };
     this.setUserAndToken(defaultUser, 'demo_player1_token');
   }
@@ -91,6 +96,7 @@ export class AuthService {
       display_name: 'Security Director (Admin)',
       role: 'ADMIN',
       cohort_id: 'cohort_cyber_defense_2026',
+      audience_mode: 'professional',
     };
     this.setUserAndToken(adminUser, 'demo_admin_token');
   }
@@ -98,6 +104,15 @@ export class AuthService {
   public setUserAndToken(user: User, token: string): void {
     this.userSignal.set(user);
     this.currentToken.set(token);
+    if (user.audience_mode) {
+      this.audience.setMode(user.audience_mode);
+    }
+    if (user.cohort_id) {
+      this.http.get<any>(`/api/v1/cohorts/${user.cohort_id}`).subscribe({
+        next: (cohort) => this.audience.applyCohortEnvironment(cohort),
+        error: () => {},
+      });
+    }
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('infosphere_auth_token', token);
@@ -135,7 +150,7 @@ export class AuthService {
       );
   }
 
-  public quickSwitchUser(username: 'admin' | 'player1' | 'player2'): void {
+  public quickSwitchUser(username: 'admin' | 'player1' | 'player2' | 'kid1' | 'senior1'): void {
     if (username === 'admin') {
       this.login('admin', 'admin123').subscribe({
         error: () => this.useDefaultAdmin(),
@@ -150,8 +165,48 @@ export class AuthService {
             display_name: 'Sam Carter (Player 2)',
             role: 'PLAYER',
             cohort_id: 'cohort_cyber_defense_2026',
+            audience_mode: 'professional',
           };
           this.setUserAndToken(user, 'demo_player2_token');
+        },
+      });
+    } else if (username === 'kid1') {
+      this.login('kid1', 'kid1123').subscribe({
+        error: () => {
+          const user: User = {
+            id: 'user_kid1',
+            username: 'kid1',
+            email: 'leo.explorer@school.edu.pl',
+            display_name: 'Leo Nowak (Junior Explorer)',
+            role: 'PLAYER',
+            cohort_id: 'cohort_kids_explorers_2026',
+            audience_mode: 'kids',
+          };
+          this.setUserAndToken(user, 'demo_kid1_token');
+          this.audience.applyCohortEnvironment({
+            audience_mode: 'kids',
+            location_name: null,
+            prepared_session_id: null,
+          });
+        },
+      });
+    } else if (username === 'senior1') {
+      this.login('senior1', 'senior1123').subscribe({
+        error: () => {
+          const user: User = {
+            id: 'user_senior1',
+            username: 'senior1',
+            email: 'marta.kowalska@senior-club.wroclaw.pl',
+            display_name: 'Marta Kowalska (Senior Citizen)',
+            role: 'PLAYER',
+            cohort_id: 'cohort_silver_shield_2026',
+            audience_mode: 'seniors',
+          };
+          this.setUserAndToken(user, 'demo_senior1_token');
+          this.audience.applyCohortEnvironment({
+            audience_mode: 'seniors',
+            location_name: 'Wrocław',
+          });
         },
       });
     } else {

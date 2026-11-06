@@ -13,6 +13,8 @@ class CreateSessionRequest(BaseModel):
     title: Optional[str] = "Poland Power Grid Panic 2026"
     scenario_id: Optional[str] = "poland-grid-panic-2026"
     language: Optional[str] = "en"
+    audience_mode: Optional[str] = "professional"
+    location_name: Optional[str] = None
     max_ticks: Optional[int] = 40
 
 @router.post("", response_model=Session)
@@ -23,6 +25,8 @@ def create_session(req: CreateSessionRequest):
         title=req.title or "Poland Power Grid Panic 2026",
         scenario_id=req.scenario_id or "poland-grid-panic-2026",
         language=req.language or "en",
+        audience_mode=req.audience_mode or "professional",
+        location_name=req.location_name,
         max_ticks=req.max_ticks or 40,
         status=SessionStatus.LOBBY
     )

@@ -62,6 +62,25 @@ class UserService:
                 "password": "player123",
                 "role": UserRoleType.PLAYER,
                 "cohort_id": "cohort_cyber_defense_2026",
+                "audience_mode": "professional",
+            },
+            {
+                "username": "kid1",
+                "email": "leo.explorer@school.edu.pl",
+                "display_name": "Leo Nowak (Junior Explorer)",
+                "password": "kid1123",
+                "role": UserRoleType.PLAYER,
+                "cohort_id": "cohort_kids_explorers_2026",
+                "audience_mode": "kids",
+            },
+            {
+                "username": "senior1",
+                "email": "marta.kowalska@senior-club.wroclaw.pl",
+                "display_name": "Marta Kowalska (Senior Citizen)",
+                "password": "senior1123",
+                "role": UserRoleType.PLAYER,
+                "cohort_id": "cohort_silver_shield_2026",
+                "audience_mode": "seniors",
             },
         ]
         for acc in default_accounts:
@@ -77,6 +96,7 @@ class UserService:
                 salt=salt,
                 role=acc["role"],
                 cohort_id=acc["cohort_id"],
+                audience_mode=acc.get("audience_mode", "professional"),
                 created_at=time.time(),
             )
             self._users[uid] = user
@@ -114,6 +134,7 @@ class UserService:
             salt=salt,
             role=role,
             cohort_id=req.cohort_id or "cohort_cyber_defense_2026",
+            audience_mode=req.audience_mode or "professional",
             created_at=time.time(),
         )
         self._users[uid] = user
@@ -144,6 +165,7 @@ class UserService:
             "email": user.email,
             "role": user.role.value,
             "cohort_id": user.cohort_id,
+            "audience_mode": user.audience_mode,
             "iat": now,
             "exp": now + (validity_hours * 3600),
             "iss": "infosphere-auth-engine",
@@ -182,6 +204,7 @@ class UserService:
             display_name=user.display_name,
             role=user.role,
             cohort_id=user.cohort_id,
+            audience_mode=user.audience_mode,
             created_at=user.created_at,
         )
 

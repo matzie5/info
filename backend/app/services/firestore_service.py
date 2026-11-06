@@ -45,17 +45,19 @@ class FirestoreService:
             doc = doc_ref.get()
             if doc.exists:
                 return Session(**doc.to_dict())
-            return None
+            data = self._mem_sessions.get(session_id)
+            return Session(**data) if data else None
         except Exception as e:
             logger.error("Error fetching session %s: %s", session_id, e)
-            return None
+            data = self._mem_sessions.get(session_id)
+            return Session(**data) if data else None
 
     def save_session(self, session: Session) -> Session:
         session.updated_at = time.time()
         session_data = session.model_dump()
+        self._mem_sessions[session.id] = session_data
 
         if self.in_memory:
-            self._mem_sessions[session.id] = session_data
             return session
 
         try:
@@ -64,7 +66,6 @@ class FirestoreService:
             return session
         except Exception as e:
             logger.error("Error saving session %s: %s", session.id, e)
-            self._mem_sessions[session.id] = session_data
             return session
 
     # Feed Items
@@ -77,17 +78,24 @@ class FirestoreService:
         try:
             col_ref = self._db.collection("sessions").document(session_id).collection("feed")
             docs = col_ref.order_by("created_at_tick", direction=firestore.Query.DESCENDING).stream()
-            return [FeedItem(**doc.to_dict()) for doc in docs]
+            res = [FeedItem(**doc.to_dict()) for doc in docs]
+            if res:
+                return res
+            items_dict = self._mem_feed.get(session_id, {})
+            sorted_items = sorted(items_dict.values(), key=lambda x: x.get("created_at_tick", 0), reverse=True)
+            return [FeedItem(**i) for i in sorted_items]
         except Exception as e:
             logger.error("Error streaming feed items for session %s: %s", session_id, e)
-            return []
+            items_dict = self._mem_feed.get(session_id, {})
+            sorted_items = sorted(items_dict.values(), key=lambda x: x.get("created_at_tick", 0), reverse=True)
+            return [FeedItem(**i) for i in sorted_items]
 
     def save_feed_item(self, session_id: str, item: FeedItem) -> FeedItem:
         item_data = item.model_dump()
+        if session_id not in self._mem_feed:
+            self._mem_feed[session_id] = {}
+        self._mem_feed[session_id][item.id] = item_data
         if self.in_memory:
-            if session_id not in self._mem_feed:
-                self._mem_feed[session_id] = {}
-            self._mem_feed[session_id][item.id] = item_data
             return item
 
         try:
@@ -101,10 +109,10 @@ class FirestoreService:
     # Player Actions
     def record_action(self, session_id: str, action: PlayerAction) -> PlayerAction:
         action_data = action.model_dump()
+        if session_id not in self._mem_actions:
+            self._mem_actions[session_id] = []
+        self._mem_actions[session_id].append(action_data)
         if self.in_memory:
-            if session_id not in self._mem_actions:
-                self._mem_actions[session_id] = []
-            self._mem_actions[session_id].append(action_data)
             return action
 
         try:
@@ -128,10 +136,19 @@ class FirestoreService:
                 docs = col_ref.where("tick", "==", tick).stream()
             else:
                 docs = col_ref.stream()
-            return [PlayerAction(**doc.to_dict()) for doc in docs]
+            res = [PlayerAction(**doc.to_dict()) for doc in docs]
+            if res:
+                return res
+            actions_list = self._mem_actions.get(session_id, [])
+            if tick is not None:
+                actions_list = [a for a in actions_list if a.get("tick") == tick]
+            return [PlayerAction(**a) for a in actions_list]
         except Exception as e:
             logger.error("Error fetching actions for session %s: %s", session_id, e)
-            return []
+            actions_list = self._mem_actions.get(session_id, [])
+            if tick is not None:
+                actions_list = [a for a in actions_list if a.get("tick") == tick]
+            return [PlayerAction(**a) for a in actions_list]
 
     # Heartbeats & Presence
     def register_heartbeat(self, session_id: str, user_id: str, role: UserRole, handle: str) -> Optional[Session]:

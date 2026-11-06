@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AudienceService } from '../../../core/audience/audience.service';
 import { RouterModule } from '@angular/router';
 
 export interface CandidateFeedPost {
@@ -35,9 +36,20 @@ export interface RecommenderSimulationResult {
       <!-- Header Banner -->
       <header class="border-b border-slate-200 dark:border-slate-800 pb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
             <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#84AA40]/20 text-[#84AA40] border border-[#84AA40]/40">
               MODULE 5
+            </span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold border"
+              [ngClass]="{
+                'bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border-indigo-500/30': audience.isProfessional(),
+                'bg-sky-500/15 text-sky-600 dark:text-sky-300 border-sky-500/30': audience.isKids(),
+                'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30': audience.isSeniors()
+              }">
+              {{ locale.t('audience.' + audience.mode()) }}
+            </span>
+            <span *ngIf="audience.activeLocationName()" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+              📍 {{ audience.activeLocationName() }}
             </span>
             <span class="text-xs font-mono text-slate-500 dark:text-slate-400">Algorithmic Auditing & EU Digital Services Act (DSA) Sandbox</span>
           </div>
@@ -58,6 +70,11 @@ export interface RecommenderSimulationResult {
           </div>
         </div>
       </header>
+
+      <!-- Audience Golden Rule / Detective Tip Callout -->
+      <div *ngIf="!audience.isProfessional()" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-medium flex items-center gap-2">
+        <span>{{ audience.isKids() ? locale.t('audience.kids_rule_m5') : locale.t('audience.golden_rule_m5') }}</span>
+      </div>
 
       <!-- Main Grid (2 Columns) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -350,6 +367,7 @@ export class M5EchoLabComponent implements OnInit {
   public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
+  public audience = inject(AudienceService);
 
   wOutrage = 0.85;
   wAffinity = 0.75;
@@ -364,6 +382,21 @@ export class M5EchoLabComponent implements OnInit {
   coachExplanation = signal<string>('');
   isSimulating = signal<boolean>(false);
   pointsAwarded = signal<boolean>(false);
+
+  constructor() {
+    effect(() => {
+      const mode = this.audience.mode();
+      const loc = this.audience.activeLocationName();
+      if (mode === 'kids') {
+        this.interestQuery = 'school gaming cup & snowday rumors';
+      } else if (mode === 'seniors') {
+        this.interestQuery = loc ? `${loc} municipal alerts & senior center news` : 'pension payouts & local clinic news';
+      } else {
+        this.interestQuery = 'grid blackout outrage sabotage';
+      }
+      this.simulateFeed();
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit(): void {
     this.simulateFeed();
@@ -401,7 +434,9 @@ export class M5EchoLabComponent implements OnInit {
       w_affinity: this.wAffinity,
       w_bridging_diversity: this.wBridging,
       language: lang,
-      top_k: 4
+      top_k: 4,
+      audience_mode: this.audience.mode(),
+      city_name: this.audience.activeLocationName() || undefined
     };
 
     this.http.post<RecommenderSimulationResult>('/api/v1/modules/m5-echo/simulate-feed', body).subscribe({

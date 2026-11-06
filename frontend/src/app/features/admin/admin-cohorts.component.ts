@@ -3,8 +3,10 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { LocaleService } from '../../core/i18n/locale.service';
+import { AudienceService, AudienceMode } from '../../core/audience/audience.service';
 
 export interface CohortModuleConfig {
   enabled: boolean;
@@ -20,6 +22,10 @@ export interface CohortData {
   created_by: string;
   created_at: number;
   is_active: boolean;
+  audience_mode?: string;
+  location_name?: string;
+  prepared_session_id?: string;
+  tailored_environment?: any;
   module_configs: { [key: string]: CohortModuleConfig };
   assigned_user_ids: string[];
 }
@@ -37,7 +43,7 @@ export interface CohortAnalytics {
 @Component({
   selector: 'app-admin-cohorts',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="space-y-8 animate-fadeIn">
       <!-- Admin Header -->
@@ -116,6 +122,155 @@ export interface CohortAnalytics {
             <span class="text-xs font-bold px-2 py-1 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">
               {{ currentCohort()?.module_configs?.['m1_disinfo']?.parameters?.['scenario_id'] || 'poland-grid-panic-2026' }}
             </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upfront Trainer Session Preparation & AI Location Tailoring Studio -->
+      <div class="bg-white/90 dark:bg-[#141B26]/90 border border-indigo-500/30 rounded-2xl p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
+                📍 {{ locale.t('trainer_studio.badge') }}
+              </span>
+              <span *ngIf="currentCohort()?.location_name" class="px-2.5 py-0.5 text-[11px] font-bold rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                Active City: {{ currentCohort()?.location_name }}
+              </span>
+            </div>
+            <h2 class="text-lg font-black tracking-tight text-slate-900 dark:text-white mt-1">
+              {{ locale.t('trainer_studio.title') }}
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              {{ locale.t('trainer_studio.subtitle') }}
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <a
+              *ngIf="currentCohort()?.prepared_session_id"
+              [routerLink]="['/arena', currentCohort()?.prepared_session_id]"
+              class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 transition-all flex items-center gap-1.5"
+            >
+              <span>{{ locale.t('trainer_studio.open_prepared_session') }}</span>
+            </a>
+
+            <button
+              type="button"
+              (click)="tailorEnvironment()"
+              [disabled]="isTailoring()"
+              class="px-5 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-md shadow-indigo-600/20 transition-all flex items-center gap-1.5 disabled:opacity-60"
+            >
+              <span *ngIf="isTailoring()" class="animate-spin">⚙️</span>
+              <span>{{ isTailoring() ? locale.t('trainer_studio.generating_btn') : locale.t('trainer_studio.generate_btn') }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Preset City Chips -->
+        <div class="mb-4 flex flex-wrap items-center gap-2 text-xs">
+          <span class="font-semibold text-slate-500 dark:text-slate-400">{{ locale.t('trainer_studio.preset_cities') }}:</span>
+          <button
+            *ngFor="let city of ['Wrocław', 'Warszawa', 'Kraków', 'Gdańsk', 'Berlin', 'Kyiv']"
+            type="button"
+            (click)="applyCityPreset(city)"
+            [ngClass]="tailorCity === city ? 'bg-indigo-600 text-white border-indigo-600 font-bold' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-indigo-400'"
+            class="px-2.5 py-1 rounded-lg border transition-colors"
+          >
+            📍 {{ city }}
+          </button>
+        </div>
+
+        <!-- Studio Input Fields -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+          <div>
+            <label class="block text-slate-500 dark:text-slate-400 font-semibold mb-1">{{ locale.t('trainer_studio.city_label') }}</label>
+            <input
+              type="text"
+              [(ngModel)]="tailorCity"
+              placeholder="e.g. Wrocław"
+              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold"
+            />
+          </div>
+
+          <div>
+            <label class="block text-slate-500 dark:text-slate-400 font-semibold mb-1">{{ locale.t('trainer_studio.audience_label') }}</label>
+            <select
+              [(ngModel)]="tailorAudience"
+              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold"
+            >
+              <option value="seniors">{{ locale.t('audience.seniors') }}</option>
+              <option value="kids">{{ locale.t('audience.kids') }}</option>
+              <option value="professional">{{ locale.t('audience.professional') }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-500 dark:text-slate-400 font-semibold mb-1">{{ locale.t('trainer_studio.mayor_label') }}</label>
+            <input
+              type="text"
+              [(ngModel)]="tailorLeader"
+              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label class="block text-slate-500 dark:text-slate-400 font-semibold mb-1">{{ locale.t('trainer_studio.utility_label') }}</label>
+            <input
+              type="text"
+              [(ngModel)]="tailorUtility"
+              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label class="block text-slate-500 dark:text-slate-400 font-semibold mb-1">{{ locale.t('trainer_studio.portal_label') }}</label>
+            <input
+              type="text"
+              [(ngModel)]="tailorPortal"
+              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label class="block text-slate-500 dark:text-slate-400 font-semibold mb-1">{{ locale.t('trainer_studio.institution_label') }}</label>
+            <input
+              type="text"
+              [(ngModel)]="tailorInstitution"
+              class="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <!-- Generated Localized M1-M5 Preview -->
+        <div *ngIf="currentCohort()?.tailored_environment as env" class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              ✓ {{ locale.t('trainer_studio.preview_title') }} ({{ env.city_name }} • {{ env.audience_mode }})
+            </span>
+            <span *ngIf="currentCohort()?.prepared_session_id" class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+              Session ID: {{ currentCohort()?.prepared_session_id }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <div class="font-bold text-slate-900 dark:text-white">🌐 M1: {{ env.m1_scenario_title_pl || env.m1_scenario_title_en }}</div>
+              <div class="text-[11px] font-mono text-indigo-500 mt-0.5">{{ env.m1_scenario_id }}</div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{{ env.m1_scenario_description_pl || env.m1_scenario_description_en }}</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <div class="font-bold text-slate-900 dark:text-white">🎣 M2: {{ env.m2_scam_title }}</div>
+              <div class="text-[11px] font-mono text-indigo-500 mt-0.5">{{ env.m2_scam_scenario_id }}</div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{{ env.m2_initial_message }}</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <div class="font-bold text-slate-900 dark:text-white">🎭 M3: {{ env.m3_sample_title }}</div>
+              <div class="text-[11px] font-mono text-indigo-500 mt-0.5">{{ env.m3_sample_id }}</div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">M4 Preset: {{ env.m4_preset_id }} | M5 Posts: {{ env.m5_feed_posts?.length || 4 }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -388,14 +543,23 @@ export interface CohortAnalytics {
 export class AdminCohortsComponent implements OnInit {
   public auth = inject(AuthService);
   public locale = inject(LocaleService);
+  public audience = inject(AudienceService);
   private http = inject(HttpClient);
 
   public cohorts = signal<CohortData[]>([]);
-  public selectedCohortId = signal<string>('cohort_cyber_defense_2026');
+  public selectedCohortId = signal<string>('cohort_silver_shield_2026');
   public currentCohort = signal<CohortData | null>(null);
   public analytics = signal<CohortAnalytics | null>(null);
   public showCreateModal = signal<boolean>(false);
   public saveSuccessMessage = signal<string | null>(null);
+  public isTailoring = signal<boolean>(false);
+
+  public tailorCity = 'Wrocław';
+  public tailorAudience: AudienceMode = 'seniors';
+  public tailorLeader = 'Prezydent Miasta Wrocławia (Mayor of Wrocław)';
+  public tailorUtility = 'MPWiK Wrocław';
+  public tailorPortal = 'wroclaw.pl';
+  public tailorInstitution = 'Wrocławskie Centrum Seniora';
 
   public configs: { [key: string]: CohortModuleConfig } = {
     m1_disinfo: { enabled: true, pass_score: 60, points_reward: 100, parameters: { scenario_id: 'poland-grid-panic-2026', max_ticks: 40 } },
@@ -407,6 +571,83 @@ export class AdminCohortsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCohorts();
+  }
+
+  public applyCityPreset(city: string): void {
+    this.tailorCity = city;
+    if (city === 'Wrocław') {
+      this.tailorLeader = 'Prezydent Miasta Wrocławia (Mayor of Wrocław)';
+      this.tailorUtility = 'MPWiK Wrocław';
+      this.tailorPortal = 'wroclaw.pl';
+      this.tailorInstitution = 'Wrocławskie Centrum Seniora';
+    } else if (city === 'Warszawa') {
+      this.tailorLeader = 'Prezydent m.st. Warszawy';
+      this.tailorUtility = 'MPWiK Warszawa';
+      this.tailorPortal = 'um.warszawa.pl';
+      this.tailorInstitution = 'Warszawskie Centrum Seniora';
+    } else if (city === 'Kraków') {
+      this.tailorLeader = 'Prezydent Miasta Krakowa';
+      this.tailorUtility = 'Wodociągi Miasta Krakowa';
+      this.tailorPortal = 'krakow.pl';
+      this.tailorInstitution = 'Centrum Aktywności Seniorów w Krakowie';
+    } else if (city === 'Gdańsk') {
+      this.tailorLeader = 'Prezydent Miasta Gdańska';
+      this.tailorUtility = 'GIWK Gdańsk';
+      this.tailorPortal = 'gdansk.pl';
+      this.tailorInstitution = 'Centrum Pracy Seniorek i Seniorów w Gdańsku';
+    } else if (city === 'Berlin') {
+      this.tailorLeader = 'Regierender Bürgermeister von Berlin';
+      this.tailorUtility = 'Berliner Wasserbetriebe';
+      this.tailorPortal = 'berlin.de';
+      this.tailorInstitution = 'Seniorenvertretung Berlin';
+    } else if (city === 'Kyiv') {
+      this.tailorLeader = 'Мер Києва (Mayor of Kyiv)';
+      this.tailorUtility = 'Київводоканал';
+      this.tailorPortal = 'kyivcity.gov.ua';
+      this.tailorInstitution = 'Центр активного довголіття Києва';
+    }
+  }
+
+  public tailorEnvironment(): void {
+    const cId = this.selectedCohortId();
+    if (!cId || !this.tailorCity.trim()) return;
+    this.isTailoring.set(true);
+
+    const payload = {
+      city_name: this.tailorCity.trim(),
+      audience_mode: this.tailorAudience,
+      language: this.locale.language(),
+      local_leader_title: this.tailorLeader,
+      local_utility_name: this.tailorUtility,
+      local_official_portal: this.tailorPortal,
+      local_institution_name: this.tailorInstitution,
+      pre_create_m1_session: true,
+    };
+
+    this.http.post<CohortData>(`/api/v1/cohorts/${cId}/tailor-environment`, payload).subscribe({
+      next: (updated) => {
+        this.currentCohort.set(updated);
+        this.audience.applyCohortEnvironment(updated);
+        if (updated.module_configs) {
+          for (const key of Object.keys(updated.module_configs)) {
+            if (this.configs[key]) {
+              this.configs[key] = {
+                ...this.configs[key],
+                ...updated.module_configs[key],
+                parameters: { ...this.configs[key].parameters, ...(updated.module_configs[key].parameters || {}) }
+              };
+            }
+          }
+        }
+        this.isTailoring.set(false);
+        this.saveSuccessMessage.set(this.locale.t('trainer_studio.tailored_success'));
+        setTimeout(() => this.saveSuccessMessage.set(null), 5000);
+      },
+      error: (err) => {
+        console.error('Error tailoring cohort environment:', err);
+        this.isTailoring.set(false);
+      }
+    });
   }
 
   public loadCohorts(): void {
@@ -441,6 +682,13 @@ export class AdminCohortsComponent implements OnInit {
     this.http.get<CohortData>(`/api/v1/cohorts/${id}`).subscribe({
       next: (cohort) => {
         this.currentCohort.set(cohort);
+        this.audience.applyCohortEnvironment(cohort);
+        if (cohort.audience_mode === 'kids' || cohort.audience_mode === 'seniors' || cohort.audience_mode === 'professional') {
+          this.tailorAudience = cohort.audience_mode;
+        }
+        if (cohort.location_name) {
+          this.applyCityPreset(cohort.location_name);
+        }
         if (cohort.module_configs) {
           for (const key of Object.keys(cohort.module_configs)) {
             if (this.configs[key]) {

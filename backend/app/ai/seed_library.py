@@ -600,6 +600,322 @@ SCENARIOS_DATA = {
                 )
             ]
         }
+    },
+    "kids-school-snowday-rumor-2026": {
+        "id": "kids-school-snowday-rumor-2026",
+        "audience_mode": "kids",
+        "title_pl": "Szkolna Plotka: Odwołane Lekcje i Darmowe Skórki w Grze!",
+        "title_en": "Junior Detective: Viral School Closure & Gaming Hoax",
+        "description_pl": "Na szkolnym czacie pojawia się fałszywy zrzut ekranu, że szkoła jest zamknięta przez tydzień, a dyrektor rozdaje kody do gry za podanie hasła.",
+        "description_en": "A fake screenshot spreads in school group chats claiming school is cancelled all week and a gaming creator is giving free skins if you share your login.",
+        "default_ticks": 30,
+        "starter_post": {
+            "pl": {
+                "author_name": "Szkolny Dziennik Info",
+                "author_handle": "@SzkolnyInfoPL",
+                "author_avatar": "",
+                "headline": "Plan lekcji na ten tydzień bez zmian — sprawdź tablicę ogłoszeń",
+                "content": "Sekretariat szkoły przypomina: wszystkie zajęcia i kółka zainteresowań odbywają się zgodnie z planem. Oficjalne komunikaty publikujemy tylko w e-dzienniku.",
+                "outrage_score": 0.25,
+                "bias_score": 0.0,
+                "virality_velocity": 1.0,
+                "shares_count": 8,
+                "likes_count": 25,
+                "target_cluster": "Apolitical Youth"
+            },
+            "en": {
+                "author_name": "School Bulletin Board",
+                "author_handle": "@SchoolBulletinOfficial",
+                "author_avatar": "",
+                "headline": "Weekly Class Schedule Normal — Check Official School Portal",
+                "content": "The principal's office confirms all classes and sports clubs run on schedule this week. Official updates are only posted on the verified school portal.",
+                "outrage_score": 0.25,
+                "bias_score": 0.0,
+                "virality_velocity": 1.0,
+                "shares_count": 8,
+                "likes_count": 25,
+                "target_cluster": "Apolitical Youth"
+            }
+        },
+        "crisis_inject": {
+            "pl": CrisisInjectPayload(
+                title="OFICJALNY KOMUNIKAT DYREKCJI SZKOŁY I RADY RODZICÓW",
+                official_statement=(
+                    "Uwaga Uczniowie! Krążący na czatach zrzut ekranu o zamknięciu szkoły i darmowych kodach do gier jest fałszywy. "
+                    "Zawsze sprawdzajcie wiadomości w oficjalnym e-dzienniku lub zapytajcie nauczyciela zanim podacie dalej!"
+                ),
+                institution="Dyrekcja Szkoły Podstawowej (E-Dziennik)",
+                severity="HIGH",
+                trust_impact=0.15
+            ),
+            "en": CrisisInjectPayload(
+                title="OFFICIAL PRINCIPAL & SCHOOL COUNCIL ANNOUNCEMENT",
+                official_statement=(
+                    "Attention Students! The viral group-chat screenshot claiming school is closed and offering free gaming codes is a fake edit. "
+                    "Always check the official school portal or ask a teacher or parent before sharing!"
+                ),
+                institution="School Principal Office (Verified Portal)",
+                severity="HIGH",
+                trust_impact=0.15
+            )
+        },
+        "articles": {
+            "pl": [
+                SpoofedArticle(
+                    headline="SZOK! Szkoła zamknięta do końca miesiąca! Wyciekł tajny SMS od dyrektora — podaj dalej 10 osobom!",
+                    body_text="Kto nie wyśle tej wiadomości na 3 grupy klasowe, będzie musiał pisać dodatkowy sprawdzian z matematyki! Zobacz zrzut ekranu!",
+                    author_name="Tajne Przecieki Szkolne",
+                    author_handle="@SzkolnePrzecieki99",
+                    media_url="/assets/images/school_hoax.jpg",
+                    outrage_score=0.88,
+                    bias_score=0.30,
+                    target_cluster="Apolitical Youth"
+                ),
+                SpoofedArticle(
+                    headline="DARMOWE 10 000 ROBUXÓW I SKÓRKI! Znany YouTuber rozdaje nagrody z okazji dnia wagarowicza!",
+                    body_text="Wystarczy wpisać swój login i hasło do e-dziennika na specjalnej stronie, żeby odebrać pakiet legendarnych przedmiotów w 5 minut!",
+                    author_name="FreeSkinsBox_Official",
+                    author_handle="@FreeSkinsBox2026",
+                    media_url="/assets/images/gaming_hoax.jpg",
+                    outrage_score=0.85,
+                    bias_score=0.10,
+                    target_cluster="Apolitical Youth"
+                )
+            ],
+            "en": [
+                SpoofedArticle(
+                    headline="OMG! School Cancelled All Month! Leaked Principal Text Message — Forward to 10 Friends Now!",
+                    body_text="Anyone who doesn't share this screenshot in 3 class group chats will get extra weekend homework! Click to see the secret memo!",
+                    author_name="Secret School Leaks",
+                    author_handle="@SchoolLeaks99",
+                    media_url="/assets/images/school_hoax.jpg",
+                    outrage_score=0.88,
+                    bias_score=0.30,
+                    target_cluster="Apolitical Youth"
+                ),
+                SpoofedArticle(
+                    headline="FREE 10,000 ROBUX & LEGENDARY SKINS! Top Gaming YouTuber Special Snow-Day Drop!",
+                    body_text="Just enter your school account login and password on our giveaway page to unlock the legendary skin pack in 5 minutes!",
+                    author_name="FreeSkinsBox_Official",
+                    author_handle="@FreeSkinsBox2026",
+                    media_url="/assets/images/gaming_hoax.jpg",
+                    outrage_score=0.85,
+                    bias_score=0.10,
+                    target_cluster="Apolitical Youth"
+                )
+            ]
+        }
+    },
+    "seniors-pension-health-rumor-2026": {
+        "id": "seniors-pension-health-rumor-2026",
+        "audience_mode": "seniors",
+        "title_pl": "Fałszywy Alert: Wstrzymanie Emerytur i Zamknięcie Przychodni",
+        "title_en": "Senior Shield: Fake Pension Freeze & Clinic Closure Rumors",
+        "description_pl": "W mediach społecznościowych i SMS-ach pojawiają się fałszywe wiadomości o konieczności kliknięcia w link, aby nie stracić 13. emerytury lub miejsca w przychodni.",
+        "description_en": "Viral posts and SMS messages falsely claim seniors must click an urgent link or pay a courier fee to keep their pension and clinic registration active.",
+        "default_ticks": 35,
+        "starter_post": {
+            "pl": {
+                "author_name": "Biuletyn Seniora i ZUS Info",
+                "author_handle": "@BiuletynSenioraPL",
+                "author_avatar": "",
+                "headline": "Wypłaty świadczeń emerytalnych i wizyty w przychodniach realizowane zgodnie z harmonogramem",
+                "content": "Zakład Ubezpieczeń Społecznych oraz NFZ przypominają: urzędnicy nigdy nie proszą przez SMS lub telefon o podanie hasła, numeru PESEL ani przekazanie gotówki kurierowi.",
+                "outrage_score": 0.30,
+                "bias_score": 0.0,
+                "virality_velocity": 1.0,
+                "shares_count": 12,
+                "likes_count": 45,
+                "target_cluster": "Susceptible Neutrals"
+            },
+            "en": {
+                "author_name": "Senior Civic Bulletin",
+                "author_handle": "@SeniorCivicBulletin",
+                "author_avatar": "",
+                "headline": "Monthly Pension Transfers & Local Clinic Appointments Operating Normally",
+                "content": "Social Insurance (ZUS) and Public Health authorities remind all citizens: officials never ask for passwords, PESEL numbers, or cash via SMS or phone calls.",
+                "outrage_score": 0.30,
+                "bias_score": 0.0,
+                "virality_velocity": 1.0,
+                "shares_count": 12,
+                "likes_count": 45,
+                "target_cluster": "Susceptible Neutrals"
+            }
+        },
+        "crisis_inject": {
+            "pl": CrisisInjectPayload(
+                title="OFICJALNY KOMUNIKAT ZUS, NFZ I POLICJI DLA SENIORÓW",
+                official_statement=(
+                    "Szanowni Seniorzy! Wszystkie emerytury i renty wpływają na konta oraz są dostarczane przez listonoszy bez żadnych opłat i dodatkowych wniosków SMS. "
+                    "Złota Zasada: w razie wątpliwości rozłącz się i zadzwoń do bliskiej osoby lub na oficjalną infolinię."
+                ),
+                institution="Zakład Ubezpieczeń Społecznych (ZUS) i Policja",
+                severity="HIGH",
+                trust_impact=0.15
+            ),
+            "en": CrisisInjectPayload(
+                title="OFFICIAL ZUS, PUBLIC HEALTH & POLICE SENIOR ADVISORY",
+                official_statement=(
+                    "Dear Seniors! All monthly pensions and healthcare prescriptions are processed automatically without SMS links or courier fees. "
+                    "Golden Rule: When in doubt, hang up the phone and call a family member or official helpline directly."
+                ),
+                institution="Social Insurance Institution (ZUS) & Police",
+                severity="HIGH",
+                trust_impact=0.15
+            )
+        },
+        "articles": {
+            "pl": [
+                SpoofedArticle(
+                    headline="PILNE DLA EMERYTÓW: Kto nie potwierdzi danych przez link SMS do godziny 18:00, straci wypłatę świadczenia!",
+                    body_text="Fałszywa strona podszywająca się pod urząd straszy zablokowaniem konta emerytalnego i żąda podania numeru PESEL oraz kodu PIN do banku.",
+                    author_name="pilne-swiadczenia-alert24",
+                    author_handle="@SwiadczeniaAlert24",
+                    media_url="/assets/images/pension_hoax.jpg",
+                    outrage_score=0.92,
+                    bias_score=0.50,
+                    target_cluster="Susceptible Neutrals"
+                ),
+                SpoofedArticle(
+                    headline="Brak leków w aptekach od poniedziałku?! Wykupujcie zapasy zanim zamkną przychodnie rejonowe!",
+                    body_text="Anonimowy wpis wywołuje panikę wśród pacjentów i zachęca do zamawiania 'cudownych zamienników' za pobraniem po zawyżonych cenach.",
+                    author_name="Zdrowie Bez Cenzury",
+                    author_handle="@ZdrowieBezCenzury",
+                    media_url="/assets/images/clinic_hoax.jpg",
+                    outrage_score=0.89,
+                    bias_score=0.40,
+                    target_cluster="Institutional Skeptics"
+                )
+            ],
+            "en": [
+                SpoofedArticle(
+                    headline="URGENT FOR SENIORS: Confirm Your Bank Details via SMS Link Before 6:00 PM or Monthly Pension Freezes!",
+                    body_text="A spoofed portal impersonating the pension office threatens immediate benefit suspension unless citizens enter their PESEL and online banking PIN.",
+                    author_name="urgent-pension-notice24",
+                    author_handle="@PensionNotice24",
+                    media_url="/assets/images/pension_hoax.jpg",
+                    outrage_score=0.92,
+                    bias_score=0.50,
+                    target_cluster="Susceptible Neutrals"
+                ),
+                SpoofedArticle(
+                    headline="Prescription Medicine Shortage Starting Monday?! Buy Emergency Packs Before Local Clinics Close!",
+                    body_text="Viral post attempts to panic senior patients into ordering unverified 'miracle supplements' via cash-on-delivery couriers.",
+                    author_name="Health Truth Alert",
+                    author_handle="@HealthTruthAlert",
+                    media_url="/assets/images/clinic_hoax.jpg",
+                    outrage_score=0.89,
+                    bias_score=0.40,
+                    target_cluster="Institutional Skeptics"
+                )
+            ]
+        }
+    },
+    "tailored-wroclaw-mpwik-2026": {
+        "id": "tailored-wroclaw-mpwik-2026",
+        "audience_mode": "seniors",
+        "location_name": "Wrocław",
+        "title_pl": "[Wrocław] Fałszywy Alert MPWiK Wrocław i Komunikat Prezydenta Miasta",
+        "title_en": "[Wrocław] MPWiK Wrocław Water Alert & Mayor Deepfake Rumors",
+        "description_pl": "Lokalny scenariusz dla mieszkańców Wrocławia: fałszywe SMS-y o skażeniu wody MPWiK Wrocław, podrabiane nagranie Prezydenta Wrocławia oraz oszustwa 'na inkasenta wodociągów'.",
+        "description_en": "Localized scenario for Wrocław residents: fake MPWiK Wrocław water contamination SMS alerts, a deepfake video of the Mayor of Wrocław, and doorstep utility inspector scams.",
+        "default_ticks": 35,
+        "starter_post": {
+            "pl": {
+                "author_name": "MPWiK Wrocław & Biuletyn wroclaw.pl",
+                "author_handle": "@MPWiK_Wroclaw",
+                "author_avatar": "",
+                "headline": "MPWiK Wrocław: Woda w kranach we Wrocławiu jest w 100% czysta i bezpieczna",
+                "content": "Laboratoria MPWiK Wrocław potwierdzają pełną zdatność wody do picia we wszystkich dzielnicach (Krzyki, Fabryczna, Psie Pole, Śródmieście, Stare Miasto). Przestrzegamy przed fałszywymi inkasentami żądającymi gotówki!",
+                "outrage_score": 0.30,
+                "bias_score": 0.0,
+                "virality_velocity": 1.0,
+                "shares_count": 18,
+                "likes_count": 64,
+                "target_cluster": "Susceptible Neutrals"
+            },
+            "en": {
+                "author_name": "MPWiK Wrocław & Official wroclaw.pl",
+                "author_handle": "@MPWiK_Wroclaw",
+                "author_avatar": "",
+                "headline": "MPWiK Wrocław: Tap Water Across All Wrocław Districts is 100% Safe to Drink",
+                "content": "MPWiK Wrocław laboratories confirm drinking water across Krzyki, Fabryczna, Psie Pole, Śródmieście, and Stare Miasto meets all quality standards. Beware of fake doorstep inspectors asking for cash!",
+                "outrage_score": 0.30,
+                "bias_score": 0.0,
+                "virality_velocity": 1.0,
+                "shares_count": 18,
+                "likes_count": 64,
+                "target_cluster": "Susceptible Neutrals"
+            }
+        },
+        "crisis_inject": {
+            "pl": CrisisInjectPayload(
+                title="OFICJALNY KOMUNIKAT URZĘDU MIEJSKIEGO WROCŁAWIA I MPWiK WROCŁAW",
+                official_statement=(
+                    "Drodzy Mieszkańcy Wrocławia! Rozsyłane SMS-y o wyłączeniu wody przez MPWiK Wrocław oraz rzekome nagranie Prezydenta Wrocławia o dopłatach do wodomierzy to oszustwo. "
+                    "Pracownicy MPWiK Wrocław nigdy nie pobierają gotówki w mieszkaniach. Sprawdzajcie komunikaty na oficjalnej stronie wroclaw.pl oraz mpwik.wroc.pl."
+                ),
+                institution="Urząd Miejski Wrocławia & MPWiK Wrocław",
+                severity="HIGH",
+                trust_impact=0.15
+            ),
+            "en": CrisisInjectPayload(
+                title="OFFICIAL COMMUNIQUE: WROCŁAW CITY HALL & MPWiK WROCŁAW",
+                official_statement=(
+                    "Dear Residents of Wrocław! Viral SMS alerts claiming MPWiK Wrocław water shutoffs and the circulating video of the Mayor of Wrocław demanding water-meter fees are fabricated scams. "
+                    "MPWiK Wrocław staff never collect cash at your door. Verify all city announcements at wroclaw.pl and mpwik.wroc.pl."
+                ),
+                institution="Wrocław City Hall & MPWiK Wrocław",
+                severity="HIGH",
+                trust_impact=0.15
+            )
+        },
+        "articles": {
+            "pl": [
+                SpoofedArticle(
+                    headline="PILNE WROCŁAW: Awaria w MPWiK Wrocław! Zakaz picia wody na Krzykach i Psim Polu — kliknij w link, by zamówić beczkowóz!",
+                    body_text="Fałszywy portal podszywający się pod lokalne wiadomości we Wrocławiu straszy mieszkańców skażeniem kranówki i wyłudza opłaty BLIK za 'dostawę wody awaryjnej'.",
+                    author_name="Wroclaw-Alert24-Nieoficjalny",
+                    author_handle="@WroclawAlert24Fake",
+                    media_url="/assets/images/water_leak.jpg",
+                    outrage_score=0.93,
+                    bias_score=0.55,
+                    target_cluster="Susceptible Neutrals"
+                ),
+                SpoofedArticle(
+                    headline="SZOKUJĄCE NAGRANIE: Prezydent Wrocławia ogłasza obowiązkową wymianę wodomierzy za 300 zł gotówką u inkasenta!",
+                    body_text="Spreparowane przez AI (deepfake) wideo wzywa seniorów we Wrocławiu do wpuszczania 'kontrolerów MPWiK' i przekazywania im gotówki pod groźbą odcięcia wody.",
+                    author_name="Głos Nadodrzański Extra",
+                    author_handle="@GlosNadodrzanski",
+                    media_url="/assets/images/mayor_deepfake.jpg",
+                    outrage_score=0.91,
+                    bias_score=0.60,
+                    target_cluster="Institutional Skeptics"
+                )
+            ],
+            "en": [
+                SpoofedArticle(
+                    headline="URGENT WROCŁAW: MPWiK Wrocław Pipe Contamination in Krzyki & Psie Pole — Click Link to Pay for Emergency Water Delivery!",
+                    body_text="A spoofed local news page targets Wrocław residents with fabricated tap-water contamination claims to steal BLIK codes for fake emergency water tankers.",
+                    author_name="Wroclaw-Alert24-Unofficial",
+                    author_handle="@WroclawAlert24Fake",
+                    media_url="/assets/images/water_leak.jpg",
+                    outrage_score=0.93,
+                    bias_score=0.55,
+                    target_cluster="Susceptible Neutrals"
+                ),
+                SpoofedArticle(
+                    headline="SHOCK VIDEO: Mayor of Wrocław Announces Mandatory 300 PLN Cash Doorstep Water-Meter Inspection Today!",
+                    body_text="An AI-manipulated deepfake video urges Wrocław seniors to let unannounced 'MPWiK inspectors' into their apartments and pay 300 PLN cash immediately.",
+                    author_name="Odra Valley Dispatch",
+                    author_handle="@OdraValleyDispatch",
+                    media_url="/assets/images/mayor_deepfake.jpg",
+                    outrage_score=0.91,
+                    bias_score=0.60,
+                    target_cluster="Institutional Skeptics"
+                )
+            ]
+        }
     }
 }
 
@@ -801,6 +1117,11 @@ BOT_COMMENTS = {
 
 class SeedLibrary:
     @staticmethod
+    def register_custom_scenario(scenario_dict: Dict) -> None:
+        if "id" in scenario_dict:
+            SCENARIOS_DATA[scenario_dict["id"]] = scenario_dict
+
+    @staticmethod
     def get_scenarios() -> List[Dict]:
         res = []
         for s_id, s in SCENARIOS_DATA.items():
@@ -810,7 +1131,9 @@ class SeedLibrary:
                 "title_en": s["title_en"],
                 "description_pl": s["description_pl"],
                 "description_en": s["description_en"],
-                "default_ticks": s.get("default_ticks", 40)
+                "default_ticks": s.get("default_ticks", 40),
+                "audience_mode": s.get("audience_mode", "professional"),
+                "location_name": s.get("location_name"),
             })
         return res
 

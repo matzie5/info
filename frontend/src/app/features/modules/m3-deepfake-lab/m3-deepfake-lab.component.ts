@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { LocaleService } from '../../../core/i18n/locale.service';
 import { ThemeService } from '../../../core/theme/theme.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AudienceService } from '../../../core/audience/audience.service';
 import { RouterModule } from '@angular/router';
 
 export interface MediaArtifactSample {
@@ -16,6 +17,9 @@ export interface MediaArtifactSample {
   synthid_watermark_detected: boolean;
   ground_truth_is_synthetic: boolean;
   forensic_markers: string[];
+  audience_mode?: string;
+  location_tag?: string;
+  plain_markers?: string[];
 }
 
 export interface DeepfakeForensicReport {
@@ -40,9 +44,20 @@ export interface DeepfakeForensicReport {
       <!-- Header Banner -->
       <header class="border-b border-slate-200 dark:border-slate-800 pb-4 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
             <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-[#84AA40]/20 text-[#84AA40] border border-[#84AA40]/40">
               MODULE 3
+            </span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold border"
+              [ngClass]="{
+                'bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border-indigo-500/30': audience.isProfessional(),
+                'bg-sky-500/15 text-sky-600 dark:text-sky-300 border-sky-500/30': audience.isKids(),
+                'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30': audience.isSeniors()
+              }">
+              {{ locale.t('audience.' + audience.mode()) }}
+            </span>
+            <span *ngIf="audience.activeLocationName()" class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+              📍 {{ audience.activeLocationName() }}
             </span>
             <span class="text-xs font-mono text-slate-500 dark:text-slate-400">Vertex AI Gemini Multimodal SequentialAgent + C2PA/SynthID</span>
           </div>
@@ -63,6 +78,11 @@ export interface DeepfakeForensicReport {
           </div>
         </div>
       </header>
+
+      <!-- Audience Golden Rule / Detective Tip Callout -->
+      <div *ngIf="!audience.isProfessional()" class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-medium flex items-center gap-2">
+        <span>{{ audience.isKids() ? locale.t('audience.kids_rule_m3') : locale.t('audience.golden_rule_m3') }}</span>
+      </div>
 
       <!-- Media Sample Catalog Grid -->
       <section class="flex flex-col gap-2">
@@ -190,7 +210,7 @@ export interface DeepfakeForensicReport {
 
               <div class="flex flex-col gap-2">
                 <label
-                  *ngFor="let marker of availableMarkers"
+                  *ngFor="let marker of getDisplayMarkers()"
                   class="flex items-start gap-2.5 p-2 rounded bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 cursor-pointer hover:border-slate-400 dark:hover:border-slate-700">
                   <input
                     type="checkbox"
@@ -359,6 +379,7 @@ export class M3DeepfakeLabComponent implements OnInit {
   public auth = inject(AuthService);
   public locale = inject(LocaleService);
   public theme = inject(ThemeService);
+  public audience = inject(AudienceService);
 
   samples = signal<MediaArtifactSample[]>([]);
   selectedSample = signal<MediaArtifactSample | null>(null);
@@ -378,12 +399,27 @@ export class M3DeepfakeLabComponent implements OnInit {
     'Cryptographically valid C2PA v2.1 hardware capture signature'
   ];
 
-  ngOnInit(): void {
-    this.fetchSamples();
+  constructor() {
+    effect(() => {
+      const mode = this.audience.mode();
+      this.fetchSamples(mode);
+    }, { allowSignalWrites: true });
   }
 
-  fetchSamples(): void {
-    this.http.get<MediaArtifactSample[]>('/api/v1/modules/m3-deepfake/samples').subscribe({
+  ngOnInit(): void {
+    this.fetchSamples(this.audience.mode());
+  }
+
+  getDisplayMarkers(): string[] {
+    const sample = this.selectedSample();
+    if (!this.audience.isProfessional() && sample?.plain_markers?.length) {
+      return sample.plain_markers;
+    }
+    return this.availableMarkers;
+  }
+
+  fetchSamples(mode: string = 'professional'): void {
+    this.http.get<MediaArtifactSample[]>(`/api/v1/modules/m3-deepfake/samples?audience_mode=${mode}`).subscribe({
       next: (res) => {
         this.samples.set(res);
         if (res.length > 0) {
@@ -444,7 +480,7 @@ export class M3DeepfakeLabComponent implements OnInit {
     this.selectedSample.set(sample);
     this.report.set(null);
     this.selectedMarkers.set([]);
-    this.userVerdict.set(sample.sample_id !== 'verified-pse-substation-photo');
+    this.userVerdict.set(sample.ground_truth_is_synthetic);
   }
 
   toggleMarker(marker: string): void {

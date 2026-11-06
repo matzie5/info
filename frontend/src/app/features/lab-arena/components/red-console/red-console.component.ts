@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeamBudgets, ActionType, DemographicCluster, FeedItem } from '../../../../core/models/session.model';
 import { LocaleService } from '../../../../core/i18n/locale.service';
+import { AudienceService } from '../../../../core/audience/audience.service';
 
 @Component({
   selector: 'app-red-console',
@@ -183,6 +184,7 @@ export class RedConsoleComponent {
   public microtargetCluster: DemographicCluster = DemographicCluster.HYPER_PARTISAN_A;
   public astroturfPostId = '';
   public statusNotice = '';
+  public audience = inject(AudienceService);
 
   constructor(public locale: LocaleService) {}
 

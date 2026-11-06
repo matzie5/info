@@ -1,5 +1,5 @@
 # backend/app/modules/m4_osint_exposure/plugin.py
-from typing import Dict, List
+from typing import Dict, List, Optional
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
@@ -15,8 +15,59 @@ from app.platform.plugin_registry import (
 from app.platform.rag_engine import rag_engine
 
 
+OSINT_PRESETS_CATALOG: Dict[str, dict] = {
+    "pro-grid-engineer": {
+        "id": "pro-grid-engineer",
+        "audience_mode": "professional",
+        "title_en": "SCADA Grid Engineer (Exposed EXIF + IBAN + Mobile)",
+        "title_pl": "Inżynier SCADA PSE (Wyciek EXIF + IBAN + Telefon)",
+        "sample_text": (
+            "Senior SCADA Grid Engineer at PSE Warsaw. Direct mobile: +48 601 234 567, "
+            "corporate email: j.kowalski@pse-grid.pl. Photo EXIF: 52.2297° N, 21.0122° E. "
+            "Reimbursement IBAN: PL61 1090 1014 0000 0712 1981 2874."
+        ),
+    },
+    "kids-gamer-selfie": {
+        "id": "kids-gamer-selfie",
+        "audience_mode": "kids",
+        "title_en": "🧒 Junior Gamer Profile (School Crest + Home GPS + Mom's Phone)",
+        "title_pl": "🧒 Profil Młodego Gracza (Szkoła + Lokalizacja Domu + Telefon Mamy)",
+        "sample_text": (
+            "Hi! I am Leo from Primary School #14 class 4B! My gaming email is leo.nowak2015@school-mail.pl "
+            "and my mom's emergency phone is +48 502 998 112. Bedroom window selfie GPS EXIF: 51.1079° N, 17.0385° E. "
+            "My dog Azor was born on 12 May so my password is Azor1205!"
+        ),
+    },
+    "seniors-facebook-comment": {
+        "id": "seniors-facebook-comment",
+        "audience_mode": "seniors",
+        "title_en": "👵 Senior Public Post (PESEL + Bank Account + Home Address)",
+        "title_pl": "👵 Publiczny Wpis Seniora (PESEL + Konto Bankowe + Telefon)",
+        "sample_text": (
+            "Hello! I am Mrs. Marta Kowalska, retired teacher. Please send the sanatorium voucher to my email "
+            "marta.kowalska1949@poczta.pl or call me at +48 604 551 890. My PESEL for the clinic list is 49081412345 "
+            "and my pension bank account IBAN is PL61 1090 1014 0000 0712 1981 2874."
+        ),
+    },
+    "tailored-wroclaw-senior-profile": {
+        "id": "tailored-wroclaw-senior-profile",
+        "audience_mode": "seniors",
+        "location_name": "Wrocław",
+        "title_en": "📍 [Wrocław] Senior Club Member Comment (Krzyki District + PESEL + IBAN)",
+        "title_pl": "📍 [Wrocław] Komentarz pod konkursem dla Seniorów (Wrocław-Krzyki + PESEL + Konto)",
+        "sample_text": (
+            "Dzień dobry, zgłaszam się do konkursu dla Seniorów we Wrocławiu (dzielnica Krzyki)! "
+            "Mój telefon to +48 71 608 221 334, e-mail: marta.wroclaw@senior.pl, PESEL: 49081412345. "
+            "Zdjęcie z ogrodu GPS EXIF: 51.0845° N, 17.0112° E. Konto do zwrotu z MPWiK Wrocław: PL61 1090 1014 0000 0712 1981 2874."
+        ),
+    },
+}
+
+
 class OSINTFootprintSubmission(BaseModel):
     user_id: str = "demo_user"
+    audience_mode: str = "professional"  # "professional" | "kids" | "seniors"
+    language: str = "en"
     public_bio_and_posts: str = (
         "Senior SCADA Grid Engineer at PSE Warsaw. Direct mobile: +48 601 234 567, "
         "corporate email: j.kowalski@pse-grid.pl. Photo EXIF: 52.2297° N, 21.0122° E. "
@@ -51,6 +102,17 @@ class Module4OSINTExposurePlugin(DigitalHygieneModulePlugin):
             supported_models=["gemini-2.5-flash", "gemini-2.5-pro"],
             rag_corpus_domain="m4_osint",
         )
+
+    def register_custom_preset(self, preset_id: str, preset_dict: dict) -> None:
+        OSINT_PRESETS_CATALOG[preset_id] = preset_dict
+
+    def list_presets(self, audience_mode: Optional[str] = None) -> List[dict]:
+        all_presets = list(OSINT_PRESETS_CATALOG.values())
+        if audience_mode and audience_mode != "all":
+            filtered = [p for p in all_presets if p.get("audience_mode") == audience_mode]
+            if filtered:
+                return filtered
+        return all_presets
 
     def analyze_footprint(self, req: OSINTFootprintSubmission) -> OSINTExposureReport:
         inspection = dlp_guardrail.inspect_and_sanitize(req.public_bio_and_posts)
@@ -94,27 +156,55 @@ class Module4OSINTExposurePlugin(DigitalHygieneModulePlugin):
             req.user_id, "m4_osint_exposure", hygiene_score, takeaway
         )
 
+        if req.audience_mode == "kids":
+            pretext = (
+                "🕵️ Secret Clue Alert: A stranger on a game chat could use your school name, pet's birthday, "
+                "and bedroom photo location to pretend they know your family or guess your password!"
+            )
+            checklist = [
+                "Never post photos showing your school badge, street sign, or house number",
+                "Turn off location tags (GPS) on your phone camera before sharing selfies",
+                "Don't put your real phone number, email, or pet password clues in your bio!",
+            ]
+        elif req.audience_mode == "seniors":
+            pretext = (
+                "🛡️ Safety Warning: Scammers read public comments to find your PESEL, phone number, and neighborhood "
+                "so they can call you pretending to be your bank, clinic, or municipal water office!"
+            )
+            checklist = [
+                "Never write your PESEL, home address, or bank account number in public Facebook comments",
+                "Do not post photos of medical wristbands, prescriptions, or official letters",
+                "Share your phone number only in private messages with family you know in person",
+            ]
+        else:
+            pretext = (
+                "Attacker Pretext Preview: Combines your leaked role + GPS EXIF coordinates + mobile number "
+                "to send an urgent SMS impersonating regional substation dispatch."
+            )
+            checklist = [
+                "Strip GPS EXIF tags automatically prior to social media uploads",
+                "Remove direct mobile numbers and IBAN strings from public profiles",
+                "Replace personal email addresses in public repositories with role aliases",
+            ]
+
         return OSINTExposureReport(
             adk_pipeline_name=getattr(pipeline, "name", "m4_osint_recon_and_dlp_pipeline"),
             exposure_risk_score=exposure_risk,
             hygiene_resilience_score=hygiene_score,
             discovered_pii_counts=inspection.findings_by_type,
             total_redactions=inspection.pii_redactions,
-            simulated_attacker_pretext=(
-                "Attacker Pretext Preview: Combines your leaked role + GPS EXIF coordinates + mobile number "
-                "to send an urgent SMS impersonating regional substation dispatch."
-            ),
+            simulated_attacker_pretext=pretext,
             dlp_remediated_profile=inspection.sanitized_text,
-            remediation_checklist=[
-                "Strip GPS EXIF tags automatically prior to social media uploads",
-                "Remove direct mobile numbers and IBAN strings from public profiles",
-                "Replace personal email addresses in public repositories with role aliases",
-            ],
+            remediation_checklist=checklist,
             citations=citations,
         )
 
     def get_router(self) -> APIRouter:
         router = APIRouter()
+
+        @router.get("/presets")
+        def get_osint_presets(audience_mode: Optional[str] = None):
+            return {"presets": self.list_presets(audience_mode=audience_mode)}
 
         @router.post("/analyze", response_model=OSINTExposureReport)
         def analyze_osint_exposure(req: OSINTFootprintSubmission):

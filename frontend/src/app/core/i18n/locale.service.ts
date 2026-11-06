@@ -433,7 +433,39 @@ export const CORE_DICTIONARY_EN: Record<string, any> = {
     "register_btn": "Create Operator Account",
     "switch_to_register": "Need an account? Register as Operator",
     "switch_to_login": "Already registered? Sign in with credentials",
-    "logging_in": "Authenticating..."
+    "logging_in": "Authenticating...",
+    "kid1_btn": "🧒 Kid (Leo)",
+    "senior1_btn": "👵 Senior (Marta)"
+  },
+  "audience": {
+    "switcher_label": "Audience Track",
+    "pro_short": "🛡️ Pro",
+    "kids_short": "🧒 Kids",
+    "seniors_short": "👵 Seniors",
+    "pro_title": "Professional / Enterprise Track",
+    "kids_title": "Junior Cyber Detective Track (Ages 8–14)",
+    "seniors_title": "Silver Shield Senior Safety Track",
+    "kids_golden_rule": "🕵️ Detective Rule: Never share passwords, secret codes, or home address clues in games or chats — always ask a parent or teacher!",
+    "seniors_golden_rule": "🛡️ Golden Rule: Hang up the phone and dial your family member or official municipal helpline yourself! Never hand cash to couriers or click urgent SMS payment links.",
+    "prepared_session_banner": "Your trainer prepared a live localized classroom session for",
+    "join_prepared_btn": "🚀 Join Trainer's Prepared Session"
+  },
+  "trainer_studio": {
+    "title": "Upfront Trainer Session Preparation & AI Location Tailoring Studio",
+    "subtitle": "Prepare a classroom session upfront and use Google ADK AI to tailor M1–M5 scenarios to a specific city (e.g., Wrocław), Mayor, and municipal utility (e.g., MPWiK Wrocław).",
+    "badge": "ADK CURRICULUM TAILOR AGENT",
+    "target_audience": "Target Audience Track",
+    "target_city": "City / Municipality Name",
+    "quick_cities": "Quick City Presets",
+    "local_leader": "Local Mayor / Public Figure (for M1 & M3 Deepfake)",
+    "local_utility": "Local Water / Utility Provider (for M1 & M2 Scam)",
+    "local_portal": "Official Municipal Portal",
+    "local_institution": "Local Senior Club / School / Institution",
+    "generate_btn": "✨ Generate Localized M1–M5 Environment & Pre-Create Session",
+    "generating_btn": "Synthesizing City Scenarios & Creating Live Session...",
+    "ready_banner": "Prepared Session Ready for 1-Click Student Launch",
+    "open_session_btn": "🚀 Open Prepared Classroom Session",
+    "preview_title": "Tailored M1–M5 Curriculum Preview"
   }
 };
 
@@ -854,7 +886,39 @@ export const CORE_DICTIONARY_PL: Record<string, any> = {
     "register_btn": "Utwórz Konto Operatora",
     "switch_to_register": "Nie masz konta? Zarejestruj się jako Operator",
     "switch_to_login": "Masz już konto? Zaloguj się danymi dostępowymi",
-    "logging_in": "Uwierzytelnianie..."
+    "logging_in": "Uwierzytelnianie...",
+    "kid1_btn": "🧒 Uczeń (Leo)",
+    "senior1_btn": "👵 Senior (Marta)"
+  },
+  "audience": {
+    "switcher_label": "Tryb Odbiorcy",
+    "pro_short": "🛡️ Ekspert",
+    "kids_short": "🧒 Dzieci",
+    "seniors_short": "👵 Seniorzy",
+    "pro_title": "Ścieżka Profesjonalna / SOC i Instytucje",
+    "kids_title": "Młody Cyber-Detektyw (Szkoły 8–14 lat)",
+    "seniors_title": "Srebrna Tarcza — Bezpieczny Senior",
+    "kids_golden_rule": "🕵️ Zasada Detektywa: Nigdy nie podawaj hasła, kodów BLIK ani adresu domu w grach i na czatach — zawsze zapytaj rodzica lub nauczyciela!",
+    "seniors_golden_rule": "🛡️ Złota Zasada: Rozłącz się i zadzwoń sam do wnuczka lub oficjalnego urzędu! Nigdy nie przekazuj gotówki kurierowi ani nie klikaj w linki SMS o dopłacie.",
+    "prepared_session_banner": "Trener przygotował na żywo lokalną sesję ćwiczeniową dla miasta",
+    "join_prepared_btn": "🚀 Dołącz do Przygotowanej Sesji Trenera"
+  },
+  "trainer_studio": {
+    "title": "Studio Przygotowania Sesji Trenera i Lokalizacji AI (Miasto / Region)",
+    "subtitle": "Przygotuj sesję przed zajęciami i użyj agenta AI Google ADK, aby dopasować moduły M1–M5 do wybranego miasta (np. Wrocław), Prezydenta Miasta oraz wodociągów (np. MPWiK Wrocław).",
+    "badge": "AGENT AI LOKALIZACJI PROGRAMU",
+    "target_audience": "Grupa Docelowa (Tryb Odbiorcy)",
+    "target_city": "Miasto / Gmina",
+    "quick_cities": "Szybki Wybór Miasta",
+    "local_leader": "Prezydent Miasta / Burmistrz (dla M1 i M3 Deepfake)",
+    "local_utility": "Miejskie Wodociągi / Zakład Komunalny (dla M1 i M2)",
+    "local_portal": "Oficjalny Portal Miejski",
+    "local_institution": "Lokalny Klub Seniora / Szkoła / Urząd",
+    "generate_btn": "✨ Wygeneruj Lokalny Program M1–M5 i Utwórz Gotową Sesję",
+    "generating_btn": "Generowanie scenariuszy miejskich AI i tworzenie sesji...",
+    "ready_banner": "Gotowa Sesja Utworzona — Uczestnicy Mogą Dołączyć 1 Kliknięciem",
+    "open_session_btn": "🚀 Otwórz Przygotowaną Sesję Szkoleniową",
+    "preview_title": "Podgląd Dopasowanych Modułów M1–M5"
   }
 };
 
