@@ -60,6 +60,7 @@ class StudioScenario(BaseModel):
     red_flags: List[str] = Field(default_factory=list)
     safe_action_advice: str = ""
     is_authentic: bool = False
+    cloned_website: Optional[Dict[str, Any]] = None
 
 class StudioParticipant(BaseModel):
     username: str

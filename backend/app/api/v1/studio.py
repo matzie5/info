@@ -55,21 +55,47 @@ WROCLAW_SENIORS_SCENARIOS = [
         platform_mock="BROWSER",
         threat_category="PHISHING",
         author="Alert Miejski MPWiK Wrocław",
-        author_handle="https://wroclaw-mpwik-awaria.pl.alert-security.net/komunikat",
+        author_handle="https://mpwik-wroclaw.pl.awaria-wodociagi.cc/komunikat-alarmowy",
         author_avatar="/assets/avatars/mpwik_logo.png",
         verified=False,
         title="Awaria magistrali i skażenie wody w dzielnicy Krzyki i Fabryczna",
-        content="PILNY KOMUNIKAT MPWiK WROCŁAW: W związku z wykryciem groźnych bakterii w ujęciu 'Mokry Dwór', mieszkańcy Wrocławia proszeni są o natychmiastowe zamówienie tabletek dekontaminacyjnych z miejską dopłatą 90%. Zamów pakiet pod linkiem opłacając koszt wysyłki 14.99 zł przez szybką płatność PayU-Expres.",
+        content="PILNY KOMUNIKAT MPWiK WROCŁAW: W związku z wykryciem groźnych bakterii w ujęciu 'Mokry Dwór', mieszkańcy Wrocławia proszeni są o natychmiastowe zamówienie tabletek dekontaminacyjnych z miejską dopłatą 90%. Zamów pakiet pod linkiem opłacając koszt wysyłki 4.80 zł przez szybką płatność BLIK.",
         media_url="/assets/images/wroclaw_water_pipe.jpg",
         media_type="URL",
         red_flags=[
-            "Podejrzany adres strony internetowej (subdomena spoofing)",
-            "Fałszywy certyfikat bezpieczeństwa z anonimowej rejestracji",
-            "Wywoływanie paniki zdrowotnej",
-            "Bramka płatności wyłudzająca dane karty płatniczej"
+            "Podejrzany adres strony internetowej (subdomena .cc zamiast .wroc.pl)",
+            "Fałszywy certyfikat bezpieczeństwa z darmowej 30-dniowej rejestracji",
+            "Sztuczny licznik odliczający 15 minut do odcięcia wody",
+            "Bramka płatności wyłudzająca kod BLIK i dane bankowości"
         ],
-        safe_action_advice="Sprawdź oficjalną stronę www.mpwik.wroc.pl lub zadzwoń pod całodobowy numer alarmowy 994.",
-        is_authentic=False
+        safe_action_advice="Sprawdź oficjalną stronę www.mpwik.wroc.pl lub zadzwoń pod całodobowy numer alarmowy pogotowia wodociągowego 994.",
+        is_authentic=False,
+        cloned_website={
+            "original_url": "https://www.mpwik.wroc.pl",
+            "real_domain": "mpwik.wroc.pl",
+            "spoofed_url": "https://mpwik-wroclaw.pl.awaria-wodociagi.cc/komunikat-alarmowy",
+            "spoofed_domain": "mpwik-wroclaw.pl.awaria-wodociagi.cc",
+            "brand_name": "MPWiK Wrocław S.A.",
+            "logo_text": "MPWiK Wrocław",
+            "primary_color": "#0072ce",
+            "accent_color": "#dc2626",
+            "nav_links": ["O nas", "Strefa Klienta", "Jakość Wody", "Awarie", "Kontakt"],
+            "alert_title": "PILNY KOMUNIKAT: Wykrycie bakterii w ujęciu Mokry Dwór",
+            "alert_body": "Szanowni Mieszkańcy Wrocławia! W dniu dzisiejszym wykryto krytyczne zanieczyszczenie ujęcia wody. W celu zabezpieczenia instalacji domowej konieczne jest pobranie kodu dekontaminacyjnego i wniesienie symbolicznej opłaty manipulacyjnej 4,80 zł. Brak opłaty spowoduje odcięcie zasilania.",
+            "cta_label": "Potwierdź tożsamość i ureguluj 4,80 zł [BLIK]",
+            "countdown_seconds": 895,
+            "ssl_details": {
+                "issuer": "Free Automated Domain Validator CA",
+                "valid": False,
+                "reason": "Certyfikat wystawiony dla domeny *.awaria-wodociagi.cc, brak tożsamości MPWiK S.A."
+            },
+            "comparison": {
+                "real_domain": "mpwik.wroc.pl",
+                "fake_domain": "mpwik-wroclaw.pl.awaria-wodociagi.cc",
+                "real_features": "Oficjalny adres mpwik.wroc.pl, bezpłatny numer alarmowy 994, brak opłat BLIK.",
+                "fake_features": "Adres .cc, fałszywy zegar odliczania, formularz wyłudzający 4.80 zł BLIKiem."
+            }
+        }
     ),
     StudioScenario(
         id="wroc-sen-facebook-group",
@@ -178,6 +204,53 @@ WROCLAW_KIDS_SCENARIOS = [
         ],
         safe_action_advice="Nigdy nie instaluj plików z rozszerzeniem .apk lub .exe przesyłanych przez komunikatory.",
         is_authentic=False
+    ),
+    StudioScenario(
+        id="wroc-kids-browser-librus",
+        platform_mock="BROWSER",
+        threat_category="PHISHING",
+        author="Librus Synergia - Portal Edukacyjny",
+        author_handle="https://synergia-librus.pl.szkolny-portal.cc/loguj/wroclaw-lo",
+        author_avatar="/assets/avatars/browser_shield.png",
+        verified=False,
+        title="Fałszywy panel logowania Librus: Wyciek pytań ze sprawdzianu",
+        content="UWAGA UCZNIOWIE: Zmiana systemu logowania i baza pytań z egzaminu ósmoklasisty i matury. Zaloguj się kontem ucznia lub rodzica.",
+        media_url=None,
+        media_type="URL",
+        red_flags=[
+            "Podejrzany adres domeny (.szkolny-portal.cc zamiast oficjalnego librus.pl)",
+            "Wyłudzanie haseł uczniów i rodziców",
+            "Obejściowy panel podszywający się pod platformę Synergia",
+            "Darmowy, podejrzany certyfikat SSL"
+        ],
+        safe_action_advice="Zawsze wpisuj adres szkolnego dziennika bezpośrednio lub korzystaj z oficjalnej aplikacji w telefonie.",
+        is_authentic=False,
+        cloned_website={
+            "original_url": "https://portal.librus.pl",
+            "real_domain": "portal.librus.pl",
+            "spoofed_url": "https://synergia-librus.pl.szkolny-portal.cc/loguj/wroclaw-lo",
+            "spoofed_domain": "synergia-librus.pl.szkolny-portal.cc",
+            "brand_name": "Librus Synergia",
+            "logo_text": "LIBRUS Synergia",
+            "primary_color": "#1e3a8a",
+            "accent_color": "#0284c7",
+            "nav_links": ["Wiadomości", "Oceny", "Plan Lekcji", "Zadania Domowe", "Ustawienia"],
+            "alert_title": "UWAGA UCZNIOWIE: Zmiana systemu logowania i baza pytań",
+            "alert_body": "W związku z awarią centralnego serwera Librus, zaloguj się ponownie swoim loginem i hasłem, aby zweryfikować obecność na liście uczniów oraz odblokować dostęp do oficjalnych arkuszy próbnych.",
+            "cta_label": "Zaloguj się kontem ucznia / rodzica",
+            "countdown_seconds": 600,
+            "ssl_details": {
+                "issuer": "Free Automated Cert Authority",
+                "valid": False,
+                "reason": "Certyfikat wystawiony dla *.szkolny-portal.cc, brak tożsamości Librus Sp. z o.o."
+            },
+            "comparison": {
+                "real_domain": "portal.librus.pl",
+                "fake_domain": "synergia-librus.pl.szkolny-portal.cc",
+                "real_features": "Adres portal.librus.pl, autoryzacja dwuskładnikowa, certyfikat korporacyjny.",
+                "fake_features": "Fałszywa domena szkolny-portal.cc, żądanie haseł bez 2FA."
+            }
+        }
     )
 ]
 
@@ -308,4 +381,44 @@ def studio_generate_media(req: StudioGenerateMediaRequest):
         language=req.language or "pl",
         voice_persona=req.voice_persona or "grandchild_distress",
         session_id=req.session_id,
+    )
+
+
+class InspectWebsiteRequest(BaseModel):
+    url: str
+
+
+class CloneWebsiteRequest(BaseModel):
+    url: str
+    audience_mode: str = "seniors"
+    language: str = "pl"
+    threat_type: str = "PHISHING"
+    custom_scenario_title: Optional[str] = None
+
+
+@router.post("/inspect-real-website")
+def inspect_real_website(req: InspectWebsiteRequest):
+    """
+    Inspects a real website URL, extracting brand metadata, colors, title, and structure.
+    Used by the Supervisor Studio Website Cloner Agent.
+    """
+    from app.services.website_cloner_service import WebsiteClonerService
+    service = WebsiteClonerService.get_instance()
+    return service.inspect_real_website(req.url)
+
+
+@router.post("/clone-website")
+def clone_website(req: CloneWebsiteRequest):
+    """
+    Creates an authentic spoofed website scenario based on a real website,
+    with educational red flags and audience-tailored pedagogic advice.
+    """
+    from app.services.website_cloner_service import WebsiteClonerService
+    service = WebsiteClonerService.get_instance()
+    return service.clone_and_spoof_website(
+        url=req.url,
+        audience_mode=req.audience_mode,
+        language=req.language,
+        threat_type=req.threat_type,
+        custom_scenario_title=req.custom_scenario_title,
     )

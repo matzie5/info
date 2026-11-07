@@ -38,7 +38,8 @@ logger = logging.getLogger("infosphere")
 
 def seed_wroclaw_sessions():
     fs = FirestoreService.get_instance()
-    if not fs.get_session("WROC-SENIOR-2026"):
+    existing_sen = fs.get_session("WROC-SENIOR-2026")
+    if not existing_sen:
         sen_session = Session(
             id="WROC-SENIOR-2026",
             scenario_id="wroclaw-senior-defense-2026",
@@ -67,8 +68,12 @@ def seed_wroclaw_sessions():
             }
         )
         fs.save_session(sen_session)
+    else:
+        existing_sen.scenarios = WROCLAW_SENIORS_SCENARIOS
+        fs.save_session(existing_sen)
 
-    if not fs.get_session("WROC-KIDS-2026"):
+    existing_kids = fs.get_session("WROC-KIDS-2026")
+    if not existing_kids:
         kids_session = Session(
             id="WROC-KIDS-2026",
             scenario_id="wroclaw-kids-explorers-2026",
@@ -97,6 +102,9 @@ def seed_wroclaw_sessions():
             }
         )
         fs.save_session(kids_session)
+    else:
+        existing_kids.scenarios = WROCLAW_KIDS_SCENARIOS
+        fs.save_session(existing_kids)
 
 
 @asynccontextmanager

@@ -137,12 +137,21 @@ class GoogleMediaService:
 
         # 1. Attempt Live Connection to Google Cloud Text-to-Speech
         try:
+            import google.auth
             from google.cloud import texttospeech
             from google.api_core.client_options import ClientOptions
 
             client_kwargs = {}
             if self.api_key:
                 client_kwargs["client_options"] = ClientOptions(api_key=self.api_key)
+            else:
+                try:
+                    credentials, _ = google.auth.default()
+                    if hasattr(credentials, "with_quota_project") and self.project_id:
+                        credentials = credentials.with_quota_project(self.project_id)
+                    client_kwargs["credentials"] = credentials
+                except Exception as auth_err:
+                    logger.debug("ADC credential load note: %s", auth_err)
 
             tts_client = texttospeech.TextToSpeechClient(**client_kwargs)
 
@@ -272,6 +281,14 @@ class GoogleMediaService:
             if self.api_key:
                 client_kwargs["api_key"] = self.api_key
             else:
+                try:
+                    import google.auth
+                    credentials, _ = google.auth.default()
+                    if hasattr(credentials, "with_quota_project") and self.project_id:
+                        credentials = credentials.with_quota_project(self.project_id)
+                    client_kwargs["credentials"] = credentials
+                except Exception as auth_err:
+                    logger.debug("ADC credential load for Vertex AI: %s", auth_err)
                 client_kwargs["vertexai"] = True
                 client_kwargs["project"] = self.project_id
                 client_kwargs["location"] = self.region

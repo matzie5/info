@@ -21,6 +21,7 @@ export interface StudioScenario {
   red_flags: string[];
   safe_action_advice: string;
   is_authentic: boolean;
+  cloned_website?: any;
 }
 
 export interface StudioParticipant {
@@ -335,6 +336,13 @@ export interface SessionData {
               <div class="flex items-center gap-2">
                 <button
                   type="button"
+                  (click)="showWebsiteClonerForm.set(!showWebsiteClonerForm())"
+                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-xs transition flex items-center gap-1.5">
+                  <span>🌐</span>
+                  <span>{{ showWebsiteClonerForm() ? '✕ Ukryj Klonera' : 'Agent Klonowania Stron WWW' }}</span>
+                </button>
+                <button
+                  type="button"
                   (click)="showCustomScenarioForm.set(!showCustomScenarioForm())"
                   class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-xs transition">
                   {{ showCustomScenarioForm() ? '✕ Ukryj formularz' : '✨ Utwórz Własny Scenariusz' }}
@@ -449,6 +457,122 @@ export interface SessionData {
                   class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition">
                   ✓ Dodaj Scenariusz do Listy
                 </button>
+              </div>
+            </div>
+
+            <!-- Website Cloner Agent Form (Studio) -->
+            <div *ngIf="showWebsiteClonerForm()" class="p-5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800 space-y-4 animate-fade-in">
+              <div class="flex items-center justify-between border-b border-emerald-200/60 dark:border-emerald-800/60 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">🌐</span>
+                  <div>
+                    <h3 class="font-bold text-sm text-emerald-950 dark:text-emerald-200">
+                      Autonomiczny Agent Klonowania Stron (Real-to-Spoof Website Cloner)
+                    </h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                      Podaj prawdziwy adres www instytucji — agent przeanalizuje strukturę, wyodrębni tożsamość wizualną i wygeneruje realistyczną kopię phishingową z czerwonymi flagami.
+                    </p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300 font-bold">
+                  Phishing Simulator Engine
+                </span>
+              </div>
+
+              <!-- Preset chips for fast selection -->
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                  Wybierz popularny cel we Wrocławiu lub wpisz dowolny URL:
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    (click)="setClonerPreset('https://www.mpwik.wroc.pl')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-emerald-500 flex items-center gap-1">
+                    <span>💧</span>
+                    <span>MPWiK Wrocław (Wodociągi)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setClonerPreset('https://www.wroclaw.pl')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-emerald-500 flex items-center gap-1">
+                    <span>🏛️</span>
+                    <span>Wrocław.pl (Portal Miasta)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setClonerPreset('https://tauron-dystrybucja.pl')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-emerald-500 flex items-center gap-1">
+                    <span>⚡</span>
+                    <span>TAURON Dystrybucja</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setClonerPreset('https://portal.librus.pl')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-emerald-500 flex items-center gap-1">
+                    <span>📚</span>
+                    <span>Librus Synergia (E-Dziennik)</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- URL input and Clone action -->
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  [(ngModel)]="clonerTargetUrl"
+                  placeholder="https://www.mpwik.wroc.pl"
+                  class="flex-1 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono font-semibold outline-none focus:ring-2 focus:ring-emerald-500" />
+                <button
+                  type="button"
+                  (click)="cloneWebsite()"
+                  [disabled]="isCloningWebsite() || !clonerTargetUrl.trim()"
+                  class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+                  <span *ngIf="isCloningWebsite()" class="animate-spin">🔄</span>
+                  <span>{{ isCloningWebsite() ? 'Analizowanie i klonowanie...' : '🔍 Sklonuj Stronę' }}</span>
+                </button>
+              </div>
+
+              <!-- Preview of Generated Cloned Scenario -->
+              <div *ngIf="clonedScenarioPreview()" class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 shadow-sm space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xl">✅</span>
+                    <div>
+                      <h4 class="font-bold text-xs text-slate-900 dark:text-white">
+                        {{ clonedScenarioPreview()!.title }}
+                      </h4>
+                      <p class="text-[11px] font-mono text-rose-500">
+                        Fałszywy adres: {{ clonedScenarioPreview()!.cloned_website?.spoofed_domain }}
+                      </p>
+                    </div>
+                  </div>
+                  <span class="text-xs px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">
+                    Gotowy do dodania
+                  </span>
+                </div>
+
+                <div class="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div class="font-semibold text-slate-800 dark:text-slate-200 mb-1">Czerwone flagi wygenerowane przez agenta:</div>
+                  <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                    <li *ngFor="let rf of clonedScenarioPreview()!.red_flags">{{ rf }}</li>
+                  </ul>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    (click)="clonedScenarioPreview.set(null)"
+                    class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 text-xs font-semibold">
+                    Odrzuć
+                  </button>
+                  <button
+                    type="button"
+                    (click)="addClonedScenarioToStudio()"
+                    class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition">
+                    ✓ Dodaj Sklonowaną Witrynę do Scenariuszy
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -712,6 +836,10 @@ export class SupervisorConsoleComponent implements OnInit {
 
   // Studio Custom Scenario & Google Media Generation State
   showCustomScenarioForm = signal<boolean>(false);
+  showWebsiteClonerForm = signal<boolean>(false);
+  clonerTargetUrl = 'https://www.mpwik.wroc.pl';
+  isCloningWebsite = signal<boolean>(false);
+  clonedScenarioPreview = signal<StudioScenario | null>(null);
   generatingScenarioMedia = signal<Record<string, string>>({});
   isGeneratingCustomMedia = signal<boolean>(false);
   customMediaGenType: 'AUDIO' | 'IMAGE' = 'AUDIO';
@@ -904,6 +1032,46 @@ export class SupervisorConsoleComponent implements OnInit {
       is_authentic: false
     };
     this.customScenarioRedFlagsInput = '';
+  }
+
+  setClonerPreset(url: string): void {
+    this.clonerTargetUrl = url;
+    this.cloneWebsite();
+  }
+
+  cloneWebsite(): void {
+    if (!this.clonerTargetUrl.trim()) return;
+    this.isCloningWebsite.set(true);
+
+    this.http.post<StudioScenario>('/api/v1/studio/clone-website', {
+      url: this.clonerTargetUrl.trim(),
+      audience_mode: this.newSession.audience_mode,
+      language: this.newSession.language,
+      threat_type: 'PHISHING'
+    }).subscribe({
+      next: (res) => {
+        this.isCloningWebsite.set(false);
+        this.clonedScenarioPreview.set(res);
+      },
+      error: (err) => {
+        this.isCloningWebsite.set(false);
+        console.error('Failed to clone website:', err);
+        alert('Błąd klonowania strony: ' + (err.error?.detail || err.message));
+      }
+    });
+  }
+
+  addClonedScenarioToStudio(): void {
+    const sc = this.clonedScenarioPreview();
+    if (!sc) return;
+
+    const currentProposed = [...this.proposedScenarios()];
+    currentProposed.unshift(sc);
+    this.proposedScenarios.set(currentProposed);
+    this.selectedScenarios.unshift(sc);
+
+    this.clonedScenarioPreview.set(null);
+    this.showWebsiteClonerForm.set(false);
   }
 
   addParticipantToRoster(): void {

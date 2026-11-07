@@ -24,6 +24,7 @@ export interface StudioScenario {
   red_flags: string[];
   safe_action_advice: string;
   is_authentic: boolean;
+  cloned_website?: any;
 }
 
 export interface StudioParticipant {
