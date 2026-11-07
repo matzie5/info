@@ -148,3 +148,53 @@ def test_admin_and_studio_google_media_generation():
         studio_data = res_studio.json()
         assert studio_data["media_type"] == "AUDIO"
         assert studio_data["provider"] == "google-cloud-texttospeech"
+
+
+def test_learning_and_testing_phase_lifecycle():
+    """Verify 20-min learning -> 10-min testing phase transitions and timer controls."""
+    with TestClient(app) as client:
+        # 1. Verify initial phase is LEARNING with 20 minutes (1200 seconds)
+        res = client.get("/api/v1/sessions/WROC-SENIOR-2026")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["phase"] == "LEARNING"
+        assert data["learning_duration_minutes"] == 20
+        assert data["testing_duration_minutes"] == 10
+
+        # 2. Switch phase to TESTING
+        res_phase = client.post("/api/v1/sessions/WROC-SENIOR-2026/phase", json={"phase": "TESTING"})
+        assert res_phase.status_code == 200
+        phase_data = res_phase.json()
+        assert phase_data["phase"] == "TESTING"
+        assert phase_data["phase_timer_seconds"] == 600
+        assert phase_data["phase_timer_running"] is True
+
+        # 3. Pause and adjust timer (+120s)
+        res_pause = client.post("/api/v1/sessions/WROC-SENIOR-2026/timer", json={"running": False, "delta_seconds": 120})
+        assert res_pause.status_code == 200
+        timer_data = res_pause.json()
+        assert timer_data["phase_timer_running"] is False
+        assert timer_data["phase_timer_seconds"] == 720
+
+        # 4. Submit verdict during testing
+        res_sub = client.post(
+            "/api/v1/sessions/WROC-SENIOR-2026/submit-verdict",
+            json={
+                "username": "senior_tadeusz",
+                "scenario_id": "scen_sr_wa_wnuczek",
+                "verdict": "SCAM",
+                "is_correct": True,
+                "score_awarded": 150,
+                "flagged_elements": ["Nieznany numer", "Presja czasu"],
+                "safe_action_chosen": "Rozłącz się i zadzwoń bezpośrednio na sprawdzony numer wnuka"
+            }
+        )
+        assert res_sub.status_code == 200
+        sub_data = res_sub.json()
+        tadeusz = sub_data["roster"]["senior_tadeusz"]
+        assert tadeusz["score"] >= 150
+        assert "scen_sr_wa_wnuczek" in tadeusz["completed_scenarios"]
+
+        # 5. Reset back to LEARNING for ongoing classroom runs
+        client.post("/api/v1/sessions/WROC-SENIOR-2026/phase", json={"phase": "LEARNING"})
+

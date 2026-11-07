@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from app.models.session import (
     Session,
     SessionStatus,
+    SessionPhase,
     UserRole,
     StudioScenario,
     StudioParticipant,
@@ -199,12 +200,66 @@ def add_participant(session_id: str, req: AddParticipantRequest):
     session.roster[req.username] = participant
     return fs.save_session(session)
 
+class UpdatePhaseRequest(BaseModel):
+    phase: SessionPhase
+    timer_seconds: Optional[int] = None
+    timer_running: Optional[bool] = None
+
+@router.post("/{session_id}/phase", response_model=Session)
+def update_session_phase(session_id: str, req: UpdatePhaseRequest):
+    fs = FirestoreService.get_instance()
+    session = fs.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    session.phase = req.phase
+    session.phase_started_at = time.time()
+    if req.timer_seconds is not None:
+        session.phase_timer_seconds = req.timer_seconds
+    else:
+        # Default: 20 minutes (1200s) for LEARNING, 10 minutes (600s) for TESTING
+        if req.phase == SessionPhase.LEARNING:
+            session.phase_timer_seconds = session.learning_duration_minutes * 60
+        elif req.phase == SessionPhase.TESTING:
+            session.phase_timer_seconds = session.testing_duration_minutes * 60
+        elif req.phase == SessionPhase.COMPLETED:
+            session.phase_timer_seconds = 0
+
+    if req.timer_running is not None:
+        session.phase_timer_running = req.timer_running
+    else:
+        session.phase_timer_running = (req.phase != SessionPhase.COMPLETED)
+    return fs.save_session(session)
+
+class UpdateTimerRequest(BaseModel):
+    timer_seconds: Optional[int] = None
+    timer_running: Optional[bool] = None
+    running: Optional[bool] = None
+    delta_seconds: Optional[int] = None
+
+@router.post("/{session_id}/timer", response_model=Session)
+def update_session_timer(session_id: str, req: UpdateTimerRequest):
+    fs = FirestoreService.get_instance()
+    session = fs.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    if req.delta_seconds is not None:
+        session.phase_timer_seconds = max(0, session.phase_timer_seconds + req.delta_seconds)
+    if req.timer_seconds is not None:
+        session.phase_timer_seconds = req.timer_seconds
+    is_running = req.timer_running if req.timer_running is not None else req.running
+    if is_running is not None:
+        session.phase_timer_running = is_running
+    return fs.save_session(session)
+
 class SubmitVerdictRequest(BaseModel):
     username: str
     scenario_id: str
     flagged_elements: List[str] = Field(default_factory=list)
     verdict: str  # "SCAM" | "AUTHENTIC"
     rationale: Optional[str] = None
+    is_correct: Optional[bool] = None
+    score_awarded: Optional[int] = 100
+    safe_action_chosen: Optional[str] = None
 
 @router.post("/{session_id}/submit-verdict", response_model=Session)
 def submit_verdict(session_id: str, req: SubmitVerdictRequest):
@@ -212,6 +267,7 @@ def submit_verdict(session_id: str, req: SubmitVerdictRequest):
     session = fs.get_session(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
+    score_to_add = req.score_awarded if req.score_awarded is not None else 100
     sub = {
         "id": f"sub-{uuid.uuid4().hex[:6]}",
         "username": req.username,
@@ -219,14 +275,26 @@ def submit_verdict(session_id: str, req: SubmitVerdictRequest):
         "flagged_elements": req.flagged_elements,
         "verdict": req.verdict,
         "rationale": req.rationale,
+        "is_correct": req.is_correct if req.is_correct is not None else True,
+        "score_awarded": score_to_add,
+        "safe_action_chosen": req.safe_action_chosen,
         "timestamp": time.time()
     }
     session.submissions.append(sub)
-    if req.username in session.roster:
-        p = session.roster[req.username]
-        if req.scenario_id not in p.completed_scenarios:
-            p.completed_scenarios.append(req.scenario_id)
-            p.score += 100
+    if req.username not in session.roster:
+        session.roster[req.username] = StudioParticipant(
+            username=req.username,
+            display_name=req.username,
+            score=0,
+            connected=True,
+        )
+    p = session.roster[req.username]
+    if req.scenario_id not in p.completed_scenarios:
+        p.completed_scenarios.append(req.scenario_id)
+        p.score += score_to_add
+    else:
+        # If user updates their verdict, update the score difference if needed
+        pass
     return fs.save_session(session)
 
 def _ensure_tick_running(session_id: str, interval: int = 10):

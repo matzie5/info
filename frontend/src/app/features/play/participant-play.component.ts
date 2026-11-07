@@ -25,6 +25,9 @@ export interface StudioScenario {
   red_flags: string[];
   safe_action_advice: string;
   is_authentic: boolean;
+  educational_goal?: string;
+  manipulation_technique?: string;
+  learning_points?: string[];
   cloned_website?: ClonedWebsiteData;
 }
 
@@ -44,6 +47,11 @@ export interface SessionData {
   location_name: string;
   language: string;
   status: string;
+  phase?: 'LEARNING' | 'TESTING' | 'COMPLETED';
+  phase_timer_seconds?: number;
+  phase_timer_running?: boolean;
+  learning_duration_minutes?: number;
+  testing_duration_minutes?: number;
   current_tick: number;
   max_ticks: number;
   scenarios: StudioScenario[];
@@ -56,6 +64,13 @@ export interface ScenarioVerdictResult {
   isCorrect: boolean;
   scoreAwarded: number;
   flags: string[];
+  chosenAction?: string;
+}
+
+export interface SafeActionOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
 }
 
 @Component({
@@ -94,7 +109,7 @@ export interface ScenarioVerdictResult {
               Bezpieczny Senior • {{ session()?.location_name || 'Wrocław' }}
             </h1>
             <p class="text-sm text-emerald-100">
-              Warsztat ochrony przed fałszywymi telefonami, wiadomościami i oszustwami
+              Warsztat ochrony przed manipulacją, fałszywymi telefonami i oszustwami internetowymi
             </p>
           </div>
         </div>
@@ -105,7 +120,7 @@ export interface ScenarioVerdictResult {
             <span class="text-2xl font-black text-[#FFE29A]">{{ userScore() }} pkt</span>
           </div>
           <div class="text-right">
-            <span class="text-xs text-emerald-200 block">Zadanie</span>
+            <span class="text-xs text-emerald-200 block">Materiał</span>
             <span class="text-lg font-bold">
               {{ currentIndex() + 1 }} z {{ scenarios().length }}
             </span>
@@ -169,7 +184,88 @@ export interface ScenarioVerdictResult {
         </div>
       </header>
 
-      <!-- PERSISTENT SCENARIO & SUMMARY NAVIGATION BAR -->
+      <!-- 20-MIN LEARNING vs 10-MIN TESTING PHASE CONTROLLER BANNER -->
+      <div *ngIf="currentUser && scenarios().length > 0" class="max-w-7xl mx-auto px-4 mt-3">
+        <div
+          class="p-4 rounded-2xl border-2 flex flex-wrap items-center justify-between gap-4 shadow-md transition-all"
+          [ngClass]="{
+            'bg-[#2D4A43]/10 border-[#2D4A43] text-stone-900': isSenior() && activePhase() === 'LEARNING',
+            'bg-amber-50 border-amber-500 text-amber-950': isSenior() && activePhase() === 'TESTING',
+            'bg-indigo-950/70 border-indigo-500 text-indigo-100': isKids() && activePhase() === 'LEARNING',
+            'bg-purple-950/80 border-pink-500 text-pink-100': isKids() && activePhase() === 'TESTING',
+            'bg-slate-800 border-cyan-500 text-white': !isSenior() && !isKids() && activePhase() === 'LEARNING',
+            'bg-slate-800 border-amber-500 text-white': !isSenior() && !isKids() && activePhase() === 'TESTING'
+          }">
+
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
+              [ngClass]="activePhase() === 'LEARNING' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white animate-pulse'">
+              {{ activePhase() === 'LEARNING' ? '📖' : '⏱️' }}
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-3 py-0.5 rounded-full text-xs font-black uppercase tracking-wider"
+                  [ngClass]="activePhase() === 'LEARNING' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'">
+                  {{ activePhase() === 'LEARNING' ? 'Faza 1: Nauka & Analiza (20 min)' : 'Faza 2: Test Wiedzy (10 min)' }}
+                </span>
+                <span class="text-xs font-bold opacity-80">
+                  {{ activePhase() === 'LEARNING' ? 'Spokojna eksploracja i poznawanie cech manipulacji' : 'Sprawdzenie zdobytych umiejętności w praktyce' }}
+                </span>
+              </div>
+              <p class="text-xs mt-1 font-medium max-w-2xl leading-relaxed">
+                {{ activePhase() === 'LEARNING'
+                  ? (isSenior()
+                      ? 'Zapoznaj się z poniższymi przykładami z Wrocławia. Przesłuchaj nagrania, zbadaj strony i poszlaki. Masz na to 20 minut, po czym rozpocznie się 10-minutowy sprawdzian.'
+                      : 'Eksploruj dowody, odtwarzaj dźwięki i odkrywaj triki oszustów bez presji punktowej! Za chwilę czeka Cię 10-minutowy wielki test wiedzy!')
+                  : (isSenior()
+                      ? 'Trwa 10-minutowy test wiedzy! Wybierz czy treść jest autentyczna czy zmanipulowana oraz wskaż najbezpieczniejszą reakcję.'
+                      : 'Czas na egzamin cyber-detektywa! Zbadaj każdy przypadek i zatwierdź swój werdykt przed upływem czasu.')
+                }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Timer & Manual Phase Controls -->
+          <div class="flex items-center gap-3 ml-auto">
+            <!-- TIMER DISPLAY -->
+            <div
+              class="px-4 py-2 rounded-xl font-mono text-center border shadow-inner flex items-center gap-2"
+              [ngClass]="activePhase() === 'LEARNING'
+                ? 'bg-black/10 border-black/20 text-stone-900 dark:text-white'
+                : 'bg-rose-600 text-white border-rose-700 shadow-rose-900/50'">
+              <span class="text-[11px] uppercase font-bold opacity-80">
+                {{ activePhase() === 'LEARNING' ? 'Nauka:' : 'Test:' }}
+              </span>
+              <span class="text-2xl font-black tracking-tight">{{ formattedTime() }}</span>
+            </div>
+
+            <!-- BUTTON: SWITCH TO TESTING -->
+            <button
+              *ngIf="activePhase() === 'LEARNING'"
+              type="button"
+              (click)="startTestingPhase()"
+              class="px-4 py-2.5 rounded-xl text-xs font-black transition shadow-lg flex items-center gap-2 cursor-pointer transform hover:scale-102 active:scale-98"
+              [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white border-2 border-[#E2B771]' : 'bg-amber-400 hover:bg-amber-300 text-slate-950 border-2 border-amber-300'">
+              <span>⚡</span>
+              <span>Rozpocznij Test Wiedzy (10 min)</span>
+            </button>
+
+            <!-- BUTTON: SWITCH BACK TO LEARNING -->
+            <button
+              *ngIf="activePhase() === 'TESTING'"
+              type="button"
+              (click)="returnToLearningPhase()"
+              class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition opacity-80 hover:opacity-100 cursor-pointer flex items-center gap-1.5"
+              [ngClass]="isSenior() ? 'bg-white text-stone-800 border-stone-300 hover:bg-stone-100' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'">
+              <span>↩</span>
+              <span>Wróć do Fazy Nauki</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PERSISTENT SCENARIO NAVIGATION BAR -->
       <nav *ngIf="currentUser && scenarios().length > 0" class="max-w-7xl mx-auto px-4 mt-3 flex items-center justify-between gap-2 overflow-x-auto pb-1 select-none">
         <div class="flex items-center gap-1.5 overflow-x-auto py-1">
           <button
@@ -182,10 +278,11 @@ export interface ScenarioVerdictResult {
               'bg-indigo-600 text-white ring-2 ring-amber-400 font-bold shadow-md': !isSenior() && currentIndex() === idx && !isCompleted(),
               'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700': !isSenior() && (currentIndex() !== idx || isCompleted())
             }"
-            class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition whitespace-nowrap">
+            class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition whitespace-nowrap cursor-pointer">
             <span>{{ getPlatformIcon(sc.platform_mock) }}</span>
             <span>{{ idx + 1 }}. {{ sc.author }}</span>
-            <span *ngIf="scenarioResults()[sc.id]" class="font-bold text-[11px]" [ngClass]="scenarioResults()[sc.id].isCorrect ? 'text-emerald-400' : 'text-amber-400'">✓</span>
+            <span *ngIf="activePhase() === 'LEARNING' && isScenarioExplored(sc.id)" class="text-emerald-500 font-bold text-xs" title="Przeanalizowano">✓</span>
+            <span *ngIf="activePhase() === 'TESTING' && scenarioResults()[sc.id]" class="font-bold text-xs" [ngClass]="scenarioResults()[sc.id].isCorrect ? 'text-emerald-400' : 'text-amber-400'">✓</span>
           </button>
         </div>
 
@@ -201,7 +298,7 @@ export interface ScenarioVerdictResult {
           }"
           class="px-4 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition shrink-0 cursor-pointer">
           <span>🏆</span>
-          <span>Podsumowanie</span>
+          <span>Podsumowanie & Certyfikat</span>
         </button>
       </nav>
 
@@ -227,7 +324,7 @@ export interface ScenarioVerdictResult {
           <button
             type="button"
             (click)="dismissBroadcast()"
-            class="text-xs font-bold px-2 py-1 rounded bg-black/10 hover:bg-black/20">
+            class="text-xs font-bold px-2 py-1 rounded bg-black/10 hover:bg-black/20 cursor-pointer">
             ✕ Zamknij
           </button>
         </div>
@@ -266,7 +363,7 @@ export interface ScenarioVerdictResult {
                 *ngFor="let p of rosterList()"
                 type="button"
                 (click)="loginInput = p.username"
-                class="px-3 py-1.5 rounded-lg text-xs font-medium border"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium border cursor-pointer"
                 [ngClass]="isSenior() ? 'bg-stone-100 hover:bg-stone-200 border-stone-300' : 'bg-slate-800 hover:bg-slate-700 border-slate-700'">
                 {{ p.display_name || p.username }}
               </button>
@@ -277,40 +374,38 @@ export interface ScenarioVerdictResult {
             type="button"
             (click)="confirmLogin()"
             [disabled]="!loginInput.trim()"
-            class="w-full py-3 rounded-xl font-bold text-base transition shadow-md"
+            class="w-full py-3 rounded-xl font-bold text-base transition shadow-md cursor-pointer disabled:opacity-50"
             [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
-            {{ isSenior() ? 'Rozpocznij ćwiczenie ▶' : 'Wchodzę do gry! 🚀' }}
+            {{ isSenior() ? 'Rozpocznij Faza 1: Nauka (20 min) ▶' : 'Rozpocznij Trening Detektywa! 🚀' }}
           </button>
         </div>
       </div>
 
       <!-- MAIN SCENARIO WORKBENCH (TWO COLUMN LAYOUT) -->
-      <!-- Only rendered when active scenario exists AND not in summary mode -->
       <main *ngIf="currentUser && currentScenario() && !isCompleted()" class="max-w-7xl mx-auto px-4 py-5">
 
-        <!-- MOBILE TAB SWITCHER (visible only on small screens) -->
+        <!-- MOBILE TAB SWITCHER (small screens) -->
         <div class="flex lg:hidden mb-4 p-1 rounded-xl bg-slate-200 dark:bg-slate-800">
           <button
             type="button"
             (click)="activeMobileTab.set('evidence')"
-            [ngClass]="activeMobileTab() === 'evidence' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400'"
-            class="flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2">
+            [ngClass]="activeMobileTab() === 'evidence' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-slate-600 dark:text-slate-400'"
+            class="flex-1 py-2 rounded-lg text-xs transition flex items-center justify-center gap-2">
             <span>📱</span>
-            <span>Dowód (Symulator)</span>
+            <span>Materiał (Symulator)</span>
           </button>
           <button
             type="button"
             (click)="activeMobileTab.set('analysis')"
-            [ngClass]="activeMobileTab() === 'analysis' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400'"
-            class="flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2">
-            <span>🕵️</span>
-            <span>Panel Analizy & Decyzji</span>
+            [ngClass]="activeMobileTab() === 'analysis' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-slate-600 dark:text-slate-400'"
+            class="flex-1 py-2 rounded-lg text-xs transition flex items-center justify-center gap-2">
+            <span>{{ activePhase() === 'LEARNING' ? '📖 Panel Nauki' : '⏱️ Panel Testu' }}</span>
           </button>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-          <!-- LEFT COLUMN: AUTHENTIC PLATFORM SIMULATOR (EVIDENCE) -->
+          <!-- LEFT COLUMN: AUTHENTIC PLATFORM SIMULATOR (EVIDENCE & MEDIA) -->
           <section
             class="lg:col-span-7 xl:col-span-7 flex flex-col gap-4"
             [ngClass]="{'hidden lg:flex': activeMobileTab() === 'analysis'}">
@@ -387,69 +482,238 @@ export interface ScenarioVerdictResult {
             <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
               <span class="flex items-center gap-1.5">
                 <span>💡</span>
-                <span>Wskazówka: Zbadaj nadawcę, adres strony lub treść nagrania, a następnie wybierz odpowiedź w panelu po prawej.</span>
+                <span>
+                  {{ activePhase() === 'LEARNING'
+                    ? 'Odsłuchaj nagranie lub zbadaj stronę, a następnie przeanalizuj poszlaki w panelu edukacyjnym po prawej.'
+                    : 'Zbadaj materiał i wybierz odpowiedź w teście wiedzy po prawej stronie.'
+                  }}
+                </span>
               </span>
               <button
                 type="button"
                 (click)="activeMobileTab.set('analysis')"
-                class="lg:hidden text-indigo-600 font-bold hover:underline">
-                Przejdź do oceny →
+                class="lg:hidden text-indigo-600 font-bold hover:underline cursor-pointer">
+                {{ activePhase() === 'LEARNING' ? 'Zobacz analizę →' : 'Przejdź do testu →' }}
               </button>
             </div>
           </section>
 
-          <!-- RIGHT COLUMN: DETECTIVE WORKBENCH (ANALYSIS & DECISION) -->
+          <!-- RIGHT COLUMN: ADAPTS DYNAMICALLY BY PHASE -->
+
+          <!-- ========================================================= -->
+          <!-- 1. RIGHT COLUMN IN LEARNING PHASE (20 MIN STUDY WORKBENCH) -->
+          <!-- ========================================================= -->
           <section
-            class="lg:col-span-5 xl:col-span-5 flex flex-col gap-5 lg:sticky lg:top-6"
+            *ngIf="activePhase() === 'LEARNING'"
+            class="lg:col-span-5 xl:col-span-5 flex flex-col gap-4 lg:sticky lg:top-6"
             [ngClass]="{'hidden lg:flex': activeMobileTab() === 'evidence'}">
 
-            <!-- WORKBENCH HEADER & SUMMARY JUMP -->
+            <!-- LEARNING HEADER -->
             <div class="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
               <div class="flex items-center gap-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Zadanie {{ currentIndex() + 1 }} z {{ scenarios().length }}
-                </span>
-                <span *ngIf="scenarioResults()[currentScenario()!.id]" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800">
-                  Rozwiązane ✓
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                  <span>📖</span>
+                  <span>Moduł Nauki: {{ currentIndex() + 1 }} z {{ scenarios().length }}</span>
                 </span>
               </div>
-              <button
-                type="button"
-                (click)="showSummary()"
-                class="text-xs font-bold px-3 py-1 rounded-lg border flex items-center gap-1.5 transition"
-                [ngClass]="isSenior() ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200' : 'bg-slate-800 text-amber-300 border-slate-700 hover:bg-slate-700'">
-                <span>🏆</span>
-                <span>Podsumowanie</span>
-              </button>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                Spokojna eksploracja
+              </span>
             </div>
 
-            <!-- STAGE 1: ACTIVE CLUE CHECKLIST -->
+            <!-- EDUCATIONAL GOAL CARD -->
+            <div
+              class="p-5 rounded-2xl border-2 transition-all shadow-md"
+              [ngClass]="isSenior() ? 'bg-white border-[#2D4A43]/30 text-stone-900' : 'bg-slate-900 border-indigo-500/50 text-white'">
+              <div class="flex items-center gap-2.5 mb-2">
+                <span class="text-xl">🎯</span>
+                <h3 class="font-bold text-sm uppercase tracking-wider">
+                  Cel Lekcji: {{ getCategoryTitle(currentScenario()!.threat_category) }}
+                </h3>
+              </div>
+              <p class="text-xs sm:text-sm font-medium leading-relaxed opacity-90 mb-3">
+                {{ getEducationalGoalText(currentScenario()!) }}
+              </p>
+
+              <!-- HOW MANIPULATION WORKS -->
+              <div class="p-3.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-xs space-y-1">
+                <span class="font-bold text-amber-700 dark:text-amber-300 block flex items-center gap-1">
+                  <span>⚙️</span>
+                  <span>Mechanizm manipulacji / Autentyczność:</span>
+                </span>
+                <p class="opacity-90 leading-relaxed">
+                  {{ getManipulationExplanation(currentScenario()!) }}
+                </p>
+              </div>
+            </div>
+
+            <!-- INTERACTIVE CLUE DISCOVERY EXPLORER -->
             <div
               class="p-5 rounded-2xl border transition-all shadow-md"
-              [ngClass]="{
-                'bg-white border-amber-300': isSenior(),
-                'bg-slate-900 border-indigo-500/40': isKids(),
-                'bg-slate-800 border-slate-700': !isSenior() && !isKids()
-              }">
-              <div class="flex items-center justify-between mb-3">
+              [ngClass]="isSenior() ? 'bg-white border-amber-300' : 'bg-slate-900 border-slate-700'">
+              <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
-                  <span class="text-xl">{{ currentScenario()!.is_authentic ? '🛡️' : '🚩' }}</span>
-                  <h3 class="font-bold text-sm uppercase tracking-wider" [ngClass]="isSenior() ? 'text-stone-900' : 'text-slate-100'">
-                    {{ currentScenario()!.is_authentic ? 'Krok 1: Wskaż cechy wiarygodności' : 'Krok 1: Wskaż podejrzane sygnały' }}
+                  <span class="text-xl">🔍</span>
+                  <h3 class="font-bold text-sm uppercase tracking-wider">
+                    {{ currentScenario()!.is_authentic ? 'Cechy potwierdzające autentyczność' : 'Kluczowe poszlaki manipulacji (Czerwone flagi)' }}
                   </h3>
                 </div>
-                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full"
-                  [ngClass]="selectedFlags().length > 0 ? 'bg-amber-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'">
-                  {{ selectedFlags().length }}/{{ currentScenario()!.red_flags.length }}
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  {{ getExploredCluesCount(currentScenario()!.id) }} / {{ currentScenario()!.red_flags.length }} zbadano
                 </span>
               </div>
 
               <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                {{ currentScenario()!.is_authentic
-                  ? 'Zaznacz elementy potwierdzające, że materiał pochodzi z oficjalnego i bezpiecznego źródła:'
-                  : 'Zaznacz elementy, które wzbudzają Twoje wątpliwości lub zdradzają próbę manipulacji:'
-                }}
+                Kliknij poszczególne punkty, aby dowiedzieć się, jak rozpoznać je w praktyce:
               </p>
+
+              <div class="flex flex-col gap-2.5">
+                <div
+                  *ngFor="let flag of currentScenario()!.red_flags; let fIdx = index"
+                  (click)="toggleClueExploration(currentScenario()!.id, flag)"
+                  class="p-3 rounded-xl border text-xs transition cursor-pointer select-none"
+                  [ngClass]="isClueExplored(currentScenario()!.id, flag)
+                    ? (isSenior() ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-medium' : 'bg-emerald-950/40 border-emerald-500 text-emerald-200')
+                    : (isSenior() ? 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500')">
+                  <div class="flex items-start gap-2.5">
+                    <span class="text-sm mt-0.5">
+                      {{ isClueExplored(currentScenario()!.id, flag) ? '✅' : '🔍' }}
+                    </span>
+                    <div class="flex-1">
+                      <div class="font-bold text-xs">{{ flag }}</div>
+                      <!-- Expanded Pedagogical Clue Hint -->
+                      <p *ngIf="isClueExplored(currentScenario()!.id, flag)" class="text-[11px] mt-1.5 opacity-90 leading-relaxed border-t border-black/10 dark:border-white/10 pt-1.5">
+                        {{ getCluePedagogicHint(flag, currentScenario()!) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PRACTICAL SAFE ACTION ADVICE -->
+            <div
+              class="p-4 rounded-2xl border shadow-sm"
+              [ngClass]="isSenior() ? 'bg-[#2D4A43]/10 border-[#2D4A43]/30 text-stone-900' : 'bg-indigo-950/40 border-indigo-500/40 text-indigo-100'">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-lg">🛡️</span>
+                <span class="font-bold text-xs uppercase tracking-wider">Złota Zasada Bezpieczeństwa:</span>
+              </div>
+              <p class="text-xs sm:text-sm font-semibold leading-relaxed">
+                {{ currentScenario()!.safe_action_advice }}
+              </p>
+            </div>
+
+            <!-- LEARNING PHASE NAVIGATION & SWITCH TO TEST -->
+            <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
+              <button
+                type="button"
+                (click)="goToPrevScenario()"
+                [disabled]="currentIndex() <= 0"
+                class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs border transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+                [ngClass]="isSenior() ? 'bg-white text-stone-800 border-stone-300 hover:bg-stone-100' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'">
+                ◀ Poprzedni materiał
+              </button>
+
+              <button
+                type="button"
+                (click)="goToNextScenario()"
+                [disabled]="currentIndex() >= scenarios().length - 1"
+                class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs border transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+                [ngClass]="isSenior() ? 'bg-white text-stone-800 border-stone-300 hover:bg-stone-100' : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'">
+                Następny materiał ▶
+              </button>
+            </div>
+
+            <!-- PROMINENT CALL TO ACTION TO START TEST -->
+            <button
+              type="button"
+              (click)="startTestingPhase()"
+              class="w-full py-3.5 px-4 rounded-2xl font-black text-sm transition shadow-xl flex items-center justify-center gap-2 cursor-pointer transform hover:scale-101 active:scale-98"
+              [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-[#FFE29A] border-2 border-[#E2B771]' : 'bg-amber-400 hover:bg-amber-300 text-slate-950'">
+              <span>⚡</span>
+              <span>Ukończyłem naukę • Przejdź do Testu Wiedzy (10 min)</span>
+            </button>
+
+          </section>
+
+          <!-- ========================================================= -->
+          <!-- 2. RIGHT COLUMN IN TESTING PHASE (10 MIN KNOWLEDGE QUIZ)   -->
+          <!-- ========================================================= -->
+          <section
+            *ngIf="activePhase() === 'TESTING'"
+            class="lg:col-span-5 xl:col-span-5 flex flex-col gap-5 lg:sticky lg:top-6"
+            [ngClass]="{'hidden lg:flex': activeMobileTab() === 'evidence'}">
+
+            <!-- TESTING WORKBENCH HEADER -->
+            <div class="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                  <span>⏱️</span>
+                  <span>Sprawdzian: Zadanie {{ currentIndex() + 1 }} z {{ scenarios().length }}</span>
+                </span>
+                <span *ngIf="scenarioResults()[currentScenario()!.id]" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800">
+                  Oceniono ✓
+                </span>
+              </div>
+              <div class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-600 border border-rose-500/30">
+                Czas: {{ formattedTime() }}
+              </div>
+            </div>
+
+            <!-- STEP 1: VERDICT SELECTION -->
+            <div
+              *ngIf="!submittedFeedback()"
+              class="p-5 rounded-2xl border-2 transition-all shadow-md"
+              [ngClass]="isSenior() ? 'bg-white border-[#2D4A43]/40' : 'bg-slate-900 border-indigo-500/50'">
+              <div class="text-center mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider block text-slate-500 mb-0.5">
+                  Krok 1: Twój Werdykt
+                </span>
+                <h3 class="font-black" [ngClass]="isSenior() ? 'text-lg text-stone-900' : 'text-base text-white'">
+                  Czy ta treść jest próbą oszustwa czy autentyczną informacją?
+                </h3>
+              </div>
+
+              <!-- Threat vs Authentic buttons -->
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  (click)="selectedVerdict.set('threat')"
+                  [ngClass]="selectedVerdict() === 'threat'
+                    ? 'ring-4 ring-rose-500 bg-rose-100 border-rose-600 text-rose-950 font-black shadow-md'
+                    : 'bg-stone-50 hover:bg-stone-100 border-stone-300 text-stone-800 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'"
+                  class="p-3.5 rounded-xl border-2 text-center transition flex flex-col items-center gap-1 cursor-pointer">
+                  <span class="text-2xl">🚨</span>
+                  <span class="text-xs font-bold">Manipulacja / SCAM</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="selectedVerdict.set('authentic')"
+                  [ngClass]="selectedVerdict() === 'authentic'
+                    ? 'ring-4 ring-emerald-500 bg-emerald-100 border-emerald-600 text-emerald-950 font-black shadow-md'
+                    : 'bg-stone-50 hover:bg-stone-100 border-stone-300 text-stone-800 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'"
+                  class="p-3.5 rounded-xl border-2 text-center transition flex flex-col items-center gap-1 cursor-pointer">
+                  <span class="text-2xl">✅</span>
+                  <span class="text-xs font-bold">Prawdziwa / Bezpieczna</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 2: SUSPICIOUS OR AUTHENTIC ELEMENTS IDENTIFIED -->
+            <div
+              *ngIf="!submittedFeedback()"
+              class="p-5 rounded-2xl border transition-all shadow-md"
+              [ngClass]="isSenior() ? 'bg-white border-amber-300' : 'bg-slate-900 border-slate-700'">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Krok 2: Wskaż rozpoznane cechy
+                </span>
+                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {{ selectedFlags().length }}/{{ currentScenario()!.red_flags.length }}
+                </span>
+              </div>
 
               <div class="flex flex-col gap-2">
                 <button
@@ -459,154 +723,99 @@ export interface ScenarioVerdictResult {
                   [ngClass]="selectedFlags().includes(flag)
                     ? (isSenior() ? 'bg-amber-100 border-amber-600 text-stone-950 font-bold' : 'bg-indigo-950 border-amber-400 text-amber-200 font-bold')
                     : (isSenior() ? 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100' : 'bg-slate-950/60 border-slate-700 text-slate-300 hover:border-slate-500')"
-                  class="p-2.5 rounded-xl border text-xs text-left transition flex items-start gap-2.5 shadow-2xs">
+                  class="p-2.5 rounded-xl border text-xs text-left transition flex items-start gap-2.5 cursor-pointer">
                   <span class="text-sm mt-[-1px]">{{ selectedFlags().includes(flag) ? '✅' : '⚪' }}</span>
                   <span class="flex-1 leading-snug">{{ flag }}</span>
                 </button>
               </div>
             </div>
 
-            <!-- STAGE 2: VERDICT ACTION CARD (BEFORE SUBMIT) -->
+            <!-- STEP 3: SAFE ACTION MULTIPLE CHOICE -->
             <div
               *ngIf="!submittedFeedback()"
-              class="p-6 rounded-2xl border-2 transition-all shadow-xl"
-              [ngClass]="{
-                'bg-white border-[#2D4A43]/40': isSenior(),
-                'bg-slate-900 border-indigo-500/60': isKids(),
-                'bg-slate-800 border-slate-700': !isSenior() && !isKids()
-              }">
-              <div class="text-center mb-4">
-                <span class="text-xs font-bold uppercase tracking-wider block text-slate-400 mb-1">
-                  Krok 2: Ostateczna Decyzja
-                </span>
-                <h3
-                  class="font-black"
-                  [ngClass]="isSenior() ? 'text-xl text-stone-900' : 'text-lg text-white'">
-                  {{ isSenior() ? 'Czy ta wiadomość jest bezpieczna?' : 'Jaki jest Twój werdykt detektywie?' }}
-                </h3>
+              class="p-5 rounded-2xl border-2 transition-all shadow-md"
+              [ngClass]="isSenior() ? 'bg-white border-[#2D4A43]/40' : 'bg-slate-900 border-slate-700'">
+              <span class="text-xs font-bold uppercase tracking-wider block text-slate-500 mb-2">
+                Krok 3: Jaka jest prawidłowa i bezpieczna reakcja?
+              </span>
+
+              <div class="space-y-2">
+                <div
+                  *ngFor="let opt of getSafeActionOptions(currentScenario()!)"
+                  (click)="selectedActionId.set(opt.id)"
+                  class="p-3 rounded-xl border text-xs transition cursor-pointer flex items-start gap-2.5"
+                  [ngClass]="selectedActionId() === opt.id
+                    ? (isSenior() ? 'bg-[#2D4A43]/15 border-[#2D4A43] text-stone-950 font-bold' : 'bg-indigo-950 border-indigo-400 text-white font-bold')
+                    : (isSenior() ? 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600')">
+                  <span class="text-sm mt-[-1px]">{{ selectedActionId() === opt.id ? '🔘' : '⚪' }}</span>
+                  <span class="flex-1 leading-snug">{{ opt.text }}</span>
+                </div>
               </div>
 
-              <!-- DECISION BUTTONS -->
-              <div class="flex flex-col gap-3">
-                <!-- THREAT BUTTON -->
-                <button
-                  type="button"
-                  (click)="submitVerdict('threat')"
-                  [disabled]="isSubmitting()"
-                  class="p-4 rounded-xl flex items-center gap-3 border-2 transition transform active:scale-98 shadow-md text-left"
-                  [ngClass]="{
-                    'bg-rose-50 hover:bg-rose-100 border-rose-500 text-rose-950 font-bold': isSenior(),
-                    'bg-rose-900/60 hover:bg-rose-900/90 border-rose-500 text-white font-black': isKids(),
-                    'bg-rose-950/70 hover:bg-rose-900/80 border-rose-500 text-rose-200': !isSenior() && !isKids()
-                  }">
-                  <span class="text-3xl shrink-0">🚨</span>
-                  <div class="flex-1">
-                    <span class="block text-sm sm:text-base font-bold">
-                      {{ isSenior() ? 'To jest oszustwo / manipulacja' : '❌ FAKE / SCAM!' }}
-                    </span>
-                    <span class="block text-[11px] opacity-80 mt-0.5">
-                      {{ isSenior() ? 'Wykryto cechy przestępstwa lub sztuczny materiał' : 'Nie ufam tej treści, to próba manipulacji' }}
-                    </span>
-                  </div>
-                </button>
-
-                <!-- AUTHENTIC BUTTON -->
-                <button
-                  type="button"
-                  (click)="submitVerdict('authentic')"
-                  [disabled]="isSubmitting()"
-                  class="p-4 rounded-xl flex items-center gap-3 border-2 transition transform active:scale-98 shadow-md text-left"
-                  [ngClass]="{
-                    'bg-emerald-50 hover:bg-emerald-100 border-emerald-600 text-emerald-950 font-bold': isSenior(),
-                    'bg-emerald-900/60 hover:bg-emerald-900/90 border-emerald-500 text-white font-black': isKids(),
-                    'bg-emerald-950/70 hover:bg-emerald-900/80 border-emerald-500 text-emerald-200': !isSenior() && !isKids()
-                  }">
-                  <span class="text-3xl shrink-0">✅</span>
-                  <div class="flex-1">
-                    <span class="block text-sm sm:text-base font-bold">
-                      {{ isSenior() ? 'To autentyczna, prawdziwa informacja' : '✨ LEGIT / BEZPIECZNE!' }}
-                    </span>
-                    <span class="block text-[11px] opacity-80 mt-0.5">
-                      {{ isSenior() ? 'Wiarygodne źródło, brak oznak wyłudzenia' : 'Brak złośliwych elementów, treść potwierdzona' }}
-                    </span>
-                  </div>
-                </button>
-              </div>
+              <!-- SUBMIT TEST QUESTION BUTTON -->
+              <button
+                type="button"
+                (click)="submitTestAnswer()"
+                [disabled]="!selectedVerdict() || isSubmitting()"
+                class="w-full mt-4 py-3.5 rounded-xl font-black text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+                <span>{{ isSubmitting() ? 'Zapisywanie...' : 'Zatwierdź odpowiedź w teście ▶' }}</span>
+              </button>
             </div>
 
-            <!-- STAGE 3: EDUCATIONAL FEEDBACK & ACTION PLAN (POST SUBMISSION) -->
+            <!-- STAGE 3: TEST FEEDBACK & ACCURACY REPORT (POST SUBMISSION) -->
             <div
               *ngIf="submittedFeedback()"
               class="p-6 rounded-2xl border-2 shadow-2xl transition-all"
               [ngClass]="{
                 'bg-emerald-50 border-emerald-600 text-emerald-950': submittedFeedback()!.isCorrect && isSenior(),
                 'bg-amber-50 border-amber-600 text-amber-950': !submittedFeedback()!.isCorrect && isSenior(),
-                'bg-slate-900 border-emerald-500 text-white': submittedFeedback()!.isCorrect && isKids(),
-                'bg-slate-900 border-rose-500 text-white': !submittedFeedback()!.isCorrect && isKids(),
-                'bg-slate-800 border-cyan-500 text-white': !isSenior() && !isKids()
+                'bg-slate-900 border-emerald-500 text-white': submittedFeedback()!.isCorrect && !isSenior(),
+                'bg-slate-900 border-rose-500 text-white': !submittedFeedback()!.isCorrect && !isSenior()
               }">
               <div class="flex items-center gap-3 mb-4">
                 <span class="text-4xl">
                   {{ submittedFeedback()!.isCorrect ? '🎉' : '⚠️' }}
                 </span>
                 <div class="flex-1">
-                  <h3 class="text-lg sm:text-xl font-black">
+                  <h3 class="text-lg font-black">
                     {{ submittedFeedback()!.isCorrect
-                      ? (isSenior() ? 'Doskonale! Prawidłowa ocena sytuacji!' : 'Brawo Detektywie! Punkt dla Ciebie!')
+                      ? (isSenior() ? 'Doskonale! Prawidłowa ocena sytuacji!' : 'Brawo! Trafna ocena detektywie!')
                       : (currentScenario()!.is_authentic
-                          ? (isSenior() ? 'Uwaga: ta informacja była w 100% autentyczna!' : 'Spokojnie! Ta treść była prawdziwa!')
-                          : (isSenior() ? 'Uwaga na to zagrożenie!' : 'Ups! Nie daj się zmylić!')
-                        )
+                          ? 'Uwaga: Ta treść była w 100% autentyczna!'
+                          : 'Uwaga: To była próba manipulacji / wyłudzenia!')
                     }}
                   </h3>
                   <div class="text-xs font-semibold opacity-90 mt-0.5">
-                    Zdobyte punkty: <span class="font-mono text-sm font-black">+{{ submittedFeedback()!.scoreAwarded }} pkt</span>
+                    Przyznane punkty: <span class="font-mono text-sm font-black">+{{ submittedFeedback()!.scoreAwarded }} pkt</span>
                   </div>
                 </div>
               </div>
 
-              <!-- PEDAGOGIC ACTION PLAN -->
+              <!-- PEDAGOGIC ACTION RECAP -->
               <div class="space-y-3 pt-3 border-t border-black/15 dark:border-white/15">
-                <!-- Actionable real life advice -->
-                <div class="p-3.5 rounded-xl bg-black/5 dark:bg-white/10">
-                  <span class="text-xs font-bold uppercase tracking-wider block mb-1 flex items-center gap-1.5">
-                    <span>🛡️</span>
-                    <span>Wskazówka w życiu codziennym:</span>
-                  </span>
-                  <p class="text-xs sm:text-sm font-medium leading-relaxed">
-                    {{ currentScenario()!.safe_action_advice }}
-                  </p>
-                </div>
-
-                <!-- Clues recap -->
-                <div>
-                  <span class="text-xs font-bold uppercase tracking-wider block mb-1">
-                    {{ currentScenario()!.is_authentic ? 'Elementy potwierdzające autentyczność:' : 'Elementy zdradzające próbę manipulacji:' }}
-                  </span>
-                  <ul class="list-disc list-inside text-xs space-y-1">
-                    <li *ngFor="let flag of currentScenario()!.red_flags">
-                      <span class="font-medium">{{ flag }}</span>
-                    </li>
-                  </ul>
+                <div class="p-3.5 rounded-xl bg-black/5 dark:bg-white/10 text-xs">
+                  <span class="font-bold block mb-1">🛡️ Wskazówka praktyczna:</span>
+                  <p class="leading-relaxed">{{ currentScenario()!.safe_action_advice }}</p>
                 </div>
               </div>
 
-              <!-- NAVIGATION BUTTONS AFTER VERDICT -->
+              <!-- NAVIGATION BUTTONS AFTER TEST QUESTION -->
               <div class="mt-5 flex flex-col sm:flex-row gap-2.5">
                 <button
                   type="button"
                   (click)="showSummary()"
-                  class="flex-1 py-3 px-4 rounded-xl font-bold text-xs border transition shadow-sm flex items-center justify-center gap-1.5"
+                  class="flex-1 py-3 px-4 rounded-xl font-bold text-xs border transition shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                   [ngClass]="isSenior() ? 'bg-white hover:bg-stone-100 text-stone-800 border-stone-300' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border-slate-600'">
                   <span>🏆</span>
-                  <span>Wróć do Podsumowania</span>
+                  <span>Podsumowanie & Wyniki</span>
                 </button>
                 <button
                   type="button"
-                  (click)="goToNextScenario()"
-                  class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition shadow-lg flex items-center justify-center gap-2 active:scale-95"
+                  (click)="goToNextTestScenario()"
+                  class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                   [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-amber-400 hover:bg-amber-500 text-slate-950 font-black'">
-                  <span>{{ hasMoreScenarios() ? 'Następne zadanie ▶' : 'Zobacz wyniki 🏆' }}</span>
+                  <span>{{ hasMoreScenarios() ? 'Następne pytanie ▶' : 'Zakończ test i zobacz certyfikat 🏆' }}</span>
                 </button>
               </div>
             </div>
@@ -617,19 +826,19 @@ export interface ScenarioVerdictResult {
 
       </main>
 
-      <!-- COMPLETION & SUMMARY DEBRIEF SCREEN -->
+      <!-- COMPLETION & FINAL CERTIFICATE SUMMARY DEBRIEF SCREEN -->
       <section *ngIf="isCompleted()" class="max-w-4xl mx-auto my-8 px-4">
         <div class="p-8 rounded-3xl shadow-2xl border"
           [ngClass]="isSenior() ? 'bg-white border-stone-300 text-stone-900' : 'bg-slate-900 border-slate-800 text-white'">
 
           <!-- Top Banner -->
           <div class="text-center mb-8">
-            <span class="text-6xl block mb-3">🏆</span>
+            <span class="text-6xl block mb-3">🎓</span>
             <h2 class="text-3xl font-black mb-2 tracking-tight">
-              {{ isSenior() ? 'Podsumowanie Warsztatu: Bezpieczny Senior we Wrocławiu' : 'Finał Misji Cyber Detektywów!' }}
+              {{ isSenior() ? 'Gratulacje! Warsztat Ukończony Pomyślnie!' : 'Wielki Sukces! Certyfikat Cyber-Detektywa!' }}
             </h2>
             <p class="text-base max-w-2xl mx-auto leading-relaxed" [ngClass]="isSenior() ? 'text-stone-600' : 'text-slate-300'">
-              Przeanalizowałeś {{ scenarios().length }} scenariuszy opartych na autentycznych i manipulowanych komunikatach we Wrocławiu.
+              Ukończyłeś 20 minut przygotowania i 10-minutowy test wiedzy na autentycznych przypadkach z Wrocławia.
             </p>
 
             <div class="inline-block mt-4 px-8 py-3 rounded-2xl font-mono text-3xl font-black shadow-inner"
@@ -638,74 +847,84 @@ export interface ScenarioVerdictResult {
             </div>
           </div>
 
-          <!-- SCENARIO DEBRIEF CARDS -->
-          <div class="mb-8 space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
-              <h3 class="font-bold text-sm uppercase tracking-wider text-slate-500">
-                Przegląd Rozwiązanych Zadań:
-              </h3>
-              <span class="text-xs font-mono font-bold text-emerald-600">
-                {{ completedCount() }} / {{ scenarios().length }} ukończono
-              </span>
+          <!-- SUMMARY STATS -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="p-4 rounded-2xl border text-center"
+              [ngClass]="isSenior() ? 'bg-stone-50 border-stone-200' : 'bg-slate-800/80 border-slate-700'">
+              <span class="text-xs uppercase font-bold text-slate-500 block mb-1">Faza 1: Nauka</span>
+              <span class="text-xl font-bold text-emerald-600">20 minut ✓</span>
+              <span class="text-[11px] block text-slate-400 mt-0.5">Ukończona eksploracja</span>
             </div>
 
-            <div
-              *ngFor="let sc of scenarios(); let i = index"
-              class="p-4 rounded-2xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-              [ngClass]="isSenior() ? 'bg-stone-50 border-stone-200 hover:border-stone-400' : 'bg-slate-800/80 border-slate-700 hover:border-slate-600'">
-              <div class="flex items-start gap-3 flex-1">
-                <span class="text-2xl mt-0.5">{{ getPlatformIcon(sc.platform_mock) }}</span>
+            <div class="p-4 rounded-2xl border text-center"
+              [ngClass]="isSenior() ? 'bg-stone-50 border-stone-200' : 'bg-slate-800/80 border-slate-700'">
+              <span class="text-xs uppercase font-bold text-slate-500 block mb-1">Faza 2: Test Wiedzy</span>
+              <span class="text-xl font-bold text-amber-500">{{ completedCount() }} / {{ scenarios().length }}</span>
+              <span class="text-[11px] block text-slate-400 mt-0.5">Rozwiązane zadania</span>
+            </div>
+
+            <div class="p-4 rounded-2xl border text-center"
+              [ngClass]="isSenior() ? 'bg-stone-50 border-stone-200' : 'bg-slate-800/80 border-slate-700'">
+              <span class="text-xs uppercase font-bold text-slate-500 block mb-1">Tytuł Honorowy</span>
+              <span class="text-base font-black text-indigo-600 dark:text-indigo-400">
+                {{ isSenior() ? 'Świadomy Senior Wrocławia 🛡️' : 'Mistrz Cyber-Ochrony 🚀' }}
+              </span>
+              <span class="text-[11px] block text-slate-400 mt-0.5">Odznaka przyznana</span>
+            </div>
+          </div>
+
+          <!-- SCENARIO DEBRIEF CARDS -->
+          <div class="mb-8 space-y-3">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-slate-500 pb-2 border-b border-black/10 dark:border-white/10">
+              Przegląd Zadań i Werdyktów:
+            </h3>
+
+            <div *ngFor="let sc of scenarios(); let idx = index"
+              class="p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs"
+              [ngClass]="isSenior() ? 'bg-stone-50 border-stone-200' : 'bg-slate-800/60 border-slate-700'">
+              <div class="flex items-center gap-3">
+                <span class="text-xl">{{ getPlatformIcon(sc.platform_mock) }}</span>
                 <div>
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-bold text-sm">{{ i + 1 }}. {{ sc.author }}</span>
-                    <!-- Authentic vs Scam Tag -->
-                    <span class="text-[11px] px-2 py-0.5 rounded-full font-bold"
-                      [ngClass]="sc.is_authentic ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'">
-                      {{ sc.is_authentic ? '✅ Prawdziwa / Oficjalna' : '🚨 Klon / Manipulacja' }}
-                    </span>
-                  </div>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
-                    {{ sc.title }}
-                  </p>
+                  <div class="font-bold text-sm">{{ idx + 1 }}. {{ sc.title }}</div>
+                  <div class="opacity-75">Platforma: {{ sc.platform_mock }} • Nadawca: {{ sc.author }}</div>
                 </div>
               </div>
 
-              <!-- Participant Verdict & Action Button -->
-              <div class="flex items-center gap-3 self-end sm:self-center">
-                <div *ngIf="scenarioResults()[sc.id]" class="text-right">
-                  <span class="text-xs font-bold block" [ngClass]="scenarioResults()[sc.id].isCorrect ? 'text-emerald-600' : 'text-amber-500'">
-                    {{ scenarioResults()[sc.id].isCorrect ? 'Poprawnie (+100)' : 'Pomyłka (+25)' }}
-                  </span>
-                </div>
+              <div class="flex items-center gap-2">
+                <span *ngIf="scenarioResults()[sc.id]"
+                  class="px-3 py-1 rounded-full font-bold text-[11px]"
+                  [ngClass]="scenarioResults()[sc.id].isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'">
+                  {{ scenarioResults()[sc.id].isCorrect ? 'Poprawna ocena (+100)' : 'Błąd oceny (+25)' }}
+                </span>
+                <span *ngIf="!scenarioResults()[sc.id]"
+                  class="px-3 py-1 rounded-full bg-slate-200 text-slate-600 font-medium text-[11px]">
+                  Pominięte
+                </span>
                 <button
                   type="button"
-                  (click)="goToScenario(i)"
-                  class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
-                  [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
-                  <span>🔍</span>
-                  <span>Przejrzyj materiał</span>
+                  (click)="goToScenario(idx)"
+                  class="px-2.5 py-1 rounded-lg border text-[11px] font-bold hover:underline cursor-pointer">
+                  Przejrzyj
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Bottom Actions -->
-          <div class="flex flex-wrap items-center justify-center gap-4 pt-4 border-t border-black/10 dark:border-white/10">
-            <button
-              type="button"
-              (click)="goToScenario(0)"
-              class="px-6 py-3 rounded-xl font-bold text-sm bg-slate-700 hover:bg-slate-600 text-white transition flex items-center gap-2">
-              <span>←</span>
-              <span>Wróć do zadań (Przeglądaj od zadania 1)</span>
-            </button>
+          <!-- BOTTOM ACTIONS -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-black/10 dark:border-white/10">
             <button
               type="button"
               (click)="resetToFirst()"
-              class="px-6 py-3 rounded-xl font-bold text-sm transition border flex items-center gap-2"
-              [ngClass]="isSenior() ? 'border-stone-400 hover:bg-stone-100 text-stone-800' : 'border-slate-600 hover:bg-slate-800 text-slate-300'">
-              <span>🔄</span>
-              <span>Zacznij warsztat od nowa</span>
+              class="flex-1 py-3 px-6 rounded-xl font-bold text-sm border transition flex items-center justify-center gap-2 cursor-pointer"
+              [ngClass]="isSenior() ? 'bg-white hover:bg-stone-100 text-stone-800 border-stone-300' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600'">
+              <span>🔄 Przejdź do materiałów powtórkowych</span>
             </button>
+            <a
+              routerLink="/dashboard"
+              class="flex-1 py-3 px-6 rounded-xl font-bold text-sm transition shadow-lg flex items-center justify-center gap-2 text-center"
+              [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+              <span>Wróć do Pulpitu Głównego ➔</span>
+            </a>
           </div>
 
         </div>
@@ -727,11 +946,22 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
   loginInput = '';
   userScore = signal<number>(0);
 
+  // Phase & Timer Management (20m Learning + 10m Testing)
+  activePhase = signal<'LEARNING' | 'TESTING' | 'COMPLETED'>('LEARNING');
+  phaseTimeRemaining = signal<number>(1200); // 1200s (20 min) for LEARNING, 600s (10 min) for TESTING
+  timerRunning = signal<boolean>(true);
+  private timerIntervalId: any = null;
+
   currentIndex = signal<number>(0);
   selectedFlags = signal<string[]>([]);
+  selectedVerdict = signal<'threat' | 'authentic' | null>(null);
+  selectedActionId = signal<string>('opt_safe');
   isSubmitting = signal<boolean>(false);
   isCompleted = signal<boolean>(false);
   activeMobileTab = signal<'evidence' | 'analysis'>('evidence');
+
+  // Track explored clues per scenario in Learning Phase
+  exploredCluesMap = signal<Record<string, string[]>>({});
 
   scenarioResults = signal<Record<string, ScenarioVerdictResult>>({});
 
@@ -757,6 +987,13 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     return Object.keys(this.scenarioResults()).length;
   });
 
+  readonly formattedTime = computed<string>(() => {
+    const total = this.phaseTimeRemaining();
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  });
+
   isSenior(): boolean {
     return this.session()?.audience_mode === 'seniors';
   }
@@ -777,21 +1014,131 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     }
   }
 
+  getCategoryTitle(threat: string): string {
+    switch (threat?.toUpperCase()) {
+      case 'DEEPFAKE_AUDIO': return 'Syntetyczny Głos AI (Deepfake Audio)';
+      case 'DEEPFAKE_VIDEO': return 'Syntetyczne Wideo / Cyfrowy Awatar';
+      case 'PHISHING': return 'Fałszywa Strona / Wyłudzenie Logowania';
+      case 'DISINFORMATION': return 'Dezinformacja i Panika Medialna';
+      default: return 'Manipulacja Społeczna (Social Engineering)';
+    }
+  }
+
+  getEducationalGoalText(sc: StudioScenario): string {
+    if (sc.educational_goal) return sc.educational_goal;
+    if (sc.is_authentic) {
+      return 'Naucz się rozpoznawać cechy oficjalnych i zweryfikowanych komunikatów miejskich i instytucjonalnych.';
+    }
+    return `Zrozumienie, w jaki sposób przestępcy wykorzystują platformę ${sc.platform_mock} do wywołania pośpiechu i wyłudzenia danych lub pieniędzy.`;
+  }
+
+  getManipulationExplanation(sc: StudioScenario): string {
+    if (sc.manipulation_technique) return sc.manipulation_technique;
+    if (sc.is_authentic) {
+      return 'Oficjalny profil z historią publikacji, spójny język instytucjonalny, brak presji na podawanie poufnych haseł czy szybkich płatności.';
+    }
+    switch (sc.threat_category?.toUpperCase()) {
+      case 'DEEPFAKE_AUDIO':
+        return 'Sklonowany głos bliskiej osoby lub autorytetu, odtwarzający nagłą dramatyczną sytuację (wypadek, aresztowanie), by wyłączyć racjonalną ocenę.';
+      case 'PHISHING':
+        return 'Podrobiona strona logowania lub formularza dotacyjnego – różni się subtelną literówką w adresie URL i żąda poufnych danych.';
+      default:
+        return 'Emocjonalny szantaż, presja czasu ("tylko dzisiaj!") oraz prośba o zachowanie tajemnicy przed rodziną lub przełożonymi.';
+    }
+  }
+
+  getCluePedagogicHint(flag: string, sc: StudioScenario): string {
+    const f = flag.toLowerCase();
+    if (f.includes('głos') || f.includes('audio') || f.includes('brzmienie') || f.includes('oddech')) {
+      return 'Syntetyzatory mowy TTS często generują metaliczny pogłos lub pomijają naturalne mikro-pauzy na oddech.';
+    }
+    if (f.includes('blik') || f.includes('przelew') || f.includes('pieniędz') || f.includes('kaucj')) {
+      return 'Żądanie natychmiastowej wpłaty lub kodu BLIK przez telefon to klasyczny znak rozpoznawczy oszustwa.';
+    }
+    if (f.includes('url') || f.includes('adres') || f.includes('domena') || f.includes('kłódk')) {
+      return 'Sprawdzaj dokładnie pasek adresu: oszuści rejestrują podobnie wyglądające domeny (np. librus-portal.pl zamiast portal.librus.pl).';
+    }
+    if (f.includes('pośpiech') || f.includes('tajemnic') || f.includes('presj')) {
+      return 'Presja czasu ma uniemożliwić Ci kontakt z kimkolwiek z rodziny i spokojną weryfikację faktów.';
+    }
+    return 'Ten element pozwala odróżnić zweryfikowany przekaz od sfabrykowanej próby wyłudzenia.';
+  }
+
+  getSafeActionOptions(sc: StudioScenario): SafeActionOption[] {
+    const correctAdvice = sc.safe_action_advice ||
+      (sc.is_authentic
+        ? 'Możesz bezpiecznie skorzystać z tej oficjalnej informacji lub zweryfikować szczegóły na infolinii urzędu.'
+        : 'Rozłącz się lub zamknij stronę i natychmiast zweryfikuj sprawę znanym, oficjalnym kanałem.');
+
+    if (sc.is_authentic) {
+      return [
+        { id: 'opt_safe', text: correctAdvice, isCorrect: true },
+        { id: 'opt_danger', text: 'Zgłoś ten profil na policję i zażądaj natychmiastowej blokady strony.', isCorrect: false },
+        { id: 'opt_share', text: 'Udostępnij ostrzeżenie na wszystkich grupach bez sprawdzania faktów.', isCorrect: false }
+      ];
+    } else {
+      return [
+        { id: 'opt_safe', text: correctAdvice, isCorrect: true },
+        { id: 'opt_danger', text: 'Natychmiast zrób przelew BLIK lub kliknij link, aby uniknąć problemów.', isCorrect: false },
+        { id: 'opt_share', text: 'Prześlij wiadomość do znajomych z prośbą, by oni sprawdzili czy to prawda.', isCorrect: false }
+      ];
+    }
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('sessionId') || 'WROC-SENIOR-2026';
     this.sessionId.set(id);
     this.loadSession();
 
-    // Poll session updates every 4s for trainer broadcasts and tick advances
+    // 1-second countdown ticker
+    this.timerIntervalId = setInterval(() => {
+      if (this.timerRunning() && this.phaseTimeRemaining() > 0) {
+        this.phaseTimeRemaining.update((t) => t - 1);
+        if (this.phaseTimeRemaining() === 0) {
+          this.handleTimerExpired();
+        }
+      }
+    }, 1000);
+
+    // Poll session updates every 4s for trainer broadcasts and phase changes
     this.pollIntervalId = setInterval(() => {
       this.pollBroadcasts();
     }, 4000);
   }
 
   ngOnDestroy(): void {
-    if (this.pollIntervalId) {
-      clearInterval(this.pollIntervalId);
+    if (this.timerIntervalId) clearInterval(this.timerIntervalId);
+    if (this.pollIntervalId) clearInterval(this.pollIntervalId);
+  }
+
+  handleTimerExpired(): void {
+    if (this.activePhase() === 'LEARNING') {
+      // Auto-transition to Testing phase after 20 minutes
+      this.startTestingPhase();
+    } else if (this.activePhase() === 'TESTING') {
+      // Auto-transition to Completed/Summary after 10 minutes
+      this.showSummary();
     }
+  }
+
+  startTestingPhase(): void {
+    this.audioService.stop();
+    this.activePhase.set('TESTING');
+    this.phaseTimeRemaining.set(600); // 10 minutes for testing
+    this.currentIndex.set(0);
+    this.selectedVerdict.set(null);
+    this.selectedFlags.set([]);
+    this.submittedFeedback.set(null);
+    this.activeMobileTab.set('evidence');
+  }
+
+  returnToLearningPhase(): void {
+    this.audioService.stop();
+    this.activePhase.set('LEARNING');
+    this.phaseTimeRemaining.set(1200); // 20 minutes for learning
+    this.currentIndex.set(0);
+    this.submittedFeedback.set(null);
+    this.activeMobileTab.set('evidence');
   }
 
   loadSession(): void {
@@ -800,6 +1147,13 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.session.set(res);
         this.isLoading.set(false);
+
+        if (res.phase) {
+          this.activePhase.set(res.phase);
+          if (res.phase_timer_seconds !== undefined && res.phase_timer_seconds !== null) {
+            this.phaseTimeRemaining.set(res.phase_timer_seconds);
+          }
+        }
 
         // Pre-fill default participant if roster exists
         const rosterVals = Object.values(res.roster || {});
@@ -824,6 +1178,15 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     this.http.get<SessionData>(`/api/v1/sessions/${this.sessionId()}`).subscribe({
       next: (res) => {
         this.session.set(res);
+
+        // Check if trainer changed the phase remotely
+        if (res.phase && res.phase !== this.activePhase()) {
+          this.activePhase.set(res.phase);
+          if (res.phase === 'TESTING' && this.phaseTimeRemaining() > 600) {
+            this.phaseTimeRemaining.set(600);
+          }
+        }
+
         if (res.broadcast_hints && res.broadcast_hints.length > 0) {
           const newest = res.broadcast_hints[0];
           if (!this.latestBroadcast() || this.latestBroadcast()!.id !== newest.id) {
@@ -857,17 +1220,48 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     }
   }
 
-  submitVerdict(verdict: 'threat' | 'authentic'): void {
+  toggleClueExploration(scenarioId: string, flag: string): void {
+    const map = { ...this.exploredCluesMap() };
+    const list = map[scenarioId] ? [...map[scenarioId]] : [];
+    if (list.includes(flag)) {
+      map[scenarioId] = list.filter((item) => item !== flag);
+    } else {
+      map[scenarioId] = [...list, flag];
+    }
+    this.exploredCluesMap.set(map);
+  }
+
+  isClueExplored(scenarioId: string, flag: string): boolean {
+    const list = this.exploredCluesMap()[scenarioId] || [];
+    return list.includes(flag);
+  }
+
+  getExploredCluesCount(scenarioId: string): number {
+    return (this.exploredCluesMap()[scenarioId] || []).length;
+  }
+
+  isScenarioExplored(scenarioId: string): boolean {
+    const count = this.getExploredCluesCount(scenarioId);
+    return count > 0;
+  }
+
+  submitTestAnswer(): void {
     const sc = this.currentScenario();
-    if (!sc) return;
+    const verdict = this.selectedVerdict();
+    if (!sc || !verdict) return;
 
     this.isSubmitting.set(true);
     const isActuallyAuthentic = sc.is_authentic;
     const isCorrect = (verdict === 'authentic' && isActuallyAuthentic) ||
                       (verdict === 'threat' && !isActuallyAuthentic);
-    const scoreAwarded = isCorrect ? 100 : 25;
 
-    // Record verdict locally in scenario results
+    // Calculate score
+    let scoreAwarded = isCorrect ? 100 : 25;
+    if (this.selectedActionId() === 'opt_safe') {
+      scoreAwarded += 50;
+    }
+
+    // Save locally
     this.scenarioResults.update((prev) => ({
       ...prev,
       [sc.id]: {
@@ -875,6 +1269,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
         isCorrect,
         scoreAwarded,
         flags: this.selectedFlags(),
+        chosenAction: this.selectedActionId(),
       }
     }));
 
@@ -884,6 +1279,9 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
       flagged_elements: this.selectedFlags(),
       verdict: verdict === 'threat' ? 'SCAM' : 'AUTHENTIC',
       rationale: this.selectedFlags().join(', '),
+      is_correct: isCorrect,
+      score_awarded: scoreAwarded,
+      safe_action_chosen: this.selectedActionId(),
     };
 
     this.http.post(`/api/v1/sessions/${this.sessionId()}/submit-verdict`, payload).subscribe({
@@ -896,7 +1294,6 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
         });
       },
       error: () => {
-        // Fallback local update
         this.isSubmitting.set(false);
         this.userScore.set(this.userScore() + scoreAwarded);
         this.submittedFeedback.set({
@@ -921,13 +1318,42 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     const existing = sc ? this.scenarioResults()[sc.id] : null;
     if (existing) {
       this.selectedFlags.set(existing.flags || []);
+      this.selectedVerdict.set(existing.verdict);
       this.submittedFeedback.set({
         isCorrect: existing.isCorrect,
         scoreAwarded: existing.scoreAwarded,
       });
     } else {
       this.selectedFlags.set([]);
+      this.selectedVerdict.set(null);
       this.submittedFeedback.set(null);
+    }
+  }
+
+  goToPrevScenario(): void {
+    if (this.currentIndex() > 0) {
+      this.goToScenario(this.currentIndex() - 1);
+    }
+  }
+
+  goToNextScenario(): void {
+    if (this.hasMoreScenarios()) {
+      this.goToScenario(this.currentIndex() + 1);
+    }
+  }
+
+  goToNextTestScenario(): void {
+    this.audioService.stop();
+    this.submittedFeedback.set(null);
+    this.selectedFlags.set([]);
+    this.selectedVerdict.set(null);
+    this.selectedActionId.set('opt_safe');
+    this.activeMobileTab.set('evidence');
+
+    if (this.hasMoreScenarios()) {
+      this.goToScenario(this.currentIndex() + 1);
+    } else {
+      this.showSummary();
     }
   }
 
@@ -936,34 +1362,11 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     this.isCompleted.set(true);
   }
 
-  goToNextScenario(): void {
-    this.audioService.stop();
-    this.submittedFeedback.set(null);
-    this.selectedFlags.set([]);
-    this.activeMobileTab.set('evidence');
-
-    if (this.hasMoreScenarios()) {
-      const nextIdx = this.currentIndex() + 1;
-      this.currentIndex.set(nextIdx);
-      const sc = this.scenarios()[nextIdx];
-      const existing = sc ? this.scenarioResults()[sc.id] : null;
-      if (existing) {
-        this.selectedFlags.set(existing.flags || []);
-        this.submittedFeedback.set({
-          isCorrect: existing.isCorrect,
-          scoreAwarded: existing.scoreAwarded,
-        });
-      }
-    } else {
-      this.isCompleted.set(true);
-    }
-  }
-
   resetToFirst(): void {
     this.currentIndex.set(0);
     this.submittedFeedback.set(null);
     this.selectedFlags.set([]);
-    this.scenarioResults.set({});
+    this.selectedVerdict.set(null);
     this.isCompleted.set(false);
     this.activeMobileTab.set('evidence');
   }

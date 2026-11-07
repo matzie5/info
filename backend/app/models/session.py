@@ -9,6 +9,11 @@ class SessionStatus(str, Enum):
     PAUSED = "PAUSED"
     COMPLETED = "COMPLETED"
 
+class SessionPhase(str, Enum):
+    LEARNING = "LEARNING"
+    TESTING = "TESTING"
+    COMPLETED = "COMPLETED"
+
 class UserRole(str, Enum):
     FACILITATOR = "FACILITATOR"
     RED_TEAM = "RED_TEAM"
@@ -59,6 +64,9 @@ class StudioScenario(BaseModel):
     media_type: Optional[str] = None  # "AUDIO" | "VIDEO" | "IMAGE" | "URL"
     red_flags: List[str] = Field(default_factory=list)
     safe_action_advice: str = ""
+    educational_goal: Optional[str] = ""
+    manipulation_technique: Optional[str] = ""
+    learning_points: List[str] = Field(default_factory=list)
     is_authentic: bool = False
     cloned_website: Optional[Dict[str, Any]] = None
 
@@ -99,6 +107,12 @@ class Session(BaseModel):
     audience_mode: str = "professional"  # "professional" | "kids" | "seniors"
     location_name: Optional[str] = None
     status: SessionStatus = SessionStatus.LOBBY
+    phase: SessionPhase = SessionPhase.LEARNING
+    phase_timer_seconds: int = 1200
+    phase_timer_running: bool = False
+    phase_started_at: Optional[float] = None
+    learning_duration_minutes: int = 20
+    testing_duration_minutes: int = 10
     current_tick: int = 0
     max_ticks: int = 40
     time_per_tick_seconds: int = 10

@@ -12,6 +12,12 @@ export enum SessionStatus {
   COMPLETED = 'COMPLETED'
 }
 
+export enum SessionPhase {
+  LEARNING = 'LEARNING',
+  TESTING = 'TESTING',
+  COMPLETED = 'COMPLETED'
+}
+
 export enum DemographicCluster {
   HYPER_PARTISAN_A = 'Hyper-Partisan A',
   HYPER_PARTISAN_B = 'Hyper-Partisan B',
@@ -108,6 +114,12 @@ export interface Session {
   title: string;
   scenario_id: string;
   status: SessionStatus;
+  phase?: SessionPhase;
+  phase_timer_seconds?: number;
+  phase_timer_running?: boolean;
+  phase_started_at?: number;
+  learning_duration_minutes?: number;
+  testing_duration_minutes?: number;
   current_tick: number;
   max_ticks: number;
   language: string;
