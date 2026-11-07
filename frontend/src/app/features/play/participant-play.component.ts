@@ -51,6 +51,13 @@ export interface SessionData {
   broadcast_hints?: TrainerBroadcast[];
 }
 
+export interface ScenarioVerdictResult {
+  verdict: 'threat' | 'authentic';
+  isCorrect: boolean;
+  scoreAwarded: number;
+  flags: string[];
+}
+
 @Component({
   selector: 'app-participant-play',
   standalone: true,
@@ -124,7 +131,7 @@ export interface SessionData {
               </span>
             </div>
             <p class="text-xs text-indigo-200">
-              Nie daj się nabrać botom, deepfake'om i fałszywym konkursom!
+              Nie daj się nabrać botom, deepfake'om i fałszywym stronom!
             </p>
           </div>
         </div>
@@ -162,8 +169,44 @@ export interface SessionData {
         </div>
       </header>
 
+      <!-- PERSISTENT SCENARIO & SUMMARY NAVIGATION BAR -->
+      <nav *ngIf="currentUser && scenarios().length > 0" class="max-w-7xl mx-auto px-4 mt-3 flex items-center justify-between gap-2 overflow-x-auto pb-1 select-none">
+        <div class="flex items-center gap-1.5 overflow-x-auto py-1">
+          <button
+            *ngFor="let sc of scenarios(); let idx = index"
+            type="button"
+            (click)="goToScenario(idx)"
+            [ngClass]="{
+              'bg-[#2D4A43] text-white ring-2 ring-[#E2B771] font-bold shadow-sm': isSenior() && currentIndex() === idx && !isCompleted(),
+              'bg-white text-stone-700 border border-stone-300 hover:bg-stone-100': isSenior() && (currentIndex() !== idx || isCompleted()),
+              'bg-indigo-600 text-white ring-2 ring-amber-400 font-bold shadow-md': !isSenior() && currentIndex() === idx && !isCompleted(),
+              'bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700': !isSenior() && (currentIndex() !== idx || isCompleted())
+            }"
+            class="px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition whitespace-nowrap">
+            <span>{{ getPlatformIcon(sc.platform_mock) }}</span>
+            <span>{{ idx + 1 }}. {{ sc.author }}</span>
+            <span *ngIf="scenarioResults()[sc.id]" class="font-bold text-[11px]" [ngClass]="scenarioResults()[sc.id].isCorrect ? 'text-emerald-400' : 'text-amber-400'">✓</span>
+          </button>
+        </div>
+
+        <!-- SUMMARY SHORTCUT BUTTON -->
+        <button
+          type="button"
+          (click)="showSummary()"
+          [ngClass]="{
+            'bg-[#E2B771] text-stone-900 font-black shadow-md ring-2 ring-[#2D4A43]': isSenior() && isCompleted(),
+            'bg-[#2D4A43]/15 hover:bg-[#2D4A43]/25 text-stone-800 font-bold border border-stone-300': isSenior() && !isCompleted(),
+            'bg-amber-400 text-slate-950 font-black shadow-lg ring-2 ring-pink-500': !isSenior() && isCompleted(),
+            'bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold border border-slate-700': !isSenior() && !isCompleted()
+          }"
+          class="px-4 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition shrink-0 cursor-pointer">
+          <span>🏆</span>
+          <span>Podsumowanie</span>
+        </button>
+      </nav>
+
       <!-- LIVE TRAINER BROADCAST BANNER (if any) -->
-      <div *ngIf="latestBroadcast()" class="max-w-7xl mx-auto px-4 mt-4">
+      <div *ngIf="latestBroadcast()" class="max-w-7xl mx-auto px-4 mt-3">
         <div
           class="p-4 rounded-2xl border-2 shadow-lg flex items-start gap-3 transition-all animate-bounce"
           [ngClass]="{
@@ -242,7 +285,8 @@ export interface SessionData {
       </div>
 
       <!-- MAIN SCENARIO WORKBENCH (TWO COLUMN LAYOUT) -->
-      <main *ngIf="currentUser && currentScenario()" class="max-w-7xl mx-auto px-4 py-6">
+      <!-- Only rendered when active scenario exists AND not in summary mode -->
+      <main *ngIf="currentUser && currentScenario() && !isCompleted()" class="max-w-7xl mx-auto px-4 py-5">
 
         <!-- MOBILE TAB SWITCHER (visible only on small screens) -->
         <div class="flex lg:hidden mb-4 p-1 rounded-xl bg-slate-200 dark:bg-slate-800">
@@ -259,82 +303,40 @@ export interface SessionData {
             (click)="activeMobileTab.set('analysis')"
             [ngClass]="activeMobileTab() === 'analysis' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400'"
             class="flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2">
-            <span>🕵️‍♂️</span>
-            <span>Analiza & Decyzja</span>
-            <span *ngIf="selectedFlags().length > 0" class="px-1.5 py-0.2 rounded-full bg-amber-500 text-white text-[10px]">
-              {{ selectedFlags().length }}
-            </span>
+            <span>🕵️</span>
+            <span>Panel Analizy & Decyzji</span>
           </button>
         </div>
 
-        <!-- TWO COLUMN RESPONSIVE GRID -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-          <!-- LEFT COLUMN: AUTHENTIC EVIDENCE SIMULATOR (Sticky on Desktop) -->
+          <!-- LEFT COLUMN: AUTHENTIC PLATFORM SIMULATOR (EVIDENCE) -->
           <section
             class="lg:col-span-7 xl:col-span-7 flex flex-col gap-4"
             [ngClass]="{'hidden lg:flex': activeMobileTab() === 'analysis'}">
 
-            <!-- SCENARIO BRIEFING HEADER BAR -->
-            <div
-              class="p-4 rounded-2xl border transition-all"
-              [ngClass]="{
-                'bg-amber-50/70 border-amber-300 shadow-sm': isSenior(),
-                'bg-slate-900/90 border-indigo-500/40 shadow-xl': isKids(),
-                'bg-slate-800 border-slate-700': !isSenior() && !isKids()
-              }">
-              <div class="flex items-center justify-between flex-wrap gap-2">
-                <div class="flex items-center gap-2">
-                  <span class="text-xl">{{ isSenior() ? '🔎' : '⚡' }}</span>
-                  <h2
-                    class="font-black tracking-tight"
-                    [ngClass]="isSenior() ? 'text-lg text-stone-900' : 'text-base text-white'">
-                    {{ currentScenario()!.title }}
-                  </h2>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span
-                    class="px-2.5 py-1 rounded-full text-xs font-mono font-bold"
-                    [ngClass]="isSenior() ? 'bg-amber-200 text-stone-800' : 'bg-indigo-900/60 text-indigo-300 border border-indigo-700'">
-                    {{ currentScenario()!.platform_mock | uppercase }}
-                  </span>
-                  <span
-                    class="px-2 py-0.5 rounded text-[11px] font-bold"
-                    [ngClass]="currentScenario()!.threat_category === 'DEEPFAKE_AUDIO' ? 'bg-purple-900 text-purple-200' : 'bg-rose-900 text-rose-200'">
-                    {{ currentScenario()!.threat_category }}
-                  </span>
-                </div>
-              </div>
+            <!-- Dynamic Platform Mock Dispatcher -->
+            <div [ngSwitch]="currentScenario()!.platform_mock">
 
-              <p class="mt-2 text-xs sm:text-sm" [ngClass]="isSenior() ? 'text-stone-700 text-sm leading-relaxed' : 'text-slate-300'">
-                {{ isSenior()
-                  ? 'Zbadaj dokładnie poniższy materiał dowodowy. Sprawdź treść, adresy i nagrania w symulatorze po lewej stronie, a swoje wnioski zaznacz w panelu po prawej.'
-                  : 'Zbadaj ten dowód! Sprawdź czy to autentyczna wiadomość, czy pułapka przygotowana przez boty lub oszustów.'
-                }}
-              </p>
-            </div>
-
-            <!-- SIMULATOR CONTAINER -->
-            <div class="w-full" [ngSwitch]="currentScenario()!.platform_mock">
               <!-- WHATSAPP MOCK -->
               <app-whatsapp-mock
-                *ngSwitchCase="'whatsapp'"
+                *ngSwitchCase="'WHATSAPP'"
+                [title]="currentScenario()!.title"
                 [author]="currentScenario()!.author"
-                [authorAvatar]="currentScenario()!.author_avatar || ''"
-                [verified]="currentScenario()!.verified"
+                [authorHandle]="currentScenario()!.author_handle || ''"
                 [content]="currentScenario()!.content"
                 [mediaUrl]="currentScenario()!.media_url || ''"
+                [mediaType]="currentScenario()!.media_type || 'TEXT'"
                 [redFlags]="currentScenario()!.red_flags"
+                [isSenior]="isSenior()"
                 (flagSelected)="onFlagsChanged($event)">
               </app-whatsapp-mock>
 
               <!-- TIKTOK MOCK -->
               <app-tiktok-mock
-                *ngSwitchCase="'tiktok'"
+                *ngSwitchCase="'TIKTOK'"
                 [author]="currentScenario()!.author"
                 [authorHandle]="currentScenario()!.author_handle || ''"
-                [authorAvatar]="currentScenario()!.author_avatar || ''"
-                [verified]="currentScenario()!.verified"
                 [title]="currentScenario()!.title"
                 [content]="currentScenario()!.content"
                 [mediaUrl]="currentScenario()!.media_url || ''"
@@ -344,18 +346,18 @@ export interface SessionData {
 
               <!-- FACEBOOK MOCK -->
               <app-facebook-mock
-                *ngSwitchCase="'facebook'"
+                *ngSwitchCase="'FACEBOOK'"
                 [author]="currentScenario()!.author"
-                [authorAvatar]="currentScenario()!.author_avatar || ''"
                 [title]="currentScenario()!.title"
                 [content]="currentScenario()!.content"
                 [redFlags]="currentScenario()!.red_flags"
+                [isSenior]="isSenior()"
                 (flagSelected)="onFlagsChanged($event)">
               </app-facebook-mock>
 
               <!-- YOUTUBE MOCK -->
               <app-youtube-mock
-                *ngSwitchCase="'youtube'"
+                *ngSwitchCase="'YOUTUBE'"
                 [author]="currentScenario()!.author"
                 [title]="currentScenario()!.title"
                 [content]="currentScenario()!.content"
@@ -374,6 +376,8 @@ export interface SessionData {
                 [clonedWebsite]="currentScenario()!.cloned_website"
                 [redFlags]="currentScenario()!.red_flags"
                 [isSenior]="isSenior()"
+                [isAuthentic]="currentScenario()!.is_authentic"
+                [mediaUrl]="currentScenario()!.media_url"
                 (flagSelected)="onFlagsChanged($event)">
               </app-browser-mock>
             </div>
@@ -382,13 +386,13 @@ export interface SessionData {
             <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
               <span class="flex items-center gap-1.5">
                 <span>💡</span>
-                <span>Wskazówka: Kliknij na podejrzane słowa lub paski adresu, by zbadać szczegóły dowodu.</span>
+                <span>Wskazówka: Zbadaj nadawcę, adres strony lub treść nagrania, a następnie wybierz odpowiedź w panelu po prawej.</span>
               </span>
               <button
                 type="button"
                 (click)="activeMobileTab.set('analysis')"
                 class="lg:hidden text-indigo-600 font-bold hover:underline">
-                Przejdź do werdyktu →
+                Przejdź do oceny →
               </button>
             </div>
           </section>
@@ -397,6 +401,26 @@ export interface SessionData {
           <section
             class="lg:col-span-5 xl:col-span-5 flex flex-col gap-5 lg:sticky lg:top-6"
             [ngClass]="{'hidden lg:flex': activeMobileTab() === 'evidence'}">
+
+            <!-- WORKBENCH HEADER & SUMMARY JUMP -->
+            <div class="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Zadanie {{ currentIndex() + 1 }} z {{ scenarios().length }}
+                </span>
+                <span *ngIf="scenarioResults()[currentScenario()!.id]" class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800">
+                  Rozwiązane ✓
+                </span>
+              </div>
+              <button
+                type="button"
+                (click)="showSummary()"
+                class="text-xs font-bold px-3 py-1 rounded-lg border flex items-center gap-1.5 transition"
+                [ngClass]="isSenior() ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200' : 'bg-slate-800 text-amber-300 border-slate-700 hover:bg-slate-700'">
+                <span>🏆</span>
+                <span>Podsumowanie</span>
+              </button>
+            </div>
 
             <!-- STAGE 1: ACTIVE CLUE CHECKLIST -->
             <div
@@ -408,9 +432,9 @@ export interface SessionData {
               }">
               <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2">
-                  <span class="text-xl">🚩</span>
+                  <span class="text-xl">{{ currentScenario()!.is_authentic ? '🛡️' : '🚩' }}</span>
                   <h3 class="font-bold text-sm uppercase tracking-wider" [ngClass]="isSenior() ? 'text-stone-900' : 'text-slate-100'">
-                    Krok 1: Wskaż podejrzane sygnały
+                    {{ currentScenario()!.is_authentic ? 'Krok 1: Wskaż cechy wiarygodności' : 'Krok 1: Wskaż podejrzane sygnały' }}
                   </h3>
                 </div>
                 <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full"
@@ -420,7 +444,10 @@ export interface SessionData {
               </div>
 
               <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                Zaznacz elementy, które wzbudzają Twoje wątpliwości lub zdradzają oszustwo:
+                {{ currentScenario()!.is_authentic
+                  ? 'Zaznacz elementy potwierdzające, że materiał pochodzi z oficjalnego i bezpiecznego źródła:'
+                  : 'Zaznacz elementy, które wzbudzają Twoje wątpliwości lub zdradzają próbę manipulacji:'
+                }}
               </p>
 
               <div class="flex flex-col gap-2">
@@ -525,7 +552,10 @@ export interface SessionData {
                   <h3 class="text-lg sm:text-xl font-black">
                     {{ submittedFeedback()!.isCorrect
                       ? (isSenior() ? 'Doskonale! Prawidłowa ocena sytuacji!' : 'Brawo Detektywie! Punkt dla Ciebie!')
-                      : (isSenior() ? 'Uwaga na to zagrożenie!' : 'Ups! Nie daj się zmylić!')
+                      : (currentScenario()!.is_authentic
+                          ? (isSenior() ? 'Uwaga: ta informacja była w 100% autentyczna!' : 'Spokojnie! Ta treść była prawdziwa!')
+                          : (isSenior() ? 'Uwaga na to zagrożenie!' : 'Ups! Nie daj się zmylić!')
+                        )
                     }}
                   </h3>
                   <div class="text-xs font-semibold opacity-90 mt-0.5">
@@ -540,7 +570,7 @@ export interface SessionData {
                 <div class="p-3.5 rounded-xl bg-black/5 dark:bg-white/10">
                   <span class="text-xs font-bold uppercase tracking-wider block mb-1 flex items-center gap-1.5">
                     <span>🛡️</span>
-                    <span>Jak bezpiecznie zareagować w życiu codziennym:</span>
+                    <span>Wskazówka w życiu codziennym:</span>
                   </span>
                   <p class="text-xs sm:text-sm font-medium leading-relaxed">
                     {{ currentScenario()!.safe_action_advice }}
@@ -550,7 +580,7 @@ export interface SessionData {
                 <!-- Clues recap -->
                 <div>
                   <span class="text-xs font-bold uppercase tracking-wider block mb-1">
-                    Elementy decydujące o manipulacji:
+                    {{ currentScenario()!.is_authentic ? 'Elementy potwierdzające autentyczność:' : 'Elementy zdradzające próbę manipulacji:' }}
                   </span>
                   <ul class="list-disc list-inside text-xs space-y-1">
                     <li *ngFor="let flag of currentScenario()!.red_flags">
@@ -560,14 +590,22 @@ export interface SessionData {
                 </div>
               </div>
 
-              <!-- NEXT SCENARIO BUTTON -->
-              <div class="mt-5 flex justify-end">
+              <!-- NAVIGATION BUTTONS AFTER VERDICT -->
+              <div class="mt-5 flex flex-col sm:flex-row gap-2.5">
+                <button
+                  type="button"
+                  (click)="showSummary()"
+                  class="flex-1 py-3 px-4 rounded-xl font-bold text-xs border transition shadow-sm flex items-center justify-center gap-1.5"
+                  [ngClass]="isSenior() ? 'bg-white hover:bg-stone-100 text-stone-800 border-stone-300' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border-slate-600'">
+                  <span>🏆</span>
+                  <span>Wróć do Podsumowania</span>
+                </button>
                 <button
                   type="button"
                   (click)="goToNextScenario()"
-                  class="w-full py-3 px-4 rounded-xl font-bold text-sm transition shadow-lg flex items-center justify-center gap-2 active:scale-95"
+                  class="flex-1 py-3 px-4 rounded-xl font-bold text-sm transition shadow-lg flex items-center justify-center gap-2 active:scale-95"
                   [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-amber-400 hover:bg-amber-500 text-slate-950 font-black'">
-                  <span>{{ hasMoreScenarios() ? 'Przejdź do następnego zadania ▶' : 'Zobacz podsumowanie warsztatu 🏆' }}</span>
+                  <span>{{ hasMoreScenarios() ? 'Następne zadanie ▶' : 'Zobacz wyniki 🏆' }}</span>
                 </button>
               </div>
             </div>
@@ -578,31 +616,99 @@ export interface SessionData {
 
       </main>
 
-      <!-- COMPLETION SCREEN -->
-      <div *ngIf="isCompleted()" class="max-w-2xl mx-auto my-12 p-8 rounded-3xl text-center shadow-2xl border"
-        [ngClass]="isSenior() ? 'bg-white border-stone-300' : 'bg-slate-900 border-slate-800'">
-        <span class="text-6xl block mb-4">🏆</span>
-        <h2 class="text-3xl font-black mb-2" [ngClass]="isSenior() ? 'text-stone-900' : 'text-white'">
-          {{ isSenior() ? 'Gratulacje! Warsztat zakończony pomyślnie!' : 'Misja Wykonana! Jesteś Mistrzem Fact-Checkingu!' }}
-        </h2>
-        <p class="text-base mb-6" [ngClass]="isSenior() ? 'text-stone-600' : 'text-slate-300'">
-          Poznałeś techniki dezinformacji i oszustw we Wrocławiu. Zdobyte umiejętności pozwolą Ci bezpiecznie korzystać z Internetu i komunikatorów!
-        </p>
+      <!-- COMPLETION & SUMMARY DEBRIEF SCREEN -->
+      <section *ngIf="isCompleted()" class="max-w-4xl mx-auto my-8 px-4">
+        <div class="p-8 rounded-3xl shadow-2xl border"
+          [ngClass]="isSenior() ? 'bg-white border-stone-300 text-stone-900' : 'bg-slate-900 border-slate-800 text-white'">
 
-        <div class="inline-block px-8 py-4 rounded-2xl mb-6 font-mono text-3xl font-black"
-          [ngClass]="isSenior() ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-indigo-900 text-amber-300 border border-amber-400'">
-          Twój wynik: {{ userScore() }} pkt
-        </div>
+          <!-- Top Banner -->
+          <div class="text-center mb-8">
+            <span class="text-6xl block mb-3">🏆</span>
+            <h2 class="text-3xl font-black mb-2 tracking-tight">
+              {{ isSenior() ? 'Podsumowanie Warsztatu: Bezpieczny Senior we Wrocławiu' : 'Finał Misji Cyber Detektywów!' }}
+            </h2>
+            <p class="text-base max-w-2xl mx-auto leading-relaxed" [ngClass]="isSenior() ? 'text-stone-600' : 'text-slate-300'">
+              Przeanalizowałeś {{ scenarios().length }} scenariuszy opartych na autentycznych i manipulowanych komunikatach we Wrocławiu.
+            </p>
 
-        <div>
-          <button
-            type="button"
-            (click)="resetToFirst()"
-            class="px-6 py-3 rounded-xl font-bold text-sm bg-slate-700 hover:bg-slate-600 text-white transition">
-            Zacznij od nowa
-          </button>
+            <div class="inline-block mt-4 px-8 py-3 rounded-2xl font-mono text-3xl font-black shadow-inner"
+              [ngClass]="isSenior() ? 'bg-amber-100 text-amber-900 border-2 border-amber-300' : 'bg-indigo-900 text-amber-300 border-2 border-amber-400'">
+              Twój Wynik: {{ userScore() }} pkt
+            </div>
+          </div>
+
+          <!-- SCENARIO DEBRIEF CARDS -->
+          <div class="mb-8 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-black/10 dark:border-white/10">
+              <h3 class="font-bold text-sm uppercase tracking-wider text-slate-500">
+                Przegląd Rozwiązanych Zadań:
+              </h3>
+              <span class="text-xs font-mono font-bold text-emerald-600">
+                {{ completedCount() }} / {{ scenarios().length }} ukończono
+              </span>
+            </div>
+
+            <div
+              *ngFor="let sc of scenarios(); let i = index"
+              class="p-4 rounded-2xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+              [ngClass]="isSenior() ? 'bg-stone-50 border-stone-200 hover:border-stone-400' : 'bg-slate-800/80 border-slate-700 hover:border-slate-600'">
+              <div class="flex items-start gap-3 flex-1">
+                <span class="text-2xl mt-0.5">{{ getPlatformIcon(sc.platform_mock) }}</span>
+                <div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-sm">{{ i + 1 }}. {{ sc.author }}</span>
+                    <!-- Authentic vs Scam Tag -->
+                    <span class="text-[11px] px-2 py-0.5 rounded-full font-bold"
+                      [ngClass]="sc.is_authentic ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'">
+                      {{ sc.is_authentic ? '✅ Prawdziwa / Oficjalna' : '🚨 Klon / Manipulacja' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                    {{ sc.title }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Participant Verdict & Action Button -->
+              <div class="flex items-center gap-3 self-end sm:self-center">
+                <div *ngIf="scenarioResults()[sc.id]" class="text-right">
+                  <span class="text-xs font-bold block" [ngClass]="scenarioResults()[sc.id].isCorrect ? 'text-emerald-600' : 'text-amber-500'">
+                    {{ scenarioResults()[sc.id].isCorrect ? 'Poprawnie (+100)' : 'Pomyłka (+25)' }}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  (click)="goToScenario(i)"
+                  class="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+                  [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+                  <span>🔍</span>
+                  <span>Przejrzyj materiał</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Actions -->
+          <div class="flex flex-wrap items-center justify-center gap-4 pt-4 border-t border-black/10 dark:border-white/10">
+            <button
+              type="button"
+              (click)="goToScenario(0)"
+              class="px-6 py-3 rounded-xl font-bold text-sm bg-slate-700 hover:bg-slate-600 text-white transition flex items-center gap-2">
+              <span>←</span>
+              <span>Wróć do zadań (Przeglądaj od zadania 1)</span>
+            </button>
+            <button
+              type="button"
+              (click)="resetToFirst()"
+              class="px-6 py-3 rounded-xl font-bold text-sm transition border flex items-center gap-2"
+              [ngClass]="isSenior() ? 'border-stone-400 hover:bg-stone-100 text-stone-800' : 'border-slate-600 hover:bg-slate-800 text-slate-300'">
+              <span>🔄</span>
+              <span>Zacznij warsztat od nowa</span>
+            </button>
+          </div>
+
         </div>
-      </div>
+      </section>
 
     </div>
   `,
@@ -626,6 +732,8 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
   isCompleted = signal<boolean>(false);
   activeMobileTab = signal<'evidence' | 'analysis'>('evidence');
 
+  scenarioResults = signal<Record<string, ScenarioVerdictResult>>({});
+
   submittedFeedback = signal<{
     isCorrect: boolean;
     scoreAwarded: number;
@@ -644,6 +752,9 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     const r = this.session()?.roster || {};
     return Object.values(r);
   });
+  readonly completedCount = computed<number>(() => {
+    return Object.keys(this.scenarioResults()).length;
+  });
 
   isSenior(): boolean {
     return this.session()?.audience_mode === 'seniors';
@@ -651,6 +762,18 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
 
   isKids(): boolean {
     return this.session()?.audience_mode === 'kids';
+  }
+
+  getPlatformIcon(mock: string): string {
+    switch (mock?.toUpperCase()) {
+      case 'WHATSAPP': return '💬';
+      case 'TIKTOK': return '📱';
+      case 'FACEBOOK': return '👥';
+      case 'YOUTUBE': return '▶️';
+      case 'BROWSER':
+      default:
+        return '🌐';
+    }
   }
 
   ngOnInit(): void {
@@ -743,6 +866,17 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
                       (verdict === 'threat' && !isActuallyAuthentic);
     const scoreAwarded = isCorrect ? 100 : 25;
 
+    // Record verdict locally in scenario results
+    this.scenarioResults.update((prev) => ({
+      ...prev,
+      [sc.id]: {
+        verdict,
+        isCorrect,
+        scoreAwarded,
+        flags: this.selectedFlags(),
+      }
+    }));
+
     const payload = {
       username: this.currentUser || 'anonymous',
       scenario_id: sc.id,
@@ -776,6 +910,31 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     return this.currentIndex() < this.scenarios().length - 1;
   }
 
+  goToScenario(idx: number): void {
+    this.audioService.stop();
+    this.currentIndex.set(idx);
+    this.isCompleted.set(false);
+    this.activeMobileTab.set('evidence');
+
+    const sc = this.scenarios()[idx];
+    const existing = sc ? this.scenarioResults()[sc.id] : null;
+    if (existing) {
+      this.selectedFlags.set(existing.flags || []);
+      this.submittedFeedback.set({
+        isCorrect: existing.isCorrect,
+        scoreAwarded: existing.scoreAwarded,
+      });
+    } else {
+      this.selectedFlags.set([]);
+      this.submittedFeedback.set(null);
+    }
+  }
+
+  showSummary(): void {
+    this.audioService.stop();
+    this.isCompleted.set(true);
+  }
+
   goToNextScenario(): void {
     this.audioService.stop();
     this.submittedFeedback.set(null);
@@ -783,7 +942,17 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     this.activeMobileTab.set('evidence');
 
     if (this.hasMoreScenarios()) {
-      this.currentIndex.set(this.currentIndex() + 1);
+      const nextIdx = this.currentIndex() + 1;
+      this.currentIndex.set(nextIdx);
+      const sc = this.scenarios()[nextIdx];
+      const existing = sc ? this.scenarioResults()[sc.id] : null;
+      if (existing) {
+        this.selectedFlags.set(existing.flags || []);
+        this.submittedFeedback.set({
+          isCorrect: existing.isCorrect,
+          scoreAwarded: existing.scoreAwarded,
+        });
+      }
     } else {
       this.isCompleted.set(true);
     }
@@ -793,6 +962,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     this.currentIndex.set(0);
     this.submittedFeedback.set(null);
     this.selectedFlags.set([]);
+    this.scenarioResults.set({});
     this.isCompleted.set(false);
     this.activeMobileTab.set('evidence');
   }
