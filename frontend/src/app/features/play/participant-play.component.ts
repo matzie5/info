@@ -59,11 +59,18 @@ export interface SessionData {
   broadcast_hints?: TrainerBroadcast[];
 }
 
+export interface JustificationOption {
+  id: string;
+  text: string;
+  isCorrectArgument: boolean;
+}
+
 export interface ScenarioVerdictResult {
   verdict: 'threat' | 'authentic';
   isCorrect: boolean;
   scoreAwarded: number;
   flags: string[];
+  justifications?: string[];
   chosenAction?: string;
 }
 
@@ -661,7 +668,7 @@ export interface SafeActionOption {
               </div>
             </div>
 
-            <!-- STEP 1: VERDICT SELECTION -->
+            <!-- STEP 1: VERDICT SELECTION (REAL VS FAKE) -->
             <div
               *ngIf="!submittedFeedback()"
               class="p-5 rounded-2xl border-2 transition-all shadow-md"
@@ -671,79 +678,84 @@ export interface SafeActionOption {
                   Krok 1: Twój Werdykt
                 </span>
                 <h3 class="font-black" [ngClass]="isSenior() ? 'text-lg text-stone-900' : 'text-base text-white'">
-                  Czy ta treść jest próbą oszustwa czy autentyczną informacją?
+                  Czy ta treść jest prawdziwa czy fałszywa?
                 </h3>
               </div>
 
-              <!-- Threat vs Authentic buttons -->
+              <!-- Threat (Fake) vs Authentic (Real) buttons -->
               <div class="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  (click)="selectedVerdict.set('threat')"
+                  (click)="selectVerdict('threat')"
                   [ngClass]="selectedVerdict() === 'threat'
                     ? 'ring-4 ring-rose-500 bg-rose-100 border-rose-600 text-rose-950 font-black shadow-md'
                     : 'bg-stone-50 hover:bg-stone-100 border-stone-300 text-stone-800 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'"
                   class="p-3.5 rounded-xl border-2 text-center transition flex flex-col items-center gap-1 cursor-pointer">
                   <span class="text-2xl">🚨</span>
-                  <span class="text-xs font-bold">Manipulacja / SCAM</span>
+                  <span class="text-xs sm:text-sm font-bold">Fałszywa (Manipulacja / SCAM)</span>
                 </button>
 
                 <button
                   type="button"
-                  (click)="selectedVerdict.set('authentic')"
+                  (click)="selectVerdict('authentic')"
                   [ngClass]="selectedVerdict() === 'authentic'
                     ? 'ring-4 ring-emerald-500 bg-emerald-100 border-emerald-600 text-emerald-950 font-black shadow-md'
                     : 'bg-stone-50 hover:bg-stone-100 border-stone-300 text-stone-800 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'"
                   class="p-3.5 rounded-xl border-2 text-center transition flex flex-col items-center gap-1 cursor-pointer">
                   <span class="text-2xl">✅</span>
-                  <span class="text-xs font-bold">Prawdziwa / Bezpieczna</span>
+                  <span class="text-xs sm:text-sm font-bold">Prawdziwa (Oficjalna / Bezpieczna)</span>
                 </button>
               </div>
             </div>
 
-            <!-- STEP 2: SUSPICIOUS OR AUTHENTIC ELEMENTS IDENTIFIED -->
+            <!-- STEP 2: MULTIPLE-CHOICE JUSTIFICATION SELECTION -->
             <div
-              *ngIf="!submittedFeedback()"
-              class="p-5 rounded-2xl border transition-all shadow-md"
+              *ngIf="!submittedFeedback() && selectedVerdict()"
+              class="p-5 rounded-2xl border transition-all shadow-md animate-fadeIn"
               [ngClass]="isSenior() ? 'bg-white border-amber-300' : 'bg-slate-900 border-slate-700'">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Krok 2: Wskaż rozpoznane cechy
-                </span>
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                    Krok 2: Uzasadnij swój wybór (Wielokrotny wybór)
+                  </span>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                    Zaznacz argumenty, które zadecydowały o Twojej ocenie:
+                  </p>
+                </div>
                 <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                  {{ selectedFlags().length }}/{{ currentScenario()!.red_flags.length }}
+                  {{ selectedJustifications().length }} wybrano
                 </span>
               </div>
 
-              <div class="flex flex-col gap-2">
+              <div class="flex flex-col gap-2 mt-3">
                 <button
-                  *ngFor="let flag of currentScenario()!.red_flags"
+                  *ngFor="let opt of activeJustificationOptions()"
                   type="button"
-                  (click)="onFlagToggled(flag)"
-                  [ngClass]="selectedFlags().includes(flag)
+                  (click)="toggleJustification(opt.id)"
+                  [ngClass]="selectedJustifications().includes(opt.id)
                     ? (isSenior() ? 'bg-amber-100 border-amber-600 text-stone-950 font-bold' : 'bg-indigo-950 border-amber-400 text-amber-200 font-bold')
                     : (isSenior() ? 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100' : 'bg-slate-950/60 border-slate-700 text-slate-300 hover:border-slate-500')"
-                  class="p-2.5 rounded-xl border text-xs text-left transition flex items-start gap-2.5 cursor-pointer">
-                  <span class="text-sm mt-[-1px]">{{ selectedFlags().includes(flag) ? '✅' : '⚪' }}</span>
-                  <span class="flex-1 leading-snug">{{ flag }}</span>
+                  class="p-3 rounded-xl border text-xs sm:text-sm text-left transition flex items-start gap-2.5 cursor-pointer">
+                  <span class="text-base mt-[-2px]">{{ selectedJustifications().includes(opt.id) ? '☑️' : '◻️' }}</span>
+                  <span class="flex-1 leading-snug">{{ opt.text }}</span>
                 </button>
               </div>
             </div>
 
             <!-- STEP 3: SAFE ACTION MULTIPLE CHOICE -->
             <div
-              *ngIf="!submittedFeedback()"
+              *ngIf="!submittedFeedback() && selectedVerdict()"
               class="p-5 rounded-2xl border-2 transition-all shadow-md"
               [ngClass]="isSenior() ? 'bg-white border-[#2D4A43]/40' : 'bg-slate-900 border-slate-700'">
               <span class="text-xs font-bold uppercase tracking-wider block text-slate-500 mb-2">
-                Krok 3: Jaka jest prawidłowa i bezpieczna reakcja?
+                Krok 3: Prawidłowa reakcja (Złota Zasada)
               </span>
 
               <div class="space-y-2">
                 <div
                   *ngFor="let opt of getSafeActionOptions(currentScenario()!)"
                   (click)="selectedActionId.set(opt.id)"
-                  class="p-3 rounded-xl border text-xs transition cursor-pointer flex items-start gap-2.5"
+                  class="p-3 rounded-xl border text-xs sm:text-sm transition cursor-pointer flex items-start gap-2.5"
                   [ngClass]="selectedActionId() === opt.id
                     ? (isSenior() ? 'bg-[#2D4A43]/15 border-[#2D4A43] text-stone-950 font-bold' : 'bg-indigo-950 border-indigo-400 text-white font-bold')
                     : (isSenior() ? 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600')">
@@ -756,7 +768,7 @@ export interface SafeActionOption {
               <button
                 type="button"
                 (click)="submitTestAnswer()"
-                [disabled]="!selectedVerdict() || isSubmitting()"
+                [disabled]="!selectedVerdict() || selectedJustifications().length === 0 || isSubmitting()"
                 class="w-full mt-4 py-3.5 rounded-xl font-black text-sm transition shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 [ngClass]="isSenior() ? 'bg-[#2D4A43] hover:bg-[#233b35] text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
                 <span>{{ isSubmitting() ? 'Zapisywanie...' : 'Zatwierdź odpowiedź w teście ▶' }}</span>
@@ -792,8 +804,14 @@ export interface SafeActionOption {
                 </div>
               </div>
 
-              <!-- PEDAGOGIC ACTION RECAP -->
+              <!-- PEDAGOGIC ACTION RECAP & JUSTIFICATION EVALUATION -->
               <div class="space-y-3 pt-3 border-t border-black/15 dark:border-white/15">
+                <div *ngIf="submittedFeedback()?.validJustifications?.length" class="p-3.5 rounded-xl bg-black/5 dark:bg-white/10 text-xs">
+                  <span class="font-bold block mb-1">🎯 Trafne argumenty z Twojej odpowiedzi:</span>
+                  <ul class="list-disc list-inside space-y-1">
+                    <li *ngFor="let j of submittedFeedback()!.validJustifications">{{ j }}</li>
+                  </ul>
+                </div>
                 <div class="p-3.5 rounded-xl bg-black/5 dark:bg-white/10 text-xs">
                   <span class="font-bold block mb-1">🛡️ Wskazówka praktyczna:</span>
                   <p class="leading-relaxed">{{ currentScenario()!.safe_action_advice }}</p>
@@ -954,6 +972,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
 
   currentIndex = signal<number>(0);
   selectedFlags = signal<string[]>([]);
+  selectedJustifications = signal<string[]>([]);
   selectedVerdict = signal<'threat' | 'authentic' | null>(null);
   selectedActionId = signal<string>('opt_safe');
   isSubmitting = signal<boolean>(false);
@@ -968,6 +987,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
   submittedFeedback = signal<{
     isCorrect: boolean;
     scoreAwarded: number;
+    validJustifications?: string[];
   } | null>(null);
 
   latestBroadcast = signal<TrainerBroadcast | null>(null);
@@ -978,6 +998,13 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     const list = this.scenarios();
     const idx = this.currentIndex();
     return list[idx] || null;
+  });
+
+  readonly activeJustificationOptions = computed<JustificationOption[]>(() => {
+    const sc = this.currentScenario();
+    const v = this.selectedVerdict();
+    if (!sc || !v) return [];
+    return this.getJustificationOptions(sc, v);
   });
   readonly rosterList = computed<any[]>(() => {
     const r = this.session()?.roster || {};
@@ -1128,6 +1155,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     this.currentIndex.set(0);
     this.selectedVerdict.set(null);
     this.selectedFlags.set([]);
+    this.selectedJustifications.set([]);
     this.submittedFeedback.set(null);
     this.activeMobileTab.set('evidence');
   }
@@ -1245,6 +1273,139 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     return count > 0;
   }
 
+  selectVerdict(v: 'threat' | 'authentic'): void {
+    this.selectedVerdict.set(v);
+    this.selectedJustifications.set([]);
+  }
+
+  toggleJustification(id: string): void {
+    const current = this.selectedJustifications();
+    if (current.includes(id)) {
+      this.selectedJustifications.set(current.filter((item) => item !== id));
+    } else {
+      this.selectedJustifications.set([...current, id]);
+    }
+  }
+
+  getJustificationOptions(sc: StudioScenario, verdict: 'threat' | 'authentic'): JustificationOption[] {
+    const isAudio = sc.threat_category === 'DEEPFAKE_AUDIO' || sc.media_type === 'AUDIO';
+    const isWeb = sc.platform_mock === 'BROWSER';
+
+    if (verdict === 'threat') {
+      if (!sc.is_authentic) {
+        if (isWeb) {
+          return [
+            {
+              id: 'just_fake_domain',
+              text: 'Podejrzany adres domeny (.cc / obcy serwer) różniący się od oficjalnej witryny',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_credential_harvest',
+              text: 'Żądanie podania poufnych danych (hasło, login, PESEL) lub opłaty BLIK',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_time_pressure',
+              text: 'Sztuczna presja czasu (odliczający zegar, groźba natychmiastowego odcięcia wody/mediów)',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_distractor_ssl',
+              text: 'Brak certyfikatu SSL (obecność zielonej kłódki zawsze gwarantuje bezpieczeństwo)',
+              isCorrectArgument: false,
+            },
+          ];
+        } else if (isAudio) {
+          return [
+            {
+              id: 'just_audio_artifact',
+              text: 'Sztuczny, metaliczny tembr głosu i nienaturalny brak pauz na oddech (Deepfake AI)',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_audio_urgency',
+              text: 'Dramatyczna historia o nagłym wypadku/aresztowaniu i żądanie natychmiastowej kaucji',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_audio_secrecy',
+              text: 'Zakaz rozłączania się i polecenie zachowania tajemnicy przed rodziną i bankiem',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_audio_distractor',
+              text: 'Dzwoniący użył nieznanego numeru kierunkowego, więc to zawsze przestępca',
+              isCorrectArgument: false,
+            },
+          ];
+        } else {
+          return [
+            {
+              id: 'just_social_urgency',
+              text: 'Nagła prośba o szybką pożyczkę lub kod BLIK z nieznanego profilu',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_social_link',
+              text: 'Podejrzany skrócony link prowadzący do fałszywej bramki płatniczej',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_social_emotion',
+              text: 'Wymuszenie pośpiechu i emocjonalna presja uniemożliwiająca namysł',
+              isCorrectArgument: true,
+            },
+            {
+              id: 'just_social_distractor',
+              text: 'Użycie młodzieżowego slangu jednoznacznie dowodzi próby przestępstwa',
+              isCorrectArgument: false,
+            },
+          ];
+        }
+      } else {
+        return [
+          { id: 'just_fp_fear', text: 'Zasada ograniczonego zaufania do wszelkich ogłoszeń w sieci', isCorrectArgument: false },
+          { id: 'just_fp_unknown', text: 'Nie słyszałem wcześniej o tym programie lub komunikacie', isCorrectArgument: false },
+          { id: 'just_fp_layout', text: 'Układ graficzny strony wydał mi się nietypowy dla urzędu', isCorrectArgument: false },
+          { id: 'just_fp_caution', text: 'Wolałem dmuchać na zimne i potraktować treść podejrzliwie', isCorrectArgument: false },
+        ];
+      }
+    } else {
+      if (sc.is_authentic) {
+        return [
+          {
+            id: 'just_auth_domain',
+            text: 'Oficjalna, bezpieczna domena instytucjonalna (wroclaw.pl, mpwik.wroc.pl, synergia.librus.pl)',
+            isCorrectArgument: true,
+          },
+          {
+            id: 'just_auth_no_creds',
+            text: 'Brak żądań natychmiastowego logowania, haseł bankowych czy opłat BLIK',
+            isCorrectArgument: true,
+          },
+          {
+            id: 'just_auth_official_contacts',
+            text: 'Podane oficjalne dane kontaktowe, infolinia i spójne informacje miejskie',
+            isCorrectArgument: true,
+          },
+          {
+            id: 'just_auth_distractor',
+            text: 'Strona ma zieloną kłódkę w przeglądarce, więc na pewno nie może być fałszywa',
+            isCorrectArgument: false,
+          },
+        ];
+      } else {
+        return [
+          { id: 'just_fn_logo', text: 'Strona lub profil używa oficjalnego logo i kolorów instytucji', isCorrectArgument: false },
+          { id: 'just_fn_urgency', text: 'Sprawa wydawała się pilna i ważna dla mojego bezpieczeństwa', isCorrectArgument: false },
+          { id: 'just_fn_familiar', text: 'Treść lub głos brzmiały wiarygodnie i profesjonalnie', isCorrectArgument: false },
+          { id: 'just_fn_lock', text: 'Adres internetowy wyglądał na pierwszy rzut oka podobnie do urzędowego', isCorrectArgument: false },
+        ];
+      }
+    }
+  }
+
   submitTestAnswer(): void {
     const sc = this.currentScenario();
     const verdict = this.selectedVerdict();
@@ -1255,11 +1416,23 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     const isCorrect = (verdict === 'authentic' && isActuallyAuthentic) ||
                       (verdict === 'threat' && !isActuallyAuthentic);
 
+    // Evaluate justifications
+    const options = this.activeJustificationOptions();
+    const chosenJustIds = this.selectedJustifications();
+    const chosenOptions = options.filter(o => chosenJustIds.includes(o.id));
+    const validChosen = chosenOptions.filter(o => o.isCorrectArgument);
+    const hasValidJustification = validChosen.length > 0;
+
     // Calculate score
     let scoreAwarded = isCorrect ? 100 : 25;
+    if (isCorrect && hasValidJustification) {
+      scoreAwarded += 25;
+    }
     if (this.selectedActionId() === 'opt_safe') {
       scoreAwarded += 50;
     }
+
+    const validJustificationTexts = validChosen.map(o => o.text);
 
     // Save locally
     this.scenarioResults.update((prev) => ({
@@ -1269,16 +1442,22 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
         isCorrect,
         scoreAwarded,
         flags: this.selectedFlags(),
+        justifications: chosenOptions.map(o => o.text),
         chosenAction: this.selectedActionId(),
       }
     }));
 
+    const allElements = [
+      ...this.selectedFlags(),
+      ...chosenOptions.map(o => `[Uzasadnienie] ${o.text}`)
+    ];
+
     const payload = {
       username: this.currentUser || 'anonymous',
       scenario_id: sc.id,
-      flagged_elements: this.selectedFlags(),
+      flagged_elements: allElements,
       verdict: verdict === 'threat' ? 'SCAM' : 'AUTHENTIC',
-      rationale: this.selectedFlags().join(', '),
+      rationale: chosenOptions.map(o => o.text).join('; ') || this.selectedFlags().join(', '),
       is_correct: isCorrect,
       score_awarded: scoreAwarded,
       safe_action_chosen: this.selectedActionId(),
@@ -1291,6 +1470,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
         this.submittedFeedback.set({
           isCorrect,
           scoreAwarded,
+          validJustifications: validJustificationTexts,
         });
       },
       error: () => {
@@ -1299,6 +1479,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
         this.submittedFeedback.set({
           isCorrect,
           scoreAwarded,
+          validJustifications: validJustificationTexts,
         });
       },
     });
@@ -1318,13 +1499,16 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     const existing = sc ? this.scenarioResults()[sc.id] : null;
     if (existing) {
       this.selectedFlags.set(existing.flags || []);
+      this.selectedJustifications.set(existing.justifications || []);
       this.selectedVerdict.set(existing.verdict);
       this.submittedFeedback.set({
         isCorrect: existing.isCorrect,
         scoreAwarded: existing.scoreAwarded,
+        validJustifications: existing.justifications || [],
       });
     } else {
       this.selectedFlags.set([]);
+      this.selectedJustifications.set([]);
       this.selectedVerdict.set(null);
       this.submittedFeedback.set(null);
     }
@@ -1346,6 +1530,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     this.audioService.stop();
     this.submittedFeedback.set(null);
     this.selectedFlags.set([]);
+    this.selectedJustifications.set([]);
     this.selectedVerdict.set(null);
     this.selectedActionId.set('opt_safe');
     this.activeMobileTab.set('evidence');
@@ -1366,6 +1551,7 @@ export class ParticipantPlayComponent implements OnInit, OnDestroy {
     this.currentIndex.set(0);
     this.submittedFeedback.set(null);
     this.selectedFlags.set([]);
+    this.selectedJustifications.set([]);
     this.selectedVerdict.set(null);
     this.isCompleted.set(false);
     this.activeMobileTab.set('evidence');

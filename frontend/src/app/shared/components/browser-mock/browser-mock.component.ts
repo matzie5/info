@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, inject, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, inject, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
@@ -206,8 +206,8 @@ export interface ClonedWebsiteData {
           </a>
         </div>
         <iframe
-          *ngIf="iframeUrl"
-          [src]="iframeUrl"
+          *ngIf="safeIframeUrl()"
+          [src]="safeIframeUrl()"
           class="w-full h-[580px] border-0 bg-white"
           sandbox="allow-scripts allow-same-origin allow-forms">
         </iframe>
@@ -237,8 +237,8 @@ export interface ClonedWebsiteData {
           <!-- Main MPWiK Brand Header -->
           <div class="bg-[#003366] text-white px-6 py-4 flex items-center justify-between border-b-4 border-[#00a0e3]">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-white text-[#003366] flex items-center justify-center text-2xl font-black shadow">
-                💧
+              <div class="w-12 h-12 rounded-xl bg-white text-[#003366] flex items-center justify-center shadow">
+                <svg width="28" height="28" viewBox="0 0 38 38" fill="none"><path d="M19 3C19 3 7 17 7 24.5C7 31.1274 12.3726 36.5 19 36.5C25.6274 36.5 31 31.1274 31 24.5C31 17 19 3 19 3Z" fill="#0072ce"/><path d="M15 22C15 19.7909 16.7909 18 19 18C19.5523 18 20 17.5523 20 17C20 16.4477 19.5523 16 19 16C15.6863 16 13 18.6863 13 22C13 22.5523 13.4477 23 14 23C14.5523 23 15 22.5523 15 22Z" fill="#ffffff" opacity="0.6"/></svg>
               </div>
               <div>
                 <div class="font-black text-lg tracking-wide uppercase">MPWiK Wrocław S.A.</div>
@@ -329,8 +329,8 @@ export interface ClonedWebsiteData {
           <!-- Municipal Crimson Header -->
           <div class="bg-[#c5192d] text-white px-6 py-4 flex items-center justify-between shadow-md">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-xl bg-white text-[#c5192d] flex items-center justify-center text-3xl font-black shadow border border-red-200">
-                W
+              <div class="w-12 h-12 rounded-xl bg-white text-[#c5192d] flex items-center justify-center shadow border border-red-200">
+                <span class="bg-[#fef08a] text-[#991b1b] font-black text-lg px-2.5 py-0.5 rounded border border-[#ca8a04]">W</span>
               </div>
               <div>
                 <div class="font-black text-xl tracking-tight">wroclaw.pl</div>
@@ -397,8 +397,8 @@ export interface ClonedWebsiteData {
           <!-- Top Librus Bar -->
           <div class="bg-[#1e293b] text-white px-4 py-2 flex items-center justify-between text-xs border-b border-slate-700">
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow">
-                📚
+              <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
               </div>
               <div>
                 <span class="font-black text-sm tracking-wider">LIBRUS Synergia</span>
@@ -533,7 +533,7 @@ export interface ClonedWebsiteData {
     </div>
   `
 })
-export class BrowserMockComponent implements OnInit {
+export class BrowserMockComponent implements OnInit, OnChanges {
   private sanitizer = inject(DomSanitizer);
 
   @Input() author: string = 'MPWiK Wrocław';
@@ -553,13 +553,19 @@ export class BrowserMockComponent implements OnInit {
   showComparison = signal<boolean>(false);
   selectedFlags = new Set<string>();
 
+  safeIframeUrl = signal<SafeResourceUrl | null>(null);
+  private lastLoadedKey = '';
+
   ngOnInit(): void {
-    // If authentic, default to live iframe to show the real official page!
-    // If fake phishing clone, default to template inspection so students see the educational cloned markers.
-    if (this.isAuthentic) {
-      this.viewMode.set('IFRAME');
-    } else {
-      this.viewMode.set('CLONE');
+    // Both authentic and deceptive phishing sites are rendered in the safe iframe viewer
+    // so students evaluate realistic websites rather than toy components!
+    this.viewMode.set('IFRAME');
+    this.updateSafeIframeUrl();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['authorHandle'] || changes['mediaUrl'] || changes['clonedWebsite'] || changes['isAuthentic']) {
+      this.updateSafeIframeUrl();
     }
   }
 
@@ -585,21 +591,30 @@ export class BrowserMockComponent implements OnInit {
     if (this.clonedWebsite?.original_url) return this.clonedWebsite.original_url;
     if (this.mediaUrl && this.mediaUrl.startsWith('http')) return this.mediaUrl;
     if (this.authorHandle && this.authorHandle.startsWith('http')) {
-      if (this.isAuthentic) return this.authorHandle;
+      return this.authorHandle;
     }
     if (this.officialDomain.startsWith('http')) return this.officialDomain;
     return `https://${this.officialDomain}`;
   }
 
-  get iframeUrl(): SafeResourceUrl {
+  private updateSafeIframeUrl(): void {
+    const currentKey = `${this.proxyTargetUrl}__${this.isAuthentic}`;
+    if (this.lastLoadedKey === currentKey && this.safeIframeUrl()) {
+      return;
+    }
+    this.lastLoadedKey = currentKey;
     const encoded = encodeURIComponent(this.proxyTargetUrl);
-    return this.sanitizer.bypassSecurityTrustResourceUrl(`/api/v1/studio/proxy-page?url=${encoded}`);
+    const target = `/api/v1/studio/proxy-page?url=${encoded}&is_authentic=${this.isAuthentic}`;
+    this.safeIframeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(target));
   }
 
   reloadIframe(): void {
-    const current = this.viewMode();
-    this.viewMode.set('CLONE');
-    setTimeout(() => this.viewMode.set(current), 50);
+    const encoded = encodeURIComponent(this.proxyTargetUrl);
+    const target = `/api/v1/studio/proxy-page?url=${encoded}&is_authentic=${this.isAuthentic}&t=${Date.now()}`;
+    this.safeIframeUrl.set(null);
+    setTimeout(() => {
+      this.safeIframeUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(target));
+    }, 50);
   }
 
   get pageTitle(): string {
