@@ -205,6 +205,7 @@ export interface SessionDetails {
                 [authorAvatar]="activeScenario()!.author_avatar || ''"
                 [title]="activeScenario()!.title"
                 [content]="activeScenario()!.content"
+                [mediaUrl]="activeScenario()!.media_url || ''"
                 [redFlags]="activeScenario()!.red_flags">
               </app-facebook-mock>
 

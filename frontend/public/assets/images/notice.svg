@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <rect width="800" height="500" fill="#f8fafc" />
+  <rect x="30" y="30" width="740" height="440" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+  <rect x="30" y="30" width="740" height="20" fill="#c5192d" />
+
+  <text x="60" y="85" fill="#c5192d" font-family="sans-serif" font-size="22" font-weight="900">URZĄD MIEJSKI WROCŁAWIA</text>
+  <text x="60" y="110" fill="#64748b" font-family="sans-serif" font-size="13">Wydział Bezpieczeństwa i Zarządzania Kryzysowego • Biuletyn Informacji Publicznej</text>
+
+  <line x1="60" y1="125" x2="740" y2="125" stroke="#e2e8f0" stroke-width="2" />
+
+  <text x="60" y="160" fill="#0f172a" font-family="sans-serif" font-size="16" font-weight="bold">KOMUNIKAT OFICJALNY PREZYDENTA MIASTA WROCŁAWIA</text>
+  <text x="60" y="190" fill="#334155" font-family="sans-serif" font-size="13">Data wydania: 7 listopada 2026 r. • Znak sprawy: WZK-WROC/2026/11</text>
+
+  <rect x="60" y="215" width="680" height="140" rx="8" fill="#f1f5f9" stroke="#e2e8f0" />
+  <text x="80" y="245" fill="#1e293b" font-family="sans-serif" font-size="13" font-weight="bold">Wrocławska Karta Seniora i bezpłatna komunikacja miejska:</text>
+  <text x="80" y="270" fill="#475569" font-family="sans-serif" font-size="12">Informujemy, że wydanie Wrocławskiej Karty Seniora jest CAŁKOWICIE BEZPŁATNE.</text>
+  <text x="80" y="295" fill="#475569" font-family="sans-serif" font-size="12">Urzędnicy ani pracownicy MPK Wrocław nigdy nie wymagają podawania danych kart bankowych,</text>
+  <text x="80" y="320" fill="#475569" font-family="sans-serif" font-size="12">ani haseł do bankowości internetowej w celach aktywacji uprawnień seniora.</text>
+
+  <rect x="520" y="380" width="200" height="60" rx="6" fill="none" stroke="#c5192d" stroke-width="2" stroke-dasharray="4,2" />
+  <text x="545" y="410" fill="#c5192d" font-family="sans-serif" font-size="12" font-weight="bold">PIECZĘĆ URZĘDOWA</text>
+  <text x="540" y="428" fill="#64748b" font-family="sans-serif" font-size="10">ZWERYFIKOWANO TLS</text>
+</svg>

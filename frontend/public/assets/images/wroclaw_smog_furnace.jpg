@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="60%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </linearGradient>
+    <linearGradient id="smogGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="rgba(30, 41, 59, 0.9)" />
+      <stop offset="50%" stop-color="rgba(71, 85, 105, 0.7)" />
+      <stop offset="100%" stop-color="rgba(148, 163, 184, 0)" />
+    </linearGradient>
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#dc2626" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+  </defs>
+
+  <!-- Winter Smog Sky -->
+  <rect width="800" height="500" fill="url(#skyGrad)" />
+
+  <!-- Wrocław Tenement Silhouettes -->
+  <path d="M0,380 L60,340 L120,380 L120,500 L0,500 Z" fill="#0f172a" />
+  <path d="M110,320 L160,280 L220,320 L220,500 L110,500 Z" fill="#1e293b" />
+  <path d="M210,350 L270,300 L330,350 L330,500 L210,500 Z" fill="#0f172a" />
+  <path d="M320,310 L380,260 L450,310 L450,500 L320,500 Z" fill="#18212f" />
+  <path d="M440,360 L510,310 L580,360 L580,500 L440,500 Z" fill="#0f172a" />
+  <path d="M570,320 L640,270 L710,320 L710,500 L570,500 Z" fill="#1e293b" />
+  <path d="M700,340 L760,290 L800,320 L800,500 L700,500 Z" fill="#0f172a" />
+
+  <!-- Chimneys with Smog Clouds -->
+  <rect x="145" y="250" width="18" height="35" fill="#334155" />
+  <rect x="365" y="230" width="20" height="35" fill="#334155" />
+  <rect x="625" y="240" width="18" height="35" fill="#334155" />
+
+  <!-- Smoke puffs -->
+  <circle cx="154" cy="220" r="35" fill="url(#smogGrad)" filter="blur(4px)" />
+  <circle cx="170" cy="170" r="55" fill="url(#smogGrad)" filter="blur(8px)" />
+  <circle cx="375" cy="200" r="40" fill="url(#smogGrad)" filter="blur(4px)" />
+  <circle cx="395" cy="140" r="65" fill="url(#smogGrad)" filter="blur(10px)" />
+  <circle cx="634" cy="210" r="38" fill="url(#smogGrad)" filter="blur(4px)" />
+  <circle cx="660" cy="150" r="60" fill="url(#smogGrad)" filter="blur(8px)" />
+
+  <!-- Overlay Smog Layer -->
+  <rect x="0" y="100" width="800" height="300" fill="url(#smogGrad)" opacity="0.6" />
+
+  <!-- Urgent Facebook Ad Banner Overlay -->
+  <rect x="40" y="40" width="720" height="100" rx="14" fill="rgba(15, 23, 42, 0.92)" stroke="#ef4444" stroke-width="2" />
+  <rect x="60" y="58" width="190" height="32" rx="8" fill="url(#badgeGrad)" />
+  <text x="70" y="80" fill="#ffffff" font-family="sans-serif" font-size="14" font-weight="900">⚠️ PILNA DOTACJA 2026</text>
+  <text x="265" y="78" fill="#f8fafc" font-family="sans-serif" font-size="16" font-weight="bold">WROCŁAW: 12 000 ZŁ NA WYMIANĘ PIECA</text>
+  <text x="60" y="118" fill="#fbbf24" font-family="sans-serif" font-size="13">Tylko dla seniorów 60+ • Wymagany PESEL i numer dowodu osobistego w formularzu</text>
+
+  <!-- Scammer urgency indicator -->
+  <rect x="40" y="410" width="720" height="60" rx="10" fill="rgba(220, 38, 38, 0.95)" />
+  <text x="60" y="446" fill="#ffffff" font-family="sans-serif" font-size="15" font-weight="bold">⏱️ ZOSTAŁO TYLKO 48 GODZIN NA ZŁOŻENIE WNIOSKU ONLINE!</text>
+</svg>

@@ -69,7 +69,7 @@ class GoogleMediaService:
                 "voices": {
                     "grandchild_distress": ("pl-PL-Wavenet-B", 1.25, 2.5),  # Fast, agitated, young male
                     "authority_mayor": ("pl-PL-Wavenet-B", 0.92, -2.0),     # Formal, measured, low pitch
-                    "youtuber_gamer": ("pl-PL-Neural2-A", 1.20, 1.5),      # Hyper-expressive
+                    "youtuber_gamer": ("pl-PL-Wavenet-B", 1.22, 2.0),      # Hyper-expressive energetic
                     "neutral_anchor": ("pl-PL-Wavenet-A", 1.0, 0.0),       # Neutral news anchor
                 }
             },
@@ -150,6 +150,8 @@ class GoogleMediaService:
                     if hasattr(credentials, "with_quota_project") and self.project_id:
                         credentials = credentials.with_quota_project(self.project_id)
                     client_kwargs["credentials"] = credentials
+                    if self.project_id:
+                        client_kwargs["client_options"] = ClientOptions(quota_project_id=self.project_id)
                 except Exception as auth_err:
                     logger.debug("ADC credential load note: %s", auth_err)
 

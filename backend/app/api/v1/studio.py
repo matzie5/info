@@ -748,9 +748,8 @@ async def proxy_page(url: str = Query(..., description="Target webpage URL to sa
                 else:
                     html = f"{base_tag}{html}"
 
-                # Neutralize client-side top frame-busting
-                html = html.replace("top.location", "self.location")
-                html = html.replace("parent.location", "self.location")
+                # Strip active client-side scripts to avoid frame-busting, hydration crashes, or cross-origin Sentry/Next errors
+                html = re.sub(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', '', html, flags=re.IGNORECASE)
 
                 return HTMLResponse(
                     content=html,

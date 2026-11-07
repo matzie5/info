@@ -138,7 +138,12 @@ app.add_middleware(
 async def security_headers_middleware(request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
+    # Allow educational proxy-page to be embedded in iframe
+    if request.url.path.startswith("/api/v1/studio/proxy-page"):
+        response.headers["X-Frame-Options"] = "ALLOWALL"
+        response.headers["Content-Security-Policy"] = "frame-ancestors *"
+    else:
+        response.headers["X-Frame-Options"] = "DENY"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["X-API-Version"] = "3.0.0"
     return response

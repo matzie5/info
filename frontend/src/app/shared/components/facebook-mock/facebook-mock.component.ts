@@ -59,8 +59,13 @@ import { CommonModule } from '@angular/common';
           {{ content }}
         </p>
 
-        <!-- Simulated Link / Image Card -->
-        <div class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 overflow-hidden cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition">
+        <!-- Attached Media Image if present -->
+        <div *ngIf="mediaUrl" class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-900 flex items-center justify-center max-h-96">
+          <img [src]="mediaUrl" [alt]="title || 'Załączona grafika posta'" class="w-full h-auto object-cover max-h-96" />
+        </div>
+
+        <!-- Simulated Link / Image Card (shown when no direct mediaUrl) -->
+        <div *ngIf="!mediaUrl" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 overflow-hidden cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/80 transition">
           <div class="h-32 bg-gradient-to-r from-red-900 via-amber-900 to-slate-900 flex items-center justify-center text-white text-center p-4">
             <div>
               <div class="text-xs font-mono uppercase tracking-wider text-amber-300">ALERT SĄSIEDZKI WROCŁAW</div>
@@ -159,6 +164,7 @@ export class FacebookMockComponent {
   @Input() authorAvatar: string = '';
   @Input() title: string = '';
   @Input() content: string = '';
+  @Input() mediaUrl: string = '';
   @Input() redFlags: string[] = [];
   @Input() isSenior: boolean = false;
 

@@ -350,6 +350,7 @@ export interface ScenarioVerdictResult {
                 [author]="currentScenario()!.author"
                 [title]="currentScenario()!.title"
                 [content]="currentScenario()!.content"
+                [mediaUrl]="currentScenario()!.media_url || ''"
                 [redFlags]="currentScenario()!.red_flags"
                 [isSenior]="isSenior()"
                 (flagSelected)="onFlagsChanged($event)">
