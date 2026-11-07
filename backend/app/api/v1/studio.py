@@ -196,6 +196,54 @@ WROCLAW_SENIORS_SCENARIOS = [
         ],
         safe_action_advice="Nigdy nie podawaj numeru PESEL ani numeru dowodu osobistego na formularzach z mediów społecznościowych. Informacje o dotacjach sprawdzaj osobiście w Wydziale Środowiska Urzędu Miejskiego Wrocławia.",
         is_authentic=False
+    ),
+    # 6. AUTHENTIC YOUTUBE SCENARIO (Dolnośląska Policja)
+    StudioScenario(
+        id="wroc-sen-youtube-police",
+        platform_mock="YOUTUBE",
+        threat_category="AUTHENTIC_MEDIA",
+        author="Dolnośląska Policja",
+        author_handle="@DolnoslaskaPolicja",
+        author_avatar="/assets/avatars/police_badge.png",
+        verified=True,
+        title="Dolnośląska Policja: Jak nie dać się oszukać na wnuczka i policjanta we Wrocławiu",
+        content="Oficjalny instruktaż profilaktyczny Komendy Wojewódzkiej Policji we Wrocławiu. Funkcjonariusze wyjaśniają schematy działania grup przestępczych podszywających się pod policjantów i prokuratorów. Pamiętaj: prawdziwy policjant NIGDY nie prosi o wypłatę gotówki ani kody BLIK!",
+        media_url="https://www.youtube.com/embed/8aQ6JpW9p10",
+        media_type="VIDEO",
+        red_flags=[
+            "Oficjalny zweryfikowany profil Komendy Wojewódzkiej Policji",
+            "Mundurowy funkcjonariusz z widocznym imiennikiem i stopniem służbowym",
+            "Brak jakichkolwiek próśb o przelewy, kaucje czy hasła do konta bankowego",
+            "Merytoryczne wyjaśnienie procedur bez straszenia i wywierania sztucznej presji czasu"
+        ],
+        safe_action_advice="Materiał jest w 100% autentyczny i instruktażowy. Obejrzyj nagranie i pamiętaj o zasadach weryfikacji tożsamości.",
+        is_authentic=True,
+        educational_goal="Identyfikacja oficjalnych kanałów służb mundurowych oraz procedur weryfikacji tożsamości funkcjonariusza.",
+        manipulation_technique="Brak (autentyczny materiał edukacyjny)"
+    ),
+    # 7. FAKE YOUTUBE SCENARIO (Deepfake Investment Scam)
+    StudioScenario(
+        id="wroc-sen-youtube-invest-scam",
+        platform_mock="YOUTUBE",
+        threat_category="DEEPFAKE_VIDEO",
+        author="Polski Fundusz Inwestycji Społecznych",
+        author_handle="@inwestycje_emerytura_wroc",
+        author_avatar="/assets/avatars/yt_scam.png",
+        verified=False,
+        title="Gwarantowane 4500 zł miesięcznie dla każdego seniora z Wrocławia! Program Narodowy",
+        content="UWAGA EMERYCI Z WROCŁAWIA! Rządowy program wsparcia seniorów 2026. Obejrzyj wystąpienie i kliknij link w opisie filmu: 'wroclaw-doplaty-senior.org.pl/rejestracja', aby odebrać comiesięczny dodatek 4500 zł na konto bankowe. Wymagana rejestracja i opłata aktywacyjna 250 zł.",
+        media_url="https://www.youtube.com/embed/M7lc1UVf-VE",
+        media_type="VIDEO",
+        red_flags=[
+            "Sztuczny, zsynchronizowany komputerowo ruch ust (Lip-sync deepfake)",
+            "Gwarantowany wysoki zysk finansowy (4500 zł/mies.) bez wkładu własnego",
+            "Podejrzany link zewnętrzny w opisie wideo wyłudzający dane karty i logowanie",
+            "Nieoficjalny kanał bez odznaki weryfikacji platformy YouTube"
+        ],
+        safe_action_advice="Nigdy nie klikaj w linki do platform finansowych pod filmami w sieci i nie wpłacaj opłat wstępnych. Informacje o świadczeniach sprawdzaj wyłącznie w ZUS lub MOPS Wrocław.",
+        is_authentic=False,
+        educational_goal="Rozpoznawanie manipulacji deepfake wideo oraz fałszywych obietnic inwestycyjnych na platformach wideo.",
+        manipulation_technique="Deepfake wideo polityka/dziennikarza, nielicencjonowana platforma brokerska."
     )
 ]
 
@@ -329,7 +377,7 @@ WROCLAW_KIDS_SCENARIOS = [
         verified=True,
         title="Jak powstał Wrocław? Tajemnice Ostrowa Tumskiego i Mostu Grunwaldzkiego",
         content="Oficjalny film edukacyjny zrealizowany we współpracy z Muzeum Miejskim Wrocławia i Wydziałem Edukacji Urzędu Miejskiego. Odkryj sekrety wrocławskich wysp, zabytkowych mostów i odbudowy miasta po 1945 roku. Materiał dydaktyczny polecany dla uczniów wrocławskich szkół podstawowych i ponadpodstawowych.",
-        media_url="/assets/audio/wroclaw_school_closure_announcement.mp3",
+        media_url="https://www.youtube.com/embed/5qap5aO4i9A",
         media_type="VIDEO",
         red_flags=[
             "Zweryfikowany profil miejskiej instytucji edukacyjnej (WCDN)",
@@ -338,7 +386,9 @@ WROCLAW_KIDS_SCENARIOS = [
             "Brak podejrzanych linków zewnętrznych w opisie"
         ],
         safe_action_advice="Materiał jest autentyczny i wartościowy dydaktycznie. Możesz go bezpiecznie oglądać i czerpać rzetelną wiedzę.",
-        is_authentic=True
+        is_authentic=True,
+        educational_goal="Identyfikacja zweryfikowanych kanałów dydaktycznych i instytucjonalnych.",
+        manipulation_technique="Brak (autentyczny materiał edukacyjny)"
     ),
     # 5. FAKE TIKTOK ROBUX PHISHING SCENARIO
     StudioScenario(
@@ -361,6 +411,30 @@ WROCLAW_KIDS_SCENARIOS = [
         ],
         safe_action_advice="Nigdy nie klikaj linków oferujących darmową walutę w grach i nie pobieraj nieznanych plików. Legalne kody kupuje się tylko w oficjalnych sklepach.",
         is_authentic=False
+    ),
+    # 6. FAKE YOUTUBE SCENARIO (Robux Scam & Malware)
+    StudioScenario(
+        id="wroc-kids-youtube-scam",
+        platform_mock="YOUTUBE",
+        threat_category="PHISHING",
+        author="RobuxGlitch Polska 2026",
+        author_handle="@robux_glitch_pl",
+        author_avatar="/assets/avatars/yt_scam.png",
+        verified=False,
+        title="DZIAŁAJĄCY GLITCH NA 100 000 ROBUX W POLSCE! (Działa po aktualizacji 2026)",
+        content="Siema! W tym filmie pokazuję sekretny sposób na nieskończone Robuxy i skiny we Wrocławiu! Wystarczy wejść w link z przypiętego komentarza, pobrać plik 'RobuxGenerator_v3.exe' i wpisać hasło do konta Roblox. Działa na 100%, sam zgarnąłem 100k Robuxów!",
+        media_url="https://www.youtube.com/embed/jNQXAC9IVRw",
+        media_type="VIDEO",
+        red_flags=[
+            "Obietnica niemożliwego glitcha na darmową wirtualną walutę",
+            "Nakłanianie do pobrania podejrzanego pliku .exe z linku w opisie",
+            "Prośba o podanie hasła do swojego konta Roblox",
+            "Wyłączone lub sfałszowane komentarze botów ('Działa super!')"
+        ],
+        safe_action_advice="Nigdy nie pobieraj programów obiecujących darmowe Robuxy ani nie podawaj nikomu hasła do konta. To trojan przejmujący dostęp do komputera!",
+        is_authentic=False,
+        educational_goal="Ochrona przed złośliwym oprogramowaniem (stealer / malware) maskowanym jako 'darmowa waluta' do gier.",
+        manipulation_technique="Socjotechnika oparta na chciwości, trojan wykradający sesję konta."
     )
 ]
 
@@ -531,6 +605,42 @@ def clone_website(req: CloneWebsiteRequest):
         language=req.language,
         threat_type=req.threat_type,
         custom_scenario_title=req.custom_scenario_title,
+    )
+
+
+@router.post("/suggest-youtube-videos")
+def suggest_youtube_videos(req_data: dict):
+    """
+    ADK YouTube Agent: searches and suggests relevant authentic and deceptive YouTube videos
+    tailored to topic, audience mode (seniors/kids/professionals), and location.
+    """
+    from app.services.youtube_agent_service import youtube_agent, SuggestYouTubeVideosRequest
+    req = SuggestYouTubeVideosRequest(**req_data)
+    return youtube_agent.suggest_videos(
+        topic=req.topic,
+        audience_mode=req.audience_mode,
+        location_name=req.location_name,
+        language=req.language,
+        count=req.count,
+    )
+
+
+@router.post("/create-youtube-scenario", response_model=StudioScenario)
+def create_youtube_scenario(req_data: dict):
+    """
+    ADK YouTube Agent: converts a YouTube video or URL into a fully-configured StudioScenario
+    with embedded player, verified channel metadata, red flags, and pedagogical advice.
+    """
+    from app.services.youtube_agent_service import youtube_agent, CreateYouTubeScenarioRequest
+    req = CreateYouTubeScenarioRequest(**req_data)
+    return youtube_agent.create_scenario_from_youtube(
+        youtube_url_or_id=req.youtube_url_or_id,
+        title=req.title,
+        channel_title=req.channel_title,
+        is_authentic=req.is_authentic,
+        audience_mode=req.audience_mode,
+        location_name=req.location_name,
+        language=req.language,
     )
 
 

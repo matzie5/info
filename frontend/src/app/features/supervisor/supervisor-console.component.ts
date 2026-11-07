@@ -24,6 +24,33 @@ export interface StudioScenario {
   cloned_website?: any;
 }
 
+export interface YouTubeSuggestion {
+  id: string;
+  video_id: string;
+  url: string;
+  embed_url: string;
+  title: string;
+  channel_title: string;
+  channel_handle?: string;
+  channel_avatar?: string;
+  subscriber_count?: string;
+  views_count?: string;
+  is_authentic: boolean;
+  threat_category: string;
+  summary: string;
+  red_flags: string[];
+  safe_action_advice: string;
+  pedagogical_relevance: string;
+}
+
+export interface SuggestYouTubeVideosResponse {
+  topic: string;
+  audience_mode: string;
+  location_name: string;
+  language: string;
+  suggestions: YouTubeSuggestion[];
+}
+
 export interface StudioParticipant {
   username: string;
   display_name?: string;
@@ -343,6 +370,13 @@ export interface SessionData {
                 </button>
                 <button
                   type="button"
+                  (click)="showYouTubeAgentForm.set(!showYouTubeAgentForm())"
+                  class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-xs shadow-xs transition flex items-center gap-1.5">
+                  <span>📺</span>
+                  <span>{{ showYouTubeAgentForm() ? '✕ Ukryj Agenta YouTube' : 'Agent YouTube (Rekomendacje & Embed)' }}</span>
+                </button>
+                <button
+                  type="button"
                   (click)="showCustomScenarioForm.set(!showCustomScenarioForm())"
                   class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-xs transition">
                   {{ showCustomScenarioForm() ? '✕ Ukryj formularz' : '✨ Utwórz Własny Scenariusz' }}
@@ -576,6 +610,178 @@ export interface SessionData {
               </div>
             </div>
 
+            <!-- YouTube Agent Assistant Card (Studio) -->
+            <div *ngIf="showYouTubeAgentForm()" class="p-5 rounded-2xl bg-red-50/50 dark:bg-red-950/20 border border-red-300 dark:border-red-800 space-y-4 animate-fade-in">
+              <div class="flex items-center justify-between border-b border-red-200/60 dark:border-red-800/60 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">📺</span>
+                  <div>
+                    <h3 class="font-bold text-sm text-red-950 dark:text-red-200">
+                      Autonomiczny Agent YouTube (Google ADK & Embed)
+                    </h3>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                      Inteligentny agent ADK wyszukuje autentyczne materiały instruktażowe oraz zmanipulowane filmy (deepfake / oszustwa) dla wybranego tematu i grupy odbiorców.
+                    </p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 font-bold">
+                  Google ADK Video Grounding
+                </span>
+              </div>
+
+              <!-- Topic presets -->
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                  Wybierz popularny temat edukacyjny lub wpisz własne zagadnienie:
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    (click)="setYouTubeTopicPreset('Oszustwa na wnuczka i fałszywego policjanta')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-red-500 flex items-center gap-1">
+                    <span>👮</span>
+                    <span>Policja & Oszustwa na wnuczka</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setYouTubeTopicPreset('Gwarantowane 4500 zł miesięcznie dla seniora z Wrocławia')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-red-500 flex items-center gap-1">
+                    <span>💰</span>
+                    <span>Deepfake: Emerytura 4500 zł</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setYouTubeTopicPreset('CERT Polska Bezpieczny Senior')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-red-500 flex items-center gap-1">
+                    <span>🛡️</span>
+                    <span>CERT Polska (NASK)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setYouTubeTopicPreset('Darmowe Robuxy i kody Brawl Stars glitch')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-red-500 flex items-center gap-1">
+                    <span>🎮</span>
+                    <span>Robux Scam & Glitch (Dla Młodzieży)</span>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="setYouTubeTopicPreset('Jak powstał Wrocław WCDN')"
+                    class="px-2.5 py-1 rounded-lg text-xs font-medium border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 hover:border-red-500 flex items-center gap-1">
+                    <span>🏛️</span>
+                    <span>Wrocław WCDN Edukacja</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Topic search input -->
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  [(ngModel)]="youtubeTopicInput"
+                  placeholder="Wpisz temat wideo, np. Deepfake w inwestycjach lub Bezpieczeństwo seniora"
+                  class="flex-1 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-100" />
+                <button
+                  type="button"
+                  (click)="searchYouTubeVideos()"
+                  [disabled]="isSearchingYouTube() || !youtubeTopicInput.trim()"
+                  class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+                  <span *ngIf="isSearchingYouTube()" class="animate-spin">🔄</span>
+                  <span>{{ isSearchingYouTube() ? 'Agent ADK przeszukuje...' : '🔍 Zaproponuj Filmy (ADK Agent)' }}</span>
+                </button>
+              </div>
+
+              <!-- Suggestions List -->
+              <div *ngIf="youtubeSuggestions().length > 0" class="space-y-3 pt-2">
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Rekomendowane filmy dla grupy: <strong>{{ newSession.audience_mode }}</strong> ({{ youtubeSuggestions().length }} wyników)</span>
+                  <span class="text-[11px] text-slate-500">Kliknij "Dodaj do Lekcji" aby natychmiast osadzić wideo</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div
+                    *ngFor="let sug of youtubeSuggestions()"
+                    class="p-4 rounded-xl border bg-white dark:bg-slate-900 flex flex-col justify-between gap-3 shadow-xs"
+                    [ngClass]="sug.is_authentic ? 'border-emerald-300 dark:border-emerald-800/80' : 'border-red-300 dark:border-red-800/80'">
+                    <div>
+                      <div class="flex items-center justify-between gap-2 mb-1.5">
+                        <span
+                          [ngClass]="sug.is_authentic ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'"
+                          class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                          {{ sug.is_authentic ? '✓ Autentyczny Instruktaż' : '⚠️ Deepfake / Oszustwo' }}
+                        </span>
+                        <span class="text-[10px] font-mono text-slate-500">{{ sug.threat_category }}</span>
+                      </div>
+
+                      <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-snug">
+                        {{ sug.title }}
+                      </h4>
+
+                      <div class="text-[11px] text-slate-500 mt-1 flex items-center gap-1.5">
+                        <span class="font-semibold">{{ sug.channel_title }}</span>
+                        <span>•</span>
+                        <span class="font-mono">{{ sug.video_id }}</span>
+                      </div>
+
+                      <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-2 line-clamp-2">
+                        {{ sug.summary }}
+                      </p>
+
+                      <div class="mt-2 text-[10px] bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        <strong>Cel dydaktyczny:</strong> {{ sug.pedagogical_relevance }}
+                      </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                      <a
+                        [href]="sug.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+                        <span>▶ Podgląd</span>
+                        <span>↗</span>
+                      </a>
+                      <button
+                        type="button"
+                        (click)="addYouTubeSuggestionToStudio(sug)"
+                        [disabled]="isCreatingYouTubeScenario()"
+                        class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs transition flex items-center gap-1">
+                        <span>➕ Dodaj do Scenariuszy Lekcji</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Manual Custom YouTube URL Embed Section -->
+              <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 mt-2">
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <span>🔗</span>
+                  <span>Osadź Dowolny Film z YouTube (Wklej URL lub ID)</span>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    [(ngModel)]="customYouTubeUrlInput"
+                    placeholder="np. https://www.youtube.com/watch?v=8aQ6JpW9p10 lub samo ID wideo"
+                    class="flex-1 p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-xs font-mono" />
+                  
+                  <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1 text-xs cursor-pointer select-none">
+                      <input type="checkbox" [(ngModel)]="customYouTubeAuthentic" class="rounded text-red-600 focus:ring-0" />
+                      <span>Autentyczny</span>
+                    </label>
+                    <button
+                      type="button"
+                      (click)="createCustomYouTubeScenario()"
+                      [disabled]="isCreatingYouTubeScenario() || !customYouTubeUrlInput.trim()"
+                      class="px-4 py-2 rounded-lg bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white font-bold text-xs shadow-xs transition">
+                      Osadź Wideo
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Scenarios Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div
@@ -615,6 +821,15 @@ export interface SessionData {
                     </div>
                     <div *ngIf="sc.media_type === 'image' || sc.media_url.endsWith('.png') || sc.media_url.endsWith('.jpg') || sc.media_url.endsWith('.svg')" class="flex justify-center mt-1">
                       <img [src]="sc.media_url" alt="Visual asset" class="max-h-24 rounded object-contain" />
+                    </div>
+                    <div *ngIf="sc.platform_mock === 'YOUTUBE' || (sc.media_url && (sc.media_url.includes('youtube') || sc.media_url.includes('youtu.be')))" class="mt-1 flex items-center justify-between text-xs bg-red-50 dark:bg-red-950/40 p-2 rounded-lg text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900">
+                      <span class="flex items-center gap-1 font-semibold">
+                        <span>▶</span>
+                        <span>Wideo YouTube osadzone w scenariuszu</span>
+                      </span>
+                      <a [href]="sc.media_url" target="_blank" rel="noopener noreferrer" class="font-bold underline text-[11px]">
+                        Otwórz ↗
+                      </a>
                     </div>
                   </div>
 
@@ -837,9 +1052,18 @@ export class SupervisorConsoleComponent implements OnInit {
   // Studio Custom Scenario & Google Media Generation State
   showCustomScenarioForm = signal<boolean>(false);
   showWebsiteClonerForm = signal<boolean>(false);
+  showYouTubeAgentForm = signal<boolean>(false);
   clonerTargetUrl = 'https://www.mpwik.wroc.pl';
   isCloningWebsite = signal<boolean>(false);
   clonedScenarioPreview = signal<StudioScenario | null>(null);
+
+  // YouTube Agent Assistant State
+  isSearchingYouTube = signal<boolean>(false);
+  isCreatingYouTubeScenario = signal<boolean>(false);
+  youtubeTopicInput = 'Oszustwa na wnuczka i fałszywe inwestycje';
+  customYouTubeUrlInput = '';
+  customYouTubeAuthentic = false;
+  youtubeSuggestions = signal<YouTubeSuggestion[]>([]);
   generatingScenarioMedia = signal<Record<string, string>>({});
   isGeneratingCustomMedia = signal<boolean>(false);
   customMediaGenType: 'AUDIO' | 'IMAGE' = 'AUDIO';
@@ -1072,6 +1296,88 @@ export class SupervisorConsoleComponent implements OnInit {
 
     this.clonedScenarioPreview.set(null);
     this.showWebsiteClonerForm.set(false);
+  }
+
+  setYouTubeTopicPreset(topic: string): void {
+    this.youtubeTopicInput = topic;
+    this.searchYouTubeVideos();
+  }
+
+  searchYouTubeVideos(): void {
+    if (!this.youtubeTopicInput.trim()) return;
+    this.isSearchingYouTube.set(true);
+
+    this.http.post<SuggestYouTubeVideosResponse>('/api/v1/studio/suggest-youtube-videos', {
+      topic: this.youtubeTopicInput.trim(),
+      audience_mode: this.newSession.audience_mode,
+      location_name: this.newSession.location_name,
+      language: this.newSession.language,
+      count: 4
+    }).subscribe({
+      next: (res) => {
+        this.isSearchingYouTube.set(false);
+        this.youtubeSuggestions.set(res.suggestions || []);
+      },
+      error: (err) => {
+        this.isSearchingYouTube.set(false);
+        console.error('Failed to search YouTube videos:', err);
+        alert('Błąd wyszukiwania YouTube Agent: ' + (err.error?.detail || err.message));
+      }
+    });
+  }
+
+  addYouTubeSuggestionToStudio(suggestion: YouTubeSuggestion): void {
+    this.isCreatingYouTubeScenario.set(true);
+    this.http.post<StudioScenario>('/api/v1/studio/create-youtube-scenario', {
+      youtube_url_or_id: suggestion.embed_url || suggestion.video_id,
+      title: suggestion.title,
+      channel_title: suggestion.channel_title,
+      is_authentic: suggestion.is_authentic,
+      audience_mode: this.newSession.audience_mode,
+      location_name: this.newSession.location_name,
+      language: this.newSession.language
+    }).subscribe({
+      next: (scenario) => {
+        this.isCreatingYouTubeScenario.set(false);
+        const current = [...this.proposedScenarios()];
+        current.unshift(scenario);
+        this.proposedScenarios.set(current);
+        this.selectedScenarios.unshift(scenario);
+        this.showYouTubeAgentForm.set(false);
+      },
+      error: (err) => {
+        this.isCreatingYouTubeScenario.set(false);
+        console.error('Failed to create YouTube scenario:', err);
+        alert('Błąd tworzenia scenariusza: ' + (err.error?.detail || err.message));
+      }
+    });
+  }
+
+  createCustomYouTubeScenario(): void {
+    if (!this.customYouTubeUrlInput.trim()) return;
+    this.isCreatingYouTubeScenario.set(true);
+    this.http.post<StudioScenario>('/api/v1/studio/create-youtube-scenario', {
+      youtube_url_or_id: this.customYouTubeUrlInput.trim(),
+      is_authentic: this.customYouTubeAuthentic,
+      audience_mode: this.newSession.audience_mode,
+      location_name: this.newSession.location_name,
+      language: this.newSession.language
+    }).subscribe({
+      next: (scenario) => {
+        this.isCreatingYouTubeScenario.set(false);
+        const current = [...this.proposedScenarios()];
+        current.unshift(scenario);
+        this.proposedScenarios.set(current);
+        this.selectedScenarios.unshift(scenario);
+        this.customYouTubeUrlInput = '';
+        this.showYouTubeAgentForm.set(false);
+      },
+      error: (err) => {
+        this.isCreatingYouTubeScenario.set(false);
+        console.error('Failed to create custom YouTube scenario:', err);
+        alert('Błąd osadzania wideo YouTube: ' + (err.error?.detail || err.message));
+      }
+    });
   }
 
   addParticipantToRoster(): void {

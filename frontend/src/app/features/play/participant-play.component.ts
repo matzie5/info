@@ -462,10 +462,14 @@ export interface SafeActionOption {
               <app-youtube-mock
                 *ngSwitchCase="'YOUTUBE'"
                 [author]="currentScenario()!.author"
+                [authorHandle]="currentScenario()!.author_handle || ''"
+                [authorAvatar]="currentScenario()!.author_avatar || ''"
                 [title]="currentScenario()!.title"
                 [content]="currentScenario()!.content"
                 [mediaUrl]="currentScenario()!.media_url || ''"
                 [redFlags]="currentScenario()!.red_flags"
+                [isAuthentic]="currentScenario()!.is_authentic"
+                [isSenior]="isSenior()"
                 (flagSelected)="onFlagsChanged($event)">
               </app-youtube-mock>
 

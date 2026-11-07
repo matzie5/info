@@ -273,7 +273,7 @@ export interface SessionDetails {
 
           <!-- Active Platform Mock Rendered Large for the Classroom -->
           <div class="py-4 flex justify-center">
-            <div class="w-full max-w-2xl" [ngSwitch]="activeScenario()?.platform_mock">
+            <div class="w-full max-w-2xl" [ngSwitch]="activeScenario()?.platform_mock?.toLowerCase()">
               <app-whatsapp-mock
                 *ngSwitchCase="'whatsapp'"
                 [author]="activeScenario()!.author"
@@ -309,9 +309,12 @@ export interface SessionDetails {
               <app-youtube-mock
                 *ngSwitchCase="'youtube'"
                 [author]="activeScenario()!.author"
+                [authorHandle]="activeScenario()!.author_handle || ''"
+                [authorAvatar]="activeScenario()!.author_avatar || ''"
                 [title]="activeScenario()!.title"
                 [content]="activeScenario()!.content"
                 [mediaUrl]="activeScenario()!.media_url || ''"
+                [isAuthentic]="activeScenario()!.is_authentic"
                 [redFlags]="activeScenario()!.red_flags">
               </app-youtube-mock>
 
